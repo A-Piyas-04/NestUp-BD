@@ -62,20 +62,28 @@ const Header = () => {
               </NavLink>
             </li>
             <li>
-              <NavLink 
-                to="/dashboard" 
-                className={({ isActive }) => 
-                  `transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
-                }
+              <Button 
+                as="link" 
+                to="/post-listing" 
+                variant="primary" 
+                size="md"
               >
-                Dashboard
-              </NavLink>
+                Post Listing
+              </Button>
             </li>
           </ul>
         </nav>
 
         {/* User Actions */}
         <div className="user-actions flex items-center space-x-4">
+          <NavLink 
+            to="/dashboard" 
+            className={({ isActive }) => 
+              `transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
+            }
+          >
+            Dashboard
+          </NavLink>
           <NavLink 
             to="/login" 
             className={({ isActive }) => 
@@ -84,14 +92,6 @@ const Header = () => {
           >
             Login/Register
           </NavLink>
-          <Button 
-            as="link" 
-            to="/post-listing" 
-            variant="primary" 
-            size="md"
-          >
-            Post Listing
-          </Button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -127,17 +127,6 @@ const Header = () => {
             </li>
             <li>
               <NavLink 
-                to="/post-listing" 
-                className={({ isActive }) => 
-                  `block py-2 transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
-                }
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Post Listing
-              </NavLink>
-            </li>
-            <li>
-              <NavLink 
                 to="/dashboard" 
                 className={({ isActive }) => 
                   `block py-2 transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
@@ -145,6 +134,17 @@ const Header = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Dashboard
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/post-listing" 
+                className={({ isActive }) => 
+                  `block py-2 transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
+                }
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Post Listing
               </NavLink>
             </li>
             <li>
