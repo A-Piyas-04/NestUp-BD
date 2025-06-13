@@ -1,0 +1,9 @@
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- House/Nest Icon -->
+  <path d="M20 8L10 16V32H30V16L20 8Z" fill="#646CFF" />
+  <path d="M15 20H25V32H15V20Z" fill="white" />
+  
+  <!-- Text -->
+  <text x="40" y="22" font-family="Arial, sans-serif" font-weight="bold" font-size="14" fill="#333333">NestUp</text>
+  <text x="40" y="32" font-family="Arial, sans-serif" font-weight="bold" font-size="10" fill="#646CFF">BD</text>
+</svg>

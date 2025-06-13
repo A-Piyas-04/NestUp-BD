@@ -1,0 +1,78 @@
+<svg width="500" height="400" viewBox="0 0 500 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="500" height="400" fill="#F5F7FF" />
+  
+  <!-- Sky -->
+  <rect width="500" height="200" fill="#E1E6FF" />
+  
+  <!-- Buildings -->
+  <rect x="50" y="100" width="80" height="200" fill="#646CFF" />
+  <rect x="60" y="120" width="15" height="15" fill="#FFFFFF" />
+  <rect x="85" y="120" width="15" height="15" fill="#FFFFFF" />
+  <rect x="60" y="145" width="15" height="15" fill="#FFFFFF" />
+  <rect x="85" y="145" width="15" height="15" fill="#FFFFFF" />
+  <rect x="60" y="170" width="15" height="15" fill="#FFFFFF" />
+  <rect x="85" y="170" width="15" height="15" fill="#FFFFFF" />
+  
+  <rect x="150" y="150" width="60" height="150" fill="#535BF2" />
+  <rect x="160" y="170" width="10" height="10" fill="#FFFFFF" />
+  <rect x="180" y="170" width="10" height="10" fill="#FFFFFF" />
+  <rect x="160" y="190" width="10" height="10" fill="#FFFFFF" />
+  <rect x="180" y="190" width="10" height="10" fill="#FFFFFF" />
+  <rect x="160" y="210" width="10" height="10" fill="#FFFFFF" />
+  <rect x="180" y="210" width="10" height="10" fill="#FFFFFF" />
+  
+  <rect x="230" y="120" width="100" height="180" fill="#8A91FF" />
+  <rect x="250" y="140" width="15" height="15" fill="#FFFFFF" />
+  <rect x="280" y="140" width="15" height="15" fill="#FFFFFF" />
+  <rect x="250" y="165" width="15" height="15" fill="#FFFFFF" />
+  <rect x="280" y="165" width="15" height="15" fill="#FFFFFF" />
+  <rect x="250" y="190" width="15" height="15" fill="#FFFFFF" />
+  <rect x="280" y="190" width="15" height="15" fill="#FFFFFF" />
+  <rect x="250" y="215" width="15" height="15" fill="#FFFFFF" />
+  <rect x="280" y="215" width="15" height="15" fill="#FFFFFF" />
+  
+  <rect x="350" y="170" width="70" height="130" fill="#7C83FD" />
+  <rect x="360" y="190" width="12" height="12" fill="#FFFFFF" />
+  <rect x="382" y="190" width="12" height="12" fill="#FFFFFF" />
+  <rect x="360" y="212" width="12" height="12" fill="#FFFFFF" />
+  <rect x="382" y="212" width="12" height="12" fill="#FFFFFF" />
+  <rect x="360" y="234" width="12" height="12" fill="#FFFFFF" />
+  <rect x="382" y="234" width="12" height="12" fill="#FFFFFF" />
+  
+  <!-- Ground -->
+  <rect x="0" y="300" width="500" height="100" fill="#E6E6E6" />
+  
+  <!-- Road -->
+  <rect x="0" y="350" width="500" height="50" fill="#CCCCCC" />
+  <rect x="20" y="375" width="40" height="5" fill="#FFFFFF" />
+  <rect x="100" y="375" width="40" height="5" fill="#FFFFFF" />
+  <rect x="180" y="375" width="40" height="5" fill="#FFFFFF" />
+  <rect x="260" y="375" width="40" height="5" fill="#FFFFFF" />
+  <rect x="340" y="375" width="40" height="5" fill="#FFFFFF" />
+  <rect x="420" y="375" width="40" height="5" fill="#FFFFFF" />
+  
+  <!-- Car -->
+  <rect x="150" y="330" width="60" height="20" rx="5" fill="#FF6B6B" />
+  <rect x="160" y="320" width="40" height="15" rx="5" fill="#FF6B6B" />
+  <circle cx="165" cy="350" r="7" fill="#333333" />
+  <circle cx="195" cy="350" r="7" fill="#333333" />
+  
+  <!-- Moving Van -->
+  <rect x="300" y="320" width="80" height="30" rx="5" fill="#646CFF" />
+  <rect x="300" y="330" width="30" height="20" rx="2" fill="#535BF2" />
+  <circle cx="315" cy="350" r="8" fill="#333333" />
+  <circle cx="365" cy="350" r="8" fill="#333333" />
+  
+  <!-- Sun -->
+  <circle cx="50" cy="50" r="30" fill="#FFDE59" />
+  
+  <!-- Clouds -->
+  <ellipse cx="150" cy="70" rx="30" ry="20" fill="#FFFFFF" />
+  <ellipse cx="170" cy="60" rx="25" ry="15" fill="#FFFFFF" />
+  <ellipse cx="190" cy="75" rx="20" ry="12" fill="#FFFFFF" />
+  
+  <ellipse cx="350" cy="40" rx="25" ry="15" fill="#FFFFFF" />
+  <ellipse cx="370" cy="50" rx="30" ry="20" fill="#FFFFFF" />
+  <ellipse cx="390" cy="35" rx="20" ry="12" fill="#FFFFFF" />
+</svg>
