@@ -2,17 +2,19 @@ nestup-frontend/
 │
 ├── public/                    # Static files (favicon, index.html)
 │
-├── src/                      # Main application source folder
-│   ├── assets/               # Images, icons, fonts
-│   │   ├── images/
-│   │   ├── icons/
+├── src/                      # Main application source folder ✅
+│   ├── assets/               # Images, icons, fonts ✅
+│   │   ├── images/ ✅
+│   │   ├── icons/ ✅
 │   │   └── fonts/
 │   │
-│   ├── components/           # Reusable UI components
-│   │   ├── Header/
-│   │   ├── Footer/
-│   │   ├── HeroSection/
-│   │   ├── ServiceCards/
+│   ├── components/           # Reusable UI components ✅
+│   │   ├── Header/ ✅
+│   │   ├── Footer/ ✅
+│   │   ├── HeroSection/ ✅
+│   │   ├── ServiceCards/ ✅
+│   │   ├── HowItWorks/ ✅
+│   │   ├── TrustBadges/ ✅
 │   │   ├── ListingCard/
 │   │   ├── FilterSidebar/
 │   │   ├── RatingStars/
@@ -20,8 +22,8 @@ nestup-frontend/
 │   │       ├── Button/
 │   │       └── Input/
 │   │
-│   ├── pages/                # Main page components (routes)
-│   │   ├── Home/
+│   ├── pages/                # Main page components (routes) ✅
+│   │   ├── Home/ ✅
 │   │   ├── Search/
 │   │   ├── ListingDetails/
 │   │   ├── Booking/
@@ -61,11 +63,11 @@ nestup-frontend/
 │   │   ├── globals.css
 │   │   └── tailwind.config.js
 │   │
-│   ├── App.jsx               # Root app component
-│   ├── main.jsx              # Entry point (with ReactDOM.render)
-│   └── index.css             # Base CSS
+│   ├── App.jsx               # Root app component ✅
+│   ├── main.jsx              # Entry point (with ReactDOM.render) ✅
+│   └── index.css             # Base CSS ✅
 │
 ├── .env                      # Environment variables
-├── .gitignore
-├── package.json
-└── README.md
+├── .gitignore ✅
+├── package.json ✅
+└── README.md ✅
