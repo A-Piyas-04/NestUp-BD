@@ -15,8 +15,8 @@ nestup-frontend/
 │   │   ├── ServiceCards/ ✅
 │   │   ├── HowItWorks/ ✅
 │   │   ├── TrustBadges/ ✅
-│   │   ├── ListingCard/
-│   │   ├── FilterSidebar/
+│   │   ├── ListingCard/ ✅
+│   │   ├── FilterSidebar/ ✅
 │   │   ├── RatingStars/
 │   │   └── Shared/
 │   │       ├── Button/
@@ -24,15 +24,15 @@ nestup-frontend/
 │   │
 │   ├── pages/                # Main page components (routes) ✅
 │   │   ├── Home/ ✅
-│   │   ├── Search/
+│   │   ├── Search/ ✅
 │   │   ├── ListingDetails/
 │   │   ├── Booking/
 │   │   ├── Dashboard/
 │   │   ├── PostListing/
 │   │   └── LoginRegister/
 │   │
-│   ├── layouts/              # Page layouts (Navbar + Footer wrapper)
-│   │   ├── MainLayout.jsx
+│   ├── layouts/              # Page layouts (Navbar + Footer wrapper) ✅
+│   │   ├── MainLayout.jsx ✅
 │   │   └── AuthLayout.jsx
 │   │
 │   ├── context/              # Context API (User, Auth, etc.)
