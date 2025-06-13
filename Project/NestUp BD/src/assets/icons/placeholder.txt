@@ -1,0 +1,8 @@
+This directory will contain icon assets for the NestUp BD application.
+
+Recommended icons to add:
+- Navigation icons
+- Social media icons
+- UI control icons (search, menu, close, etc.)
+- Feature/service icons
+- Rating/review icons

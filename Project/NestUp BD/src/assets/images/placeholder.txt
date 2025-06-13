@@ -1,0 +1,8 @@
+This directory will contain image assets for the NestUp BD application.
+
+Recommended images to add:
+- Logo
+- Hero section background/illustration
+- Service category icons
+- User avatars
+- Property/listing images
