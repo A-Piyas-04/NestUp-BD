@@ -11,58 +11,88 @@
   color: #333;
 }
 
-.steps-container {
+/* Workflow Container */
+.workflow-container {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 3rem;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+/* Workflow Row */
+.workflow-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.workflow-header {
+  margin-bottom: 1.5rem;
+}
+
+.workflow-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.5rem;
+}
+
+.workflow-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 3px;
+  background-color: #646cff;
+}
+
+/* Workflow Steps */
+.workflow-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
   position: relative;
 }
 
-/* Line connecting steps */
-.steps-container::before {
-  content: '';
-  position: absolute;
-  top: 40px;
-  left: 10%;
-  right: 10%;
-  height: 2px;
-  background-color: #e0e0e0;
-  z-index: 1;
+.workflow-step {
+  display: flex;
+  align-items: center;
+  flex: 1;
 }
 
-.step {
+.step-card {
+  flex: 1;
+  background-color: #f0f7ff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 30%;
+  text-align: center;
+  min-height: 180px;
   position: relative;
   z-index: 2;
 }
 
-.step-number {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.step-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.step-icon {
   font-size: 2rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-}
-
-.step:hover .step-number {
-  transform: scale(1.1);
-}
-
-.step-content {
-  text-align: center;
+  margin-bottom: 1rem;
 }
 
 .step-title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
   color: #333;
@@ -70,7 +100,18 @@
 
 .step-description {
   color: #666;
+  font-size: 0.9rem;
   line-height: 1.5;
+}
+
+.step-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #646cff;
+  padding: 0 0.5rem;
+  z-index: 1;
 }
 
 /* Animation for scroll trigger */
@@ -85,48 +126,63 @@
   }
 }
 
-.step {
+.workflow-step {
   opacity: 0;
   animation: fadeInUp 0.6s ease forwards;
 }
 
-.step:nth-child(1) {
-  animation-delay: 0.2s;
-}
+.workflow-row:nth-child(1) .workflow-step:nth-child(1) { animation-delay: 0.1s; }
+.workflow-row:nth-child(1) .workflow-step:nth-child(2) { animation-delay: 0.2s; }
+.workflow-row:nth-child(1) .workflow-step:nth-child(3) { animation-delay: 0.3s; }
+.workflow-row:nth-child(1) .workflow-step:nth-child(4) { animation-delay: 0.4s; }
 
-.step:nth-child(2) {
-  animation-delay: 0.4s;
-}
-
-.step:nth-child(3) {
-  animation-delay: 0.6s;
-}
+.workflow-row:nth-child(2) .workflow-step:nth-child(1) { animation-delay: 0.5s; }
+.workflow-row:nth-child(2) .workflow-step:nth-child(2) { animation-delay: 0.6s; }
+.workflow-row:nth-child(2) .workflow-step:nth-child(3) { animation-delay: 0.7s; }
+.workflow-row:nth-child(2) .workflow-step:nth-child(4) { animation-delay: 0.8s; }
 
 /* Media Queries */
 @media (max-width: 992px) {
-  .steps-container::before {
-    left: 5%;
-    right: 5%;
+  .workflow-steps {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .workflow-step {
+    width: 48%;
+    margin-bottom: 1rem;
+  }
+  
+  .step-arrow {
+    display: none;
   }
 }
 
 @media (max-width: 768px) {
-  .steps-container {
+  .workflow-steps {
     flex-direction: column;
     align-items: center;
   }
   
-  .steps-container::before {
-    display: none;
-  }
-  
-  .step {
+  .workflow-step {
     width: 100%;
     max-width: 350px;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    flex-direction: column;
   }
   
-  .step:last-child {
-    margin-bottom: 0;
+  .step-card {
+    width: 100%;
+    min-height: auto;
+  }
+  
+  .step-arrow {
+    transform: rotate(90deg);
+    margin: 0.5rem 0;
+    display: block;
+  }
+  
+  .workflow-row {
+    margin-bottom: 2rem;
   }
 }
