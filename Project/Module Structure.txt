@@ -1,0 +1,71 @@
+nestup-frontend/
+│
+├── public/                    # Static files (favicon, index.html)
+│
+├── src/                      # Main application source folder
+│   ├── assets/               # Images, icons, fonts
+│   │   ├── images/
+│   │   ├── icons/
+│   │   └── fonts/
+│   │
+│   ├── components/           # Reusable UI components
+│   │   ├── Header/
+│   │   ├── Footer/
+│   │   ├── HeroSection/
+│   │   ├── ServiceCards/
+│   │   ├── ListingCard/
+│   │   ├── FilterSidebar/
+│   │   ├── RatingStars/
+│   │   └── Shared/
+│   │       ├── Button/
+│   │       └── Input/
+│   │
+│   ├── pages/                # Main page components (routes)
+│   │   ├── Home/
+│   │   ├── Search/
+│   │   ├── ListingDetails/
+│   │   ├── Booking/
+│   │   ├── Dashboard/
+│   │   ├── PostListing/
+│   │   └── LoginRegister/
+│   │
+│   ├── layouts/              # Page layouts (Navbar + Footer wrapper)
+│   │   ├── MainLayout.jsx
+│   │   └── AuthLayout.jsx
+│   │
+│   ├── context/              # Context API (User, Auth, etc.)
+│   │   ├── AuthContext.js
+│   │   ├── UserContext.js
+│   │   └── ProviderWrapper.jsx
+│   │
+│   ├── hooks/                # Custom hooks
+│   │   ├── useAuth.js
+│   │   ├── useFetch.js
+│   │   └── useLocationAutocomplete.js
+│   │
+│   ├── services/             # API functions
+│   │   ├── api.js
+│   │   ├── authService.js
+│   │   ├── listingService.js
+│   │   └── bookingService.js
+│   │
+│   ├── utils/                # Helper functions
+│   │   ├── validators.js
+│   │   ├── constants.js
+│   │   └── formatter.js
+│   │
+│   ├── routes/               # Route definitions
+│   │   └── AppRoutes.jsx
+│   │
+│   ├── styles/               # Global and modular CSS (or Tailwind config)
+│   │   ├── globals.css
+│   │   └── tailwind.config.js
+│   │
+│   ├── App.jsx               # Root app component
+│   ├── main.jsx              # Entry point (with ReactDOM.render)
+│   └── index.css             # Base CSS
+│
+├── .env                      # Environment variables
+├── .gitignore
+├── package.json
+└── README.md
