@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { NavLink, Link } from 'react-router-dom';
 import './Header.css';
 import logo from '../../assets/logo.svg';
+import Button from '../Shared/Button/Button';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -30,22 +32,66 @@ const Header = () => {
       <div className="header-container">
         {/* Logo */}
         <div className="logo">
-          <a href="/">
+          <Link to="/">
             <img src={logo} alt="NestUp BD Logo" />
-          </a>
+          </Link>
         </div>
 
         {/* Desktop Navigation */}
         <nav className="desktop-nav">
-          <ul>
-            <li><a href="/browse">Browse Services</a></li>
+          <ul className="flex space-x-6">
+            <li>
+              <NavLink 
+                to="/" 
+                className={({ isActive }) => 
+                  `transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
+                }
+                end
+              >
+                Home
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/search" 
+                className={({ isActive }) => 
+                  `transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
+                }
+              >
+                Search Services
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/dashboard" 
+                className={({ isActive }) => 
+                  `transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
+                }
+              >
+                Dashboard
+              </NavLink>
+            </li>
           </ul>
         </nav>
 
         {/* User Actions */}
-        <div className="user-actions">
-          <button className="btn-register">Register</button>
-          <button className="btn-login">Login</button>
+        <div className="user-actions flex items-center space-x-4">
+          <NavLink 
+            to="/login" 
+            className={({ isActive }) => 
+              `transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
+            }
+          >
+            Login/Register
+          </NavLink>
+          <Button 
+            as="link" 
+            to="/post-listing" 
+            variant="primary" 
+            size="md"
+          >
+            Post Listing
+          </Button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -55,10 +101,63 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         <div className={`mobile-nav ${isMobileMenuOpen ? 'open' : ''}`}>
-          <ul>
-            <li><a href="/browse">Browse Services</a></li>
-            <li><a href="/register">Register</a></li>
-            <li><a href="/login">Login</a></li>
+          <ul className="flex flex-col space-y-3">
+            <li>
+              <NavLink 
+                to="/" 
+                className={({ isActive }) => 
+                  `block py-2 transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
+                }
+                end
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Home
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/search" 
+                className={({ isActive }) => 
+                  `block py-2 transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
+                }
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Search Services
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/post-listing" 
+                className={({ isActive }) => 
+                  `block py-2 transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
+                }
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Post Listing
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/dashboard" 
+                className={({ isActive }) => 
+                  `block py-2 transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
+                }
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Dashboard
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/login" 
+                className={({ isActive }) => 
+                  `block py-2 transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
+                }
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Login/Register
+              </NavLink>
+            </li>
           </ul>
         </div>
       </div>

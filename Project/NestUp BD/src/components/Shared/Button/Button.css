@@ -1,0 +1,11 @@
+/* Button component styles */
+
+/* Tailwind classes are used directly in the component, but we can add any additional styles here */
+
+/* Custom primary color if not defined in Tailwind config */
+:root {
+  --color-primary: #646cff;
+  --color-primary-dark: #535bf2;
+}
+
+/* Add any additional button styles that can't be handled with Tailwind */

@@ -43,15 +43,19 @@
   margin: 0 1rem;
 }
 
-.desktop-nav a {
-  color: #333;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.3s ease;
+/* NavLink styles are now handled with Tailwind in the component */
+/* Define primary color for consistency */
+:root {
+  --color-primary: #646cff;
+  --color-primary-dark: #535bf2;
 }
 
-.desktop-nav a:hover {
-  color: #646cff;
+.text-primary {
+  color: var(--color-primary);
+}
+
+.hover\:text-primary:hover {
+  color: var(--color-primary);
 }
 
 .user-actions {
@@ -59,33 +63,7 @@
   gap: 1rem;
 }
 
-.btn-register, .btn-login {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-register {
-  background-color: #646cff;
-  color: white;
-  border: none;
-}
-
-.btn-login {
-  background-color: transparent;
-  color: #333;
-  border: 1px solid #646cff;
-}
-
-.btn-register:hover {
-  background-color: #535bf2;
-}
-
-.btn-login:hover {
-  background-color: rgba(100, 108, 255, 0.1);
-}
+/* Button styles are now handled by the Button component */
 
 .mobile-menu-btn {
   display: none;
