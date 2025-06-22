@@ -84,14 +84,14 @@ const Header = () => {
           >
             Dashboard
           </NavLink>
-          <NavLink 
+          <Button 
+            as="link" 
             to="/login" 
-            className={({ isActive }) => 
-              `transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
-            }
+            variant="outline" 
+            size="md"
           >
             Login/Register
-          </NavLink>
+          </Button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -148,15 +148,16 @@ const Header = () => {
               </NavLink>
             </li>
             <li>
-              <NavLink 
+              <Button 
+                as="link" 
                 to="/login" 
-                className={({ isActive }) => 
-                  `block py-2 transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'}`
-                }
+                variant="outline" 
+                size="md"
+                className="w-full justify-start"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Login/Register
-              </NavLink>
+              </Button>
             </li>
           </ul>
         </div>
