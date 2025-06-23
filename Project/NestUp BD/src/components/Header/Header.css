@@ -1,18 +1,27 @@
+:root {
+  --color-primary: #646cff;
+  --color-primary-dark: #535bf2;
+  --color-bg-light: #e6f0ff;
+  --color-text-dark: #1f2a40;
+}
+
+/* Header Base */
 .header {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  background-color: white;
+  background-color: var(--color-bg-light);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   transition: all 0.3s ease;
 }
 
 .header-scrolled {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
+/* Header Content */
 .header-container {
   display: flex;
   justify-content: space-between;
@@ -22,16 +31,22 @@
   margin: 0 auto;
 }
 
+/* Logo + Animation */
 .logo a {
   display: block;
   text-decoration: none;
+  transition: transform 0.3s ease, filter 0.3s ease;
 }
-
 .logo img {
   height: 40px;
   width: auto;
 }
+.logo:hover a {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 5px var(--color-primary));
+}
 
+/* Desktop Navigation */
 .desktop-nav ul {
   display: flex;
   list-style: none;
@@ -43,28 +58,32 @@
   margin: 0 1rem;
 }
 
-/* NavLink styles are now handled with Tailwind in the component */
-/* Define primary color for consistency */
-:root {
-  --color-primary: #646cff;
-  --color-primary-dark: #535bf2;
+.desktop-nav a {
+  color: var(--color-text-dark);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.3s ease, transform 0.2s ease;
 }
-
-.text-primary {
+.desktop-nav a:hover {
   color: var(--color-primary);
+  transform: translateY(-1px);
 }
 
-.hover\:text-primary:hover {
-  color: var(--color-primary);
-}
-
+/* Action Buttons (Login/Register) */
 .user-actions {
   display: flex;
   gap: 1rem;
 }
+.user-actions a,
+.user-actions button {
+  transition: all 0.3s ease;
+}
+.user-actions a:hover,
+.user-actions button:hover {
+  transform: scale(1.05);
+}
 
-/* Button styles are now handled by the Button component */
-
+/* Mobile Menu Button */
 .mobile-menu-btn {
   display: none;
   background: none;
@@ -103,15 +122,14 @@
 .hamburger.open {
   background-color: transparent;
 }
-
 .hamburger.open::before {
   transform: rotate(45deg);
 }
-
 .hamburger.open::after {
   transform: rotate(-45deg);
 }
 
+/* Mobile Nav Dropdown */
 .mobile-nav {
   display: none;
   position: absolute;
@@ -147,9 +165,13 @@
   font-weight: 500;
   display: block;
   padding: 0.5rem 0;
+  transition: color 0.3s ease;
+}
+.mobile-nav a:hover {
+  color: var(--color-primary);
 }
 
-/* Media Queries */
+/* Responsive */
 @media (max-width: 768px) {
   .desktop-nav {
     display: none;
