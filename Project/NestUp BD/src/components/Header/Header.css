@@ -38,12 +38,15 @@
   transition: transform 0.3s ease, filter 0.3s ease;
 }
 .logo img {
-  height: 40px;
+  height: 50px;
   width: auto;
+  margin-left: -11rem;
+  transform: scale(1.15);
+  display: block;
 }
 .logo:hover a {
-  transform: scale(1.1);
-  filter: drop-shadow(0 0 5px var(--color-primary));
+  transform: scale(1.05);
+  filter: drop-shadow(1px 0 3px var(--color-primary));
 }
 
 /* Desktop Navigation */
@@ -76,6 +79,7 @@
 }
 .user-actions a,
 .user-actions button {
+  font-size: 1.05rem;
   transition: all 0.3s ease;
 }
 .user-actions a:hover,
@@ -95,8 +99,8 @@
 .hamburger {
   display: block;
   position: relative;
-  width: 24px;
-  height: 2px;
+  width: 20px;
+  height: 3px;
   background-color: #333;
   transition: all 0.3s ease;
 }
@@ -105,18 +109,18 @@
 .hamburger::after {
   content: '';
   position: absolute;
-  width: 24px;
-  height: 2px;
+  width: 20px;
+  height: 3px;
   background-color: #333;
   transition: all 0.3s ease;
 }
 
 .hamburger::before {
-  transform: translateY(-8px);
+  transform: translateY(-10px);
 }
 
 .hamburger::after {
-  transform: translateY(8px);
+  transform: translateY(10px);
 }
 
 .hamburger.open {
