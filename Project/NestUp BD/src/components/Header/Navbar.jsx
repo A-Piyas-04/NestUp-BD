@@ -2,12 +2,6 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import Button from '../Shared/Button/Button';
 import { useEffect, useState } from 'react';
 
-const navLinks = [
-  { to: '/', label: 'Home', end: true },
-  { to: '/search', label: 'Search Services' },
-  { to: '/dashboard', label: 'Dashboard' }
-];
-
 const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
@@ -27,6 +21,14 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(prev => !prev);
   };
+
+  // Define navLinks based on authentication status
+  const navLinks = [
+    { to: '/', label: 'Home', end: true },
+    { to: '/search', label: 'Search Services' },
+    // Only show Dashboard link if authenticated
+    ...(isAuthenticated ? [{ to: '/dashboard', label: 'Dashboard' }] : [])
+  ];
 
   const renderLink = ({ to, label, end }, isMobile = false) => (
     <li key={to}>
@@ -70,16 +72,19 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
 
       {/* User Actions */}
       <div className="user-actions flex items-center space-x-4">
-        <Button
-          as="link"
-          to="/dashboard"
-          variant="profileButtons"
-          size="md"
-          className="w-full justify-start"
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          Dashboard
-        </Button>
+        {/* Only show Dashboard button if authenticated */}
+        {isAuthenticated && (
+          <Button
+            as="link"
+            to="/dashboard"
+            variant="profileButtons"
+            size="md"
+            className="w-full justify-start"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            Dashboard
+          </Button>
+        )}
 
         {isAuthenticated ? (
           <Button
