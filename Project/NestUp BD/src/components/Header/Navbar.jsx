@@ -1,5 +1,6 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import Button from '../Shared/Button/Button';
+import { useEffect, useState } from 'react';
 
 const navLinks = [
   { to: '/', label: 'Home', end: true },
@@ -9,6 +10,21 @@ const navLinks = [
 ];
 
 const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
+
+  // Check token on load
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsAuthenticated(false);
+    navigate('/');
+  };
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(prev => !prev);
   };
@@ -20,8 +36,7 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
         end={end}
         onClick={isMobile ? () => setIsMobileMenuOpen(false) : undefined}
         className={({ isActive }) =>
-          `${isMobile ? 'block py-2' : ''} transition-colors duration-200 hover:text-primary ${
-            isActive ? 'text-primary font-semibold' : 'text-gray-700'
+          `${isMobile ? 'block py-2' : ''} transition-colors duration-200 hover:text-primary ${isActive ? 'text-primary font-semibold' : 'text-gray-700'
           }`
         }
       >
@@ -47,9 +62,23 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
       {/* User Actions */}
       <div className="user-actions flex items-center space-x-4">
         {renderLink(navLinks[2])}
-        <Button as="link" to="/login" variant="outline" size="md">
-          Login/Register
-        </Button>
+        {isAuthenticated ? (
+          <Button
+            variant="outline"
+            size="md"
+            onClick={() => {
+              handleLogout();
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            Logout
+          </Button>
+
+        ) : (
+          <Button as="link" to="/login" variant="outline" size="md">
+            Login/Register
+          </Button>
+        )}
       </div>
 
       {/* Mobile Toggle */}
@@ -62,16 +91,30 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
         <ul className="flex flex-col space-y-3">
           {navLinks.map(link => renderLink(link, true))}
           <li>
-            <Button
-              as="link"
-              to="/login"
-              variant="outline"
-              size="md"
-              className="w-full justify-start"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Login/Register
-            </Button>
+            {isAuthenticated ? (
+              <Button
+                variant="outline"
+                size="md"
+                className="w-full justify-start"
+                onClick={() => {
+                  handleLogout();
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                Logout
+              </Button>
+            ) : (
+              <Button
+                as="link"
+                to="/login"
+                variant="outline"
+                size="md"
+                className="w-full justify-start"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Login/Register
+              </Button>
+            )}
           </li>
         </ul>
       </div>
