@@ -1,11 +1,97 @@
-/* Button component styles */
+/* Button.css – force white text on every button state */
 
-/* Tailwind classes are used directly in the component, but we can add any additional styles here */
-
-/* Custom primary color if not defined in Tailwind config */
 :root {
   --color-primary: #646cff;
   --color-primary-dark: #535bf2;
+
+  --color-outline: #646cff;
+
+  --color-danger: #d62828;
+  --color-danger-dark: #a61b1b;
+
+  --text-light: #ffffff;
+  --border-radius: 6px;
+
+  --font-size-sm: 0.85rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.2rem;
+
+  --padding-sm: 6px 12px;
+  --padding-md: 8px 16px;
+  --padding-lg: 12px 20px;
 }
 
-/* Add any additional button styles that can't be handled with Tailwind */
+/* ---------- base ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border: none;
+  text-decoration: none;
+
+  /* 🔥 always‑white text */
+  color: var(--text-light) !important;
+}
+
+/* Ensure all anchor states inherit the white text */
+.btn:link,
+.btn:visited,
+.btn:hover,
+.btn:active,
+.btn:focus {
+  color: var(--text-light) !important;
+}
+
+/* ---------- sizes ---------- */
+.btn-sm { font-size: var(--font-size-sm); padding: var(--padding-sm); }
+.btn-md { font-size: var(--font-size-md); padding: var(--padding-md); }
+.btn-lg { font-size: var(--font-size-lg); padding: var(--padding-lg); }
+
+/* ---------- variants ---------- */
+.btn-primary           { background-color: var(--color-primary); }
+.btn-primary:hover     { background-color: var(--color-primary-dark); }
+
+.btn-outline           { background-color: transparent; border: 2px solid var(--color-outline); }
+.btn-outline:hover     { background-color: var(--color-outline); }
+
+.btn-danger            { background-color: var(--color-danger); }
+.btn-danger:hover      { background-color: var(--color-danger-dark); }
+
+
+.btn-profileButtons {
+  background-color: #060574; /* dark green */
+  color: var(--text-light);
+}
+
+.btn-profileButtons:hover {
+  background-color: #070566; /* darker green on hover */
+}
+
+
+.btn-success {
+  background-color: #060574; /* dark green */
+  color: var(--text-light);
+}
+
+.btn-success:hover {
+  background-color: #070566; /* darker green on hover */
+}
+
+
+/* ---------- disabled ---------- */
+.btn-disabled,
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Remove default focus ring / border artifacts */
+.btn:focus,
+.btn:active {
+  outline: none;
+  box-shadow: none;
+}
