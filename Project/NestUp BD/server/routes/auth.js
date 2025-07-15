@@ -8,7 +8,7 @@ const users = [];
 
 // Register endpoint
 router.post('/register', (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, name } = req.body;
   
   // Check if user already exists
   if (users.some(user => user.email === email)) {
@@ -16,13 +16,13 @@ router.post('/register', (req, res) => {
   }
   
   // Create new user
-  const newUser = { email, password };
+  const newUser = { email, password, name };
   users.push(newUser);
   
   // Generate JWT token
-  const token = jwt.sign({ email }, 'secret_key', { expiresIn: '1h' });
+  const token = jwt.sign({ email, name }, 'secret_key', { expiresIn: '1h' });
   
-  res.status(201).json({ token });
+  res.status(201).json({ token, name });
 });
 
 // Login endpoint
@@ -37,9 +37,9 @@ router.post('/login', (req, res) => {
   }
   
   // Generate JWT token
-  const token = jwt.sign({ email }, 'secret_key', { expiresIn: '1h' });
+  const token = jwt.sign({ email, name: user.name }, 'secret_key', { expiresIn: '1h' });
   
-  res.json({ token });
+  res.json({ token, name: user.name });
 });
 
 export default router;

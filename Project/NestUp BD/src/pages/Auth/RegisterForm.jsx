@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const RegisterForm = () => {
   const [name, setName] = useState('');
@@ -8,6 +9,7 @@ const RegisterForm = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,20 +19,22 @@ const RegisterForm = () => {
       return;
     }
 
-
     try {
       const response = await fetch('http://localhost:3000/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, name }),
         credentials: 'include'
       });
 
       const data = await response.json();
       if (response.ok) {
+        // Store both token and user name
         localStorage.setItem('token', data.token);
+        localStorage.setItem('userName', name);
+        login(data.token, name);
         navigate('/dashboard');
       } else {
         setError(data.error || 'Registration failed');

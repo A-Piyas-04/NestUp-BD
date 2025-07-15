@@ -8,17 +8,20 @@ export const AuthProvider = ({ children }) => {
   // Load from localStorage on first load
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) setUser({ token }); // You can expand this to actual user data
+    const userName = localStorage.getItem('userName');
+    if (token) setUser({ token, name: userName }); 
   }, []);
 
-  const login = (token) => {
-    setUser({ token });
+  const login = (token, name) => {
+    setUser({ token, name });
     localStorage.setItem('token', token);
+    localStorage.setItem('userName', name);
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('userName');
   };
 
   return (
