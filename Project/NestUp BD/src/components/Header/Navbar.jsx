@@ -5,8 +5,7 @@ import { useEffect, useState } from 'react';
 const navLinks = [
   { to: '/', label: 'Home', end: true },
   { to: '/search', label: 'Search Services' },
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/post-listing', label: 'Post Listing' }
+  { to: '/dashboard', label: 'Dashboard' }
 ];
 
 const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
@@ -50,22 +49,43 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
       {/* Desktop Navigation */}
       <nav className="desktop-nav">
         <ul className="flex space-x-6">
-          {navLinks.slice(0, 2).map(link => renderLink(link))}
           <li>
-            <Button as="link" to="/post-listing" variant="primary" size="md">
-              Post Listing
+            <Button as="link" to="/" variant="primary" size="md">
+              Home
+            </Button>
+          </li>
+          <li>
+            <Button as="link" to="/search" variant="primary" size="md">
+              Search Services
+            </Button>
+          </li>
+          <li>
+            <Button variant="primary" size="md">
+              Post Service
             </Button>
           </li>
         </ul>
+
       </nav>
 
       {/* User Actions */}
       <div className="user-actions flex items-center space-x-4">
-        {renderLink(navLinks[2])}
+        <Button
+          as="link"
+          to="/dashboard"
+          variant="profileButtons"
+          size="md"
+          className="w-full justify-start"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          Dashboard
+        </Button>
+
         {isAuthenticated ? (
           <Button
-            variant="outline"
+            variant="danger"
             size="md"
+            className="w-full justify-start"
             onClick={() => {
               handleLogout();
               setIsMobileMenuOpen(false);
@@ -73,9 +93,8 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
           >
             Logout
           </Button>
-
         ) : (
-          <Button as="link" to="/login" variant="outline" size="md">
+          <Button as="link" to="/login" variant="success" size="md">
             Login/Register
           </Button>
         )}
@@ -90,6 +109,17 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
       <div className={`mobile-nav ${isMobileMenuOpen ? 'open' : ''}`}>
         <ul className="flex flex-col space-y-3">
           {navLinks.map(link => renderLink(link, true))}
+          <li>
+            {/* New: Post Service button (no functionality) for mobile */}
+            <Button
+              variant="primary"
+              size="md"
+              className="w-full justify-start"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Post Service
+            </Button>
+          </li>
           <li>
             {isAuthenticated ? (
               <Button
