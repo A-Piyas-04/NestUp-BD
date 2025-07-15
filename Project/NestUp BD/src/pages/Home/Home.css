@@ -1,9 +1,32 @@
+/* Home.css */
+
 .home-page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+
+  /* Friendly background color */
+  background-color: #a9c9f0;
+  color: #57589b;
+
+  /* ✅ Add padding to reveal background */
+  padding: 2rem 1rem;
 }
 
 main {
   flex: 1;
+  width: 100%;
+
+  /* ✅ Optional: add spacing between sections */
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section {
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  padding: 1rem;
+  background-color: white; /* Optional, if you want cards to pop */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }

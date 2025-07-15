@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import './HeroSection.css';
-import heroIllustration from '../../assets/images/hero-illustration.svg';
+import temporaryHousingImage from '../../assets/images/temporary-housing-apts.jpg';
+
+// Remove the old illustration import
+// import heroIllustration from '../../assets/images/hero-illustration.svg';
 
 const HeroSection = () => {
   const [searchLocation, setSearchLocation] = useState('');
@@ -19,7 +22,7 @@ const HeroSection = () => {
         <div className="hero-content">
           <h1>Relocate with Confidence. Anytime. Anywhere.</h1>
           <p className="subheadline">Find housing, transport, and food solutions—all in one place.</p>
-          
+
           <div className="cta-buttons">
             <button className="cta-button primary">Find a Place</button>
             <button className="cta-button secondary">Offer a Room</button>
@@ -29,18 +32,18 @@ const HeroSection = () => {
             <div className="search-inputs">
               <div className="input-group">
                 <label htmlFor="location">Where are you moving to?</label>
-                <input 
-                  type="text" 
-                  id="location" 
+                <input
+                  type="text"
+                  id="location"
                   placeholder="City, Area, or Address"
                   value={searchLocation}
                   onChange={(e) => setSearchLocation(e.target.value)}
                 />
               </div>
-              
+
               <div className="input-group">
                 <label htmlFor="service">Service</label>
-                <select 
+                <select
                   id="service"
                   value={searchService}
                   onChange={(e) => setSearchService(e.target.value)}
@@ -51,27 +54,32 @@ const HeroSection = () => {
                   <option value="food">Food</option>
                 </select>
               </div>
-              
+
               <div className="input-group">
                 <label htmlFor="date">Date</label>
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   id="date"
                   value={searchDate}
                   onChange={(e) => setSearchDate(e.target.value)}
                 />
               </div>
             </div>
-            
+
             <button type="submit" className="search-button">
               <span className="search-icon"></span>
               Search Now
             </button>
           </form>
         </div>
-        
+
         <div className="hero-image">
-          <img src={heroIllustration} alt="City skyline illustration" />
+          <img
+            src={temporaryHousingImage}
+            alt="Temporary housing apartments"
+            className="modern-building-image"
+          />
+
         </div>
       </div>
     </section>

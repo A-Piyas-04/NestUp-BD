@@ -1,38 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './FilterSidebar.css';
 
-const FilterSidebar = () => {
+const FilterSidebar = ({ onFilterChange }) => {
+  const [filters, setFilters] = useState({
+    division: '',
+    district: '',
+    area: '',
+    minPrice: '',
+    maxPrice: '',
+    verifiedHosts: false,
+    hygieneBadge: false
+  });
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFilters(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleApply = () => {
+    onFilterChange(filters);
+  };
+
   return (
     <div className="filter-sidebar">
-      {/* <h3>Filter Services</h3>
       <label>
-        Service Type:
-        <select>
-          <option>All</option>
-          <option>Housing</option>
-          <option>Transport</option>
-          <option>Food</option>
-        </select>
-      </label> */}
-
- <label>
         Division:
-        <select>
+        <select name="division" value={filters.division} onChange={handleChange}>
           <option value="">All Divisions</option>
-          <option value="Dhaka">Dhaka Division</option>
-          <option value="Chittagong">Chittagong Division</option>
-          <option value="Rajshahi">Rajshahi Division</option>
-          <option value="Khulna">Khulna Division</option>
-          <option value="Barisal">Barisal Division</option>
-          <option value="Sylhet">Sylhet Division</option>
-          <option value="Rangpur">Rangpur Division</option>
-          <option value="Mymensingh">Mymensingh Division</option>
+          <option value="Dhaka Division">Dhaka Division</option>
+          <option value="Chittagong Division">Chittagong Division</option>
+          <option value="Rajshahi Division">Rajshahi Division</option>
+          <option value="Khulna Division">Khulna Division</option>
+          <option value="Barisal Division">Barisal Division</option>
+          <option value="Sylhet Division">Sylhet Division</option>
+          <option value="Rangpur Division">Rangpur Division</option>
+          <option value="Mymensingh Division">Mymensingh Division</option>
         </select>
       </label>
 
       <label>
         District:
-        <select>
+        <select name="district" value={filters.district} onChange={handleChange}>
           <option value="">All Districts</option>
           <option value="Dhaka">Dhaka</option>
           <option value="Gazipur">Gazipur</option>
@@ -45,32 +56,59 @@ const FilterSidebar = () => {
           <option value="Sylhet">Sylhet</option>
           <option value="Rangpur">Rangpur</option>
           <option value="Mymensingh">Mymensingh</option>
-          {/* Add more districts as needed */}
         </select>
       </label>
 
       <label>
         Search Area:
-        <input type="text" placeholder="Enter local area..." />
+        <input 
+          type="text" 
+          name="area" 
+          value={filters.area} 
+          onChange={handleChange} 
+          placeholder="Enter local area..." 
+        />
       </label>
 
       <label>
         Price Range:
-        <input type="number" placeholder="Min" />
-        <input type="number" placeholder="Max" />
+        <input 
+          type="number" 
+          name="minPrice" 
+          value={filters.minPrice} 
+          onChange={handleChange} 
+          placeholder="Min" 
+        />
+        <input 
+          type="number" 
+          name="maxPrice" 
+          value={filters.maxPrice} 
+          onChange={handleChange} 
+          placeholder="Max" 
+        />
       </label>
 
       <label>
-        <input type="checkbox" />
+        <input 
+          type="checkbox" 
+          name="verifiedHosts" 
+          checked={filters.verifiedHosts} 
+          onChange={handleChange} 
+        />
         Verified Hosts
       </label>
 
       <label>
-        <input type="checkbox" />
+        <input 
+          type="checkbox" 
+          name="hygieneBadge" 
+          checked={filters.hygieneBadge} 
+          onChange={handleChange} 
+        />
         Hygiene Badge
       </label>
 
-      <button className="apply-button">Apply Filter</button>
+      <button className="apply-button" onClick={handleApply}>Apply Filter</button>
     </div>
   );
 };
