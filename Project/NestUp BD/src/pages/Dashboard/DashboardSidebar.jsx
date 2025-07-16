@@ -1,17 +1,77 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import './Dashboard.css';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
-const DashboardSidebar = () => {
+const DashboardSidebar = ({ isOpen }) => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+  
+  const menuItems = [
+    {
+      path: '/dashboard',
+      label: 'Dashboard',
+      icon: '📊'
+    },
+    {
+      path: '/dashboard/my-listings',
+      label: 'My Listings',
+      icon: '🏠'
+    },
+    {
+      path: '/dashboard/add-listing',
+      label: 'Add Listing',
+      icon: '➕'
+    },
+    {
+      path: '/dashboard/settings',
+      label: 'Settings',
+      icon: '⚙️'
+    }
+  ];
+
   return (
-    <aside className="dashboard-sidebar">
-      <h2 className="sidebar-title">Dashboard</h2>
-      <ul className="sidebar-menu">
-        <li><NavLink to="/dashboard" end>Overview</NavLink></li>
-        <li><NavLink to="/dashboard/my-listings">My Listings</NavLink></li>
-        <li><NavLink to="/dashboard/add-listing">Add Listing</NavLink></li>
-        <li><NavLink to="/dashboard/settings">Settings</NavLink></li>
-      </ul>
+    <aside className={`dashboard-sidebar ${isOpen ? 'open' : ''}`}>
+      <div className="sidebar-title">
+        <span className="sidebar-title-icon">📋</span>
+        Dashboard
+      </div>
+      
+      <nav>
+        <ul className="sidebar-menu">
+          {menuItems.map((item) => (
+            <li key={item.path}>
+              <NavLink 
+                to={item.path}
+                end={item.path === '/dashboard'}
+                className={({ isActive }) => isActive ? 'active' : ''}
+              >
+                <span className="menu-icon">{item.icon}</span>
+                {item.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      
+      <div className="sidebar-profile">
+        <div className="profile-info">
+          <div className="profile-avatar">
+            {user?.name ? user.name.charAt(0) : 'U'}
+          </div>
+          <div>
+            <p className="profile-name">{user?.name || 'User'}</p>
+            <p className="profile-email">{user?.email || 'user@example.com'}</p>
+          </div>
+        </div>
+        <button className="logout-button" onClick={handleLogout}>
+          <span>🚪</span> Logout
+        </button>
+      </div>
     </aside>
   );
 };

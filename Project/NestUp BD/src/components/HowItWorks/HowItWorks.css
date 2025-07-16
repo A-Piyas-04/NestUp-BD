@@ -1,40 +1,63 @@
 .how-it-works-section {
-  padding: 4rem 2rem;
-  background-color: #f9f9f9;
+  padding: 5rem 0;
+  background-color: white;
+  position: relative;
+}
+
+.how-it-works-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232563eb' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  z-index: 0;
 }
 
 .how-it-works-section .section-title {
   text-align: center;
-  font-size: 2rem;
-  font-weight: 700;
   margin-bottom: 3rem;
-  color: #333;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--secondary);
+  position: relative;
+  z-index: 1;
 }
 
-/* Workflow Container */
+.how-it-works-section .section-title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 4px;
+  background: var(--primary);
+  margin: 1rem auto 0;
+  border-radius: var(--radius-full);
+}
+
 .workflow-container {
   display: flex;
   flex-direction: column;
-  gap: 3rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  gap: 4rem;
+  position: relative;
+  z-index: 1;
 }
 
-/* Workflow Row */
 .workflow-row {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  gap: 2rem;
 }
 
 .workflow-header {
-  margin-bottom: 1.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
 }
 
 .workflow-title {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 600;
-  color: #333;
+  color: var(--gray-800);
   position: relative;
   display: inline-block;
   padding-bottom: 0.5rem;
@@ -44,77 +67,107 @@
   content: '';
   position: absolute;
   bottom: 0;
-  left: 0;
-  width: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
   height: 3px;
-  background-color: #646cff;
+  background: var(--primary);
+  border-radius: var(--radius-full);
 }
 
-/* Workflow Steps */
 .workflow-steps {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  position: relative;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .workflow-step {
+  flex: 1;
+  min-width: 200px;
+  max-width: 250px;
   display: flex;
   align-items: center;
-  flex: 1;
+  gap: 1rem;
 }
 
 .step-card {
   flex: 1;
-  background-color: #f0f7ff;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  padding: 2rem 1.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  min-height: 180px;
-  position: relative;
-  z-index: 2;
+  justify-content: center;
+  background-color: white;
+  border: 1px solid var(--gray-100);
+}
+
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: var(--primary);
 }
 
 .step-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-lg);
 }
 
 .step-icon {
-  font-size: 2rem;
-  margin-bottom: 1rem;
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  background-color: var(--primary-light);
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
 }
 
 .step-title {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: #333;
+  margin-bottom: 0.75rem;
+  color: var(--secondary);
 }
 
 .step-description {
-  color: #666;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  color: var(--gray-600);
   line-height: 1.5;
 }
 
 .step-arrow {
+  font-size: 1.5rem;
+  color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  color: #646cff;
-  padding: 0 0.5rem;
-  z-index: 1;
+  position: relative;
 }
 
-/* Animation for scroll trigger */
+.step-arrow::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%232563eb'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M14 5l7 7m0 0l-7 7m7-7H3'%3E%3C/path%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -127,8 +180,8 @@
 }
 
 .workflow-step {
-  opacity: 0;
   animation: fadeInUp 0.6s ease forwards;
+  opacity: 0;
 }
 
 .workflow-row:nth-child(1) .workflow-step:nth-child(1) { animation-delay: 0.1s; }
@@ -141,16 +194,16 @@
 .workflow-row:nth-child(2) .workflow-step:nth-child(3) { animation-delay: 0.7s; }
 .workflow-row:nth-child(2) .workflow-step:nth-child(4) { animation-delay: 0.8s; }
 
-/* Media Queries */
 @media (max-width: 992px) {
   .workflow-steps {
+    flex-direction: row;
     flex-wrap: wrap;
-    gap: 1rem;
+    justify-content: center;
   }
   
   .workflow-step {
-    width: 48%;
-    margin-bottom: 1rem;
+    width: calc(50% - 1rem);
+    max-width: none;
   }
   
   .step-arrow {
@@ -166,23 +219,18 @@
   
   .workflow-step {
     width: 100%;
-    max-width: 350px;
-    margin-bottom: 1.5rem;
-    flex-direction: column;
+    max-width: 300px;
   }
   
   .step-card {
-    width: 100%;
-    min-height: auto;
+    padding: 1.5rem;
   }
   
   .step-arrow {
-    transform: rotate(90deg);
-    margin: 0.5rem 0;
-    display: block;
+    display: none;
   }
   
   .workflow-row {
-    margin-bottom: 2rem;
+    margin-bottom: 0;
   }
 }

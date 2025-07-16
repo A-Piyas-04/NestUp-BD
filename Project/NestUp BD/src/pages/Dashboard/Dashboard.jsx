@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import Overview from './views/Overview';
 import MyListings from './views/MyListings';
@@ -12,26 +12,41 @@ import Footer from '../../components/Footer/Footer';
 import './Dashboard.css';
 
 const Dashboard = () => {
-return (
-  <>
-    <Header />
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    <div className="dashboard-layout">
-      <DashboardSidebar />
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
-      <div className="dashboard-content">
-        <Routes>
-          <Route path="/" element={<Overview />} />
-          <Route path="my-listings" element={<MyListings />} />
-          <Route path="add-listing" element={<AddListing />} />
-        </Routes>
+  return (
+    <>
+      <Header />
+
+      <div className="dashboard-layout">
+        <DashboardSidebar isOpen={sidebarOpen} />
+        
+        <button 
+          className="sidebar-toggle" 
+          onClick={toggleSidebar}
+          aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+        >
+          {sidebarOpen ? "×" : "≡"}
+        </button>
+
+        <div className="dashboard-content">
+          <Routes>
+            <Route path="/" element={<Overview />} />
+            <Route path="/my-listings" element={<MyListings />} />
+            <Route path="/add-listing" element={<AddListing />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </div>
       </div>
-    </div>
 
-    <Footer />
-  </>
-);
-
+      <Footer />
+    </>
+  );
 };
 
 export default Dashboard;

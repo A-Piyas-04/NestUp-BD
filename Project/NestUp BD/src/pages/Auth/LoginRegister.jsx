@@ -10,18 +10,25 @@ const LoginRegister = () => {
 
   return (
     <div className="auth-page">
-      {/* ✅ Top-left button */}
+      {/* Navigation button */}
       <button className="home-button" onClick={() => navigate('/')}>
-        ← Back to Homepage
+        ← Return to Homepage
       </button>
 
       <div className="auth-card">
-        <h2>{isLogin ? 'Login to Your Account' : 'Create a New Account'}</h2>
+        <h2>{isLogin ? 'Welcome Back' : 'Create Your Account'}</h2>
+        <p className="auth-subtitle">
+          {isLogin 
+            ? 'Access your NestUp BD account to manage your properties and bookings' 
+            : 'Join our community to find or list properties across Bangladesh'}
+        </p>
+        
         {isLogin ? <LoginForm /> : <RegisterForm />}
+        
         <p className="toggle-text">
-          {isLogin ? "Don't have an account?" : 'Already have an account?'}
+          {isLogin ? "New to NestUp BD?" : 'Already have an account?'}
           <button onClick={() => setIsLogin(!isLogin)} className="toggle-button">
-            {isLogin ? 'Register' : 'Login'}
+            {isLogin ? 'Create Account' : 'Sign In'}
           </button>
         </p>
       </div>
