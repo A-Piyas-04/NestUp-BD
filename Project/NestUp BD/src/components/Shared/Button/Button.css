@@ -1,10 +1,10 @@
 /* Button.css – force white text on every button state */
 
 :root {
-  --color-primary: #646cff;
-  --color-primary-dark: #535bf2;
+  --color-primary: #0f172a;
+  --color-primary-dark: #0a0f1a;
 
-  --color-outline: #646cff;
+  --color-outline: #0f172a;
 
   --color-danger: #d62828;
   --color-danger-dark: #a61b1b;
@@ -63,22 +63,22 @@
 
 
 .btn-profileButtons {
-  background-color: #060574; /* dark green */
+  background-color: #0f172a; /* dark blue */
   color: var(--text-light);
 }
 
 .btn-profileButtons:hover {
-  background-color: #070566; /* darker green on hover */
+  background-color: #0a0f1a; /* darker blue on hover */
 }
 
 
 .btn-success {
-  background-color: #060574; /* dark green */
+  background-color: #0f172a; /* dark blue */
   color: var(--text-light);
 }
 
 .btn-success:hover {
-  background-color: #070566; /* darker green on hover */
+  background-color: #0a0f1a; /* darker blue on hover */
 }
 
 
