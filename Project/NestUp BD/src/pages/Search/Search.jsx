@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Search.css';
 import FilterSidebar from '../../components/FilterSidebar/FilterSidebar';
 import ListingCard from '../../components/ListingCard/ListingCard';
@@ -185,75 +185,122 @@ const Search = () => {
   });
 
   const [filteredListings, setFilteredListings] = useState(dummyListings);
+  const [totalListings, setTotalListings] = useState(dummyListings.length);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFilterChange = (filters) => {
+    setIsLoading(true);
     setActiveFilters(filters);
     
-    // Apply filters to listings
-    const filtered = dummyListings.filter(listing => {
-      // Division filter
-      if (filters.division && listing.division !== filters.division) {
-        return false;
-      }
+    // Simulate API delay
+    setTimeout(() => {
+      // Apply filters to listings
+      const filtered = dummyListings.filter(listing => {
+        // Division filter
+        if (filters.division && listing.division !== filters.division) {
+          return false;
+        }
+        
+        // District filter
+        if (filters.district && listing.district !== filters.district) {
+          return false;
+        }
+        
+        // Area filter (case insensitive partial match)
+        if (filters.area && !listing.area.toLowerCase().includes(filters.area.toLowerCase())) {
+          return false;
+        }
+        
+        // Price range filter
+        if (filters.minPrice && listing.priceNumeric < parseInt(filters.minPrice)) {
+          return false;
+        }
+        if (filters.maxPrice && listing.priceNumeric > parseInt(filters.maxPrice)) {
+          return false;
+        }
+        
+        // Verified hosts filter
+        if (filters.verifiedHosts && !listing.verifiedHost) {
+          return false;
+        }
+        
+        // Hygiene badge filter
+        if (filters.hygieneBadge && !listing.hygieneBadge) {
+          return false;
+        }
+        
+        return true;
+      });
       
-      // District filter
-      if (filters.district && listing.district !== filters.district) {
-        return false;
-      }
-      
-      // Area filter (case insensitive partial match)
-      if (filters.area && !listing.area.toLowerCase().includes(filters.area.toLowerCase())) {
-        return false;
-      }
-      
-      // Price range filter
-      if (filters.minPrice && listing.priceNumeric < parseInt(filters.minPrice)) {
-        return false;
-      }
-      if (filters.maxPrice && listing.priceNumeric > parseInt(filters.maxPrice)) {
-        return false;
-      }
-      
-      // Verified hosts filter
-      if (filters.verifiedHosts && !listing.verifiedHost) {
-        return false;
-      }
-      
-      // Hygiene badge filter
-      if (filters.hygieneBadge && !listing.hygieneBadge) {
-        return false;
-      }
-      
-      return true;
-    });
-    
-    setFilteredListings(filtered);
+      setFilteredListings(filtered);
+      setTotalListings(filtered.length);
+      setIsLoading(false);
+    }, 500);
   };
+
+  // Initial load effect
+  useEffect(() => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+  }, []);
 
   return (
     <div>
       <Header />
 
       <div className="search-page">
+        <div className="search-header">
+          <div className="container">
+            <h1>Find Your Ideal Property</h1>
+            <p className="search-subtitle">
+              {isLoading ? 'Searching...' : 
+                `${totalListings} ${totalListings === 1 ? 'property' : 'properties'} available`}
+            </p>
+          </div>
+        </div>
+        
         <div className="search-page-container">
           <div className="search-filter-sidebar">
             <FilterSidebar onFilterChange={handleFilterChange} />
           </div>
-          <div className="search-results-grid">
-            {filteredListings.length > 0 ? (
-              filteredListings.map((listing, index) => (
-                <ListingCard
-                  key={index}
-                  title={listing.title}
-                  location={`${listing.area}, ${listing.district}, ${listing.division}`}
-                  price={listing.price}
-                  image={listing.image}
-                />
-              ))
+          
+          <div className="search-results-container">
+            {isLoading ? (
+              <div className="loading-state">
+                <div className="loader"></div>
+                <p>Finding the best properties for you...</p>
+              </div>
+            ) : filteredListings.length > 0 ? (
+              <div className="search-results-grid">
+                {filteredListings.map((listing, index) => (
+                  <ListingCard
+                    key={index}
+                    title={listing.title}
+                    location={`${listing.area}, ${listing.district}`}
+                    price={listing.price}
+                    image={listing.image}
+                    verifiedHost={listing.verifiedHost}
+                    hygieneBadge={listing.hygieneBadge}
+                  />
+                ))}
+              </div>
             ) : (
               <div className="no-results">
-                <h3>No listings found</h3>
-                <p>Try adjusting your filters to see more results</p>
+                <h3>No properties match your criteria</h3>
+                <p>Try adjusting your filters or explore our featured properties</p>
+                <button className="reset-filters-btn" onClick={() => handleFilterChange({
+                  division: '',
+                  district: '',
+                  area: '',
+                  minPrice: '',
+                  maxPrice: '',
+                  verifiedHosts: false,
+                  hygieneBadge: false
+                })}>
+                  Reset All Filters
+                </button>
               </div>
             )}
           </div>
