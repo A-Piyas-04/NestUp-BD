@@ -7,21 +7,24 @@ const ServiceCards = () => {
       icon: '🏠',
       title: 'Housing',
       description: 'Verified short/long stay rooms',
-      link: '/search?service=housing'
+      link: '/search?service=housing',
+      available: true
     },
     {
       id: 'transport',
       icon: '🚗',
       title: 'Transport',
       description: 'Book rides, vans & relocation vehicles',
-      link: '/search?service=transport'
+      link: '/search?service=transport',
+      available: false
     },
     {
       id: 'food',
       icon: '🥗',
       title: 'Food & Water',
       description: 'Daily meals & water supply',
-      link: '/search?service=food'
+      link: '/search?service=food',
+      available: false
     }
   ];
 
@@ -35,7 +38,13 @@ const ServiceCards = () => {
               <div className="service-icon">{service.icon}</div>
               <h3 className="service-title">{service.title}</h3>
               <p className="service-description">{service.description}</p>
-              <a href={service.link} className="service-link">Learn More</a>
+
+              {/* ⛔ Not Available Message */}
+              {!service.available ? (
+                <p className="not-available-text">🚫 Not Available Yet</p>
+              ) : (
+                <a href={service.link} className="service-link">Learn More</a>
+              )}
             </div>
           ))}
         </div>

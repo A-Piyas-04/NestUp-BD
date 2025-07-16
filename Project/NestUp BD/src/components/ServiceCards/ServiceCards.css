@@ -93,3 +93,10 @@
     min-height: auto;
   }
 }
+
+.not-available-text {
+  color: #e53935; /* bright red */
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.5rem 0;
+}
