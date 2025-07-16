@@ -1,6 +1,6 @@
 nestup-frontend/
 │
-├── public/                    # Static files (favicon, index.html)
+├── public/                  
 │
 ├── src/                      # Main application source folder ✅
 │   ├── assets/               # Images, icons, fonts ✅
@@ -31,7 +31,7 @@ nestup-frontend/
 │   │   ├── PostListing/
 │   │   └── LoginRegister/
 │   │
-│   ├── layouts/              # Page layouts (Navbar + Footer wrapper)
+│   ├── layouts/              # Page layouts 
 │   │   ├── MainLayout.jsx
 │   │   └── AuthLayout.jsx
 │   │
