@@ -183,6 +183,69 @@
   color: var(--primary-light);
 }
 
+.logo-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s, background 0.2s;
+}
+
+.logo-link:hover {
+  color: var(--primary);
+  background: none;
+}
+
+.logo-link svg {
+  transition: filter 0.2s;
+}
+
+.logo-link:hover svg {
+  filter: brightness(1.2) drop-shadow(0 2px 8px rgba(37,99,235,0.10));
+}
+
+/* Color-coded buttons */
+.login-btn {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+}
+.login-btn:hover {
+  background-color: var(--primary);
+  color: #fff;
+}
+
+.register-btn {
+  background-color: var(--success);
+  color: #fff;
+  border: 1.5px solid var(--success);
+}
+.register-btn:hover {
+  background-color: var(--success-dark, #059669);
+  color: #fff;
+}
+
+.logout-btn {
+  background-color: var(--danger, #ef4444);
+  color: #fff;
+  border: 1.5px solid var(--danger, #ef4444);
+}
+.logout-btn:hover {
+  background-color: var(--danger-dark, #b91c1c);
+  color: #fff;
+}
+
+.dashboard-btn {
+  background-color: var(--secondary);
+  color: #fff;
+  border: 1.5px solid var(--secondary);
+}
+.dashboard-btn:hover {
+  background-color: var(--primary);
+  color: #fff;
+}
+
 @media (max-width: 768px) {
   .desktop-nav {
     display: none;
