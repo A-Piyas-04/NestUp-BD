@@ -39,6 +39,7 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const navLinks = [
     { to: '/', label: 'Home', end: true },
     { to: '/search', label: 'Search Services' },
+    { to: '/provide-service', label: 'List Property' },
     // Only show Dashboard link if authenticated
     ...(isAuthenticated ? [{ to: '/dashboard', label: 'Dashboard' }] : [])
   ];
@@ -75,8 +76,8 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
             </Button>
           </li>
           <li>
-            <Button variant="primary" size="md">
-              Post Service
+            <Button as="link" to="/provide-service" variant="primary" size="md">
+              List Property
             </Button>
           </li>
         </ul>
@@ -132,17 +133,6 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
       <div className={`mobile-nav ${isMobileMenuOpen ? 'open' : ''}`}>
         <ul className="flex flex-col space-y-3">
           {navLinks.map(link => renderLink(link, true))}
-          <li>
-            {/* New: Post Service button (no functionality) for mobile */}
-            <Button
-              variant="primary"
-              size="md"
-              className="w-full justify-start"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Post Service
-            </Button>
-          </li>
           <li>
             {isAuthenticated ? (
               <Button

@@ -4,6 +4,7 @@ import LoginRegister from './pages/Auth/LoginRegister';
 import Search from './pages/Search/Search';
 import Dashboard from './pages/Dashboard/Dashboard';
 import NotFound from './pages/NotFound/NotFound';
+import ProvideService from './pages/ProvideService/ProvideService';
 import './App.css';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path="/dashboard/*" element={<Dashboard />} />
           <Route path="/login" element={<LoginRegister />} />
           <Route path="/register" element={<LoginRegister />} />
+          <Route path="/provide-service" element={<ProvideService />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

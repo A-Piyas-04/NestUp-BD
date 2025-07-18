@@ -62,6 +62,15 @@ const Header = () => {
         </nav>
 
         <div className="user-actions">
+          <Button
+            as="link"
+            to="/provide-service"
+            variant="primary"
+            size="md"
+            style={{ marginRight: '1rem' }}
+          >
+            List Property
+          </Button>
           {user ? (
             <>
               <Button 
@@ -110,12 +119,13 @@ const Header = () => {
           <div className={`hamburger ${isMobileMenuOpen ? 'open' : ''}`}></div>
         </button>
 
-        <div className={`mobile-nav ${isMobileMenuOpen ? 'open' : ''}`}>
+        <div className={`mobile-nav ${isMobileMenuOpen ? 'open' : ''}`}> 
           <ul>
             <li><NavLink to="/" onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink></li>
             <li><NavLink to="/search" onClick={() => setIsMobileMenuOpen(false)}>Properties</NavLink></li>
             <li><NavLink to="/about" onClick={() => setIsMobileMenuOpen(false)}>About</NavLink></li>
             <li><NavLink to="/contact" onClick={() => setIsMobileMenuOpen(false)}>Contact</NavLink></li>
+            <li><NavLink to="/provide-service" onClick={() => setIsMobileMenuOpen(false)}>List Property</NavLink></li>
             {user ? (
               <>
                 <li><NavLink to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>Dashboard</NavLink></li>
