@@ -7,181 +7,197 @@ import Footer from '../../components/Footer/Footer';
 
 const dummyListings = [
   {
-    title: 'Modern Studio Apartment',
-    division: 'Dhaka Division',
+    title: 'Student Studio Apartment',
     district: 'Dhaka',
     area: 'Dhanmondi',
-    price: '৳15,000/month',
+    price: '৳7,500/month',
     image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
     verifiedHost: true,
     hygieneBadge: true,
-    priceNumeric: 15000
+    priceNumeric: 7500,
+    availableFrom: '2024-01-01',
+    availableTo: '2024-06-30'
   },
   {
-    title: 'Spacious 3BHK Family Home',
-    division: 'Dhaka Division',
+    title: 'Shared 3BR Apartment',
     district: 'Dhaka',
     area: 'Gulshan',
-    price: '৳35,000/month',
+    price: '৳5,000/month',
     image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGhvdXNlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
     verifiedHost: true,
     hygieneBadge: false,
-    priceNumeric: 35000
+    priceNumeric: 5000,
+    availableFrom: '2023-12-15',
+    availableTo: '2024-12-15'
   },
   {
     title: 'Cozy 2BHK Near University',
-    division: 'Dhaka Division',
     district: 'Dhaka',
     area: 'Mohammadpur',
-    price: '৳18,000/month',
+    price: '৳8,000/month',
     image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGFwYXJ0bWVudHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60',
     verifiedHost: false,
     hygieneBadge: true,
-    priceNumeric: 18000
+    priceNumeric: 8000,
+    availableFrom: '2024-02-01',
+    availableTo: '2025-01-31'
   },
   {
-    title: 'Luxury Apartment with Pool',
-    division: 'Dhaka Division',
+    title: 'Single Room in Shared Flat',
     district: 'Dhaka',
     area: 'Banani',
-    price: '৳45,000/month',
+    price: '৳4,500/month',
     image: 'https://images.unsplash.com/photo-1574362848149-11496d93a7c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YXBhcnRtZW50JTIwYnVpbGRpbmd8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60',
     verifiedHost: true,
     hygieneBadge: true,
-    priceNumeric: 45000
+    priceNumeric: 4500,
+    availableFrom: '2024-03-01',
+    availableTo: '2025-02-28'
   },
   {
-    title: 'Affordable Student Housing',
-    division: 'Dhaka Division',
+    title: 'Budget Student Housing',
     district: 'Dhaka',
     area: 'Mirpur',
-    price: '৳8,000/month',
+    price: '৳3,500/month',
     image: 'https://images.unsplash.com/photo-1595877244574-e90ce41ce089?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZG9ybXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60',
     verifiedHost: false,
     hygieneBadge: false,
-    priceNumeric: 8000
+    priceNumeric: 3500,
+    availableFrom: '2024-01-15',
+    availableTo: '2024-07-15'
   },
   {
-    title: 'Riverside Villa',
-    division: 'Dhaka Division',
+    title: 'Family Apartment',
     district: 'Narayanganj',
     area: 'Rupganj',
-    price: '৳60,000/month',
+    price: '৳10,000/month',
     image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGx1eHVyeSUyMGhvdXNlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
     verifiedHost: true,
     hygieneBadge: true,
-    priceNumeric: 60000
+    priceNumeric: 10000,
+    availableFrom: '2024-04-01',
+    availableTo: '2025-03-31'
   },
   {
     title: 'Traditional Home with Garden',
-    division: 'Rajshahi Division',
     district: 'Rajshahi',
     area: 'Boalia',
-    price: '৳22,000/month',
+    price: '৳6,500/month',
     image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8aG91c2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60',
     verifiedHost: true,
     hygieneBadge: false,
-    priceNumeric: 22000
+    priceNumeric: 6500,
+    availableFrom: '2024-05-01',
+    availableTo: '2025-04-30'
   },
   {
-    title: 'Beachfront Cottage',
-    division: 'Chittagong Division',
+    title: 'Beachfront Student Hostel',
     district: 'Cox\'s Bazar',
     area: 'Kolatoli',
-    price: '৳30,000/month',
+    price: '৳6,000/month',
     image: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmVhY2glMjBob3VzZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60',
     verifiedHost: true,
     hygieneBadge: true,
-    priceNumeric: 30000
+    priceNumeric: 6000,
+    availableFrom: '2024-06-01',
+    availableTo: '2025-05-31'
   },
   {
-    title: 'Mountain View Cabin',
-    division: 'Sylhet Division',
+    title: 'Mountain View Dormitory',
     district: 'Sylhet',
     area: 'Jaflong',
-    price: '৳25,000/month',
+    price: '৳4,000/month',
     image: 'https://images.unsplash.com/photo-1542718610-a1d656d1884c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2FiaW58ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60',
     verifiedHost: false,
     hygieneBadge: true,
-    priceNumeric: 25000
+    priceNumeric: 4000,
+    availableFrom: '2024-02-15',
+    availableTo: '2024-08-14'
   },
   {
-    title: 'Modern Townhouse',
-    division: 'Dhaka Division',
+    title: 'Modern Student Apartment',
     district: 'Gazipur',
     area: 'Tongi',
-    price: '৳28,000/month',
+    price: '৳5,500/month',
     image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dG93bmhvdXNlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
     verifiedHost: true,
     hygieneBadge: false,
-    priceNumeric: 28000
+    priceNumeric: 5500,
+    availableFrom: '2024-03-01',
+    availableTo: '2025-02-28'
   },
   {
-    title: 'Lakeside Bungalow',
-    division: 'Khulna Division',
+    title: 'Lakeside Student Housing',
     district: 'Khulna',
     area: 'Rupsha',
-    price: '৳20,000/month',
+    price: '৳4,200/month',
     image: 'https://images.unsplash.com/photo-1587061949409-02df41d5e562?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YnVuZ2Fsb3d8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60',
     verifiedHost: false,
     hygieneBadge: true,
-    priceNumeric: 20000
+    priceNumeric: 4200,
+    availableFrom: '2024-04-15',
+    availableTo: '2024-10-14'
   },
   {
     title: 'Heritage Home',
-    division: 'Barisal Division',
     district: 'Barisal',
     area: 'Sadar',
-    price: '৳18,500/month',
+    price: '৳5,800/month',
     image: 'https://images.unsplash.com/photo-1577495508326-19a1b3cf65b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8b2xkJTIwaG91c2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60',
     verifiedHost: true,
     hygieneBadge: false,
-    priceNumeric: 18500
+    priceNumeric: 5800,
+    availableFrom: '2024-05-01',
+    availableTo: '2025-04-30'
   },
   {
-    title: 'Eco-Friendly Tiny House',
-    division: 'Rangpur Division',
+    title: 'Eco-Friendly Shared House',
     district: 'Rangpur',
     area: 'Pirganj',
-    price: '৳12,000/month',
+    price: '৳3,800/month',
     image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dGlueSUyMGhvdXNlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
     verifiedHost: false,
     hygieneBadge: true,
-    priceNumeric: 12000
+    priceNumeric: 3800,
+    availableFrom: '2024-03-15',
+    availableTo: '2024-09-14'
   },
   {
-    title: 'Penthouse with City View',
-    division: 'Dhaka Division',
+    title: 'Student Flat with Study Room',
     district: 'Dhaka',
     area: 'Uttara',
-    price: '৳50,000/month',
+    price: '৳6,000/month',
     image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cGVudGhvdXNlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
     verifiedHost: true,
     hygieneBadge: true,
-    priceNumeric: 50000
+    priceNumeric: 6000,
+    availableFrom: '2024-02-01',
+    availableTo: '2025-01-31'
   },
   {
-    title: 'Farmhouse with Land',
-    division: 'Mymensingh Division',
+    title: 'Farmhouse Student Dormitory',
     district: 'Mymensingh',
     area: 'Fulbaria',
-    price: '৳32,000/month',
+    price: '৳4,800/month',
     image: 'https://images.unsplash.com/photo-1593604572577-1c6c44fa2804?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmFybWhvdXNlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
     verifiedHost: true,
     hygieneBadge: false,
-    priceNumeric: 32000
+    priceNumeric: 4800,
+    availableFrom: '2024-01-15',
+    availableTo: '2024-07-14'
   },
 ];
 
 const Search = () => {
   const [activeFilters, setActiveFilters] = useState({
-    division: '',
     district: '',
     area: '',
     minPrice: '',
     maxPrice: '',
     verifiedHosts: false,
-    hygieneBadge: false
+    hygieneBadge: false,
+    availableFrom: '',
+    availableTo: ''
   });
 
   const [filteredListings, setFilteredListings] = useState(dummyListings);
@@ -196,11 +212,6 @@ const Search = () => {
     setTimeout(() => {
       // Apply filters to listings
       const filtered = dummyListings.filter(listing => {
-        // Division filter
-        if (filters.division && listing.division !== filters.division) {
-          return false;
-        }
-        
         // District filter
         if (filters.district && listing.district !== filters.district) {
           return false;
@@ -217,6 +228,29 @@ const Search = () => {
         }
         if (filters.maxPrice && listing.priceNumeric > parseInt(filters.maxPrice)) {
           return false;
+        }
+        
+        // Date range filter
+        if (filters.availableFrom || filters.availableTo) {
+          // If either date filter is applied
+          const filterFromDate = filters.availableFrom ? new Date(filters.availableFrom) : null;
+          const filterToDate = filters.availableTo ? new Date(filters.availableTo) : null;
+          const listingFromDate = new Date(listing.availableFrom);
+          const listingToDate = new Date(listing.availableTo);
+          
+          // Logic: Show the listing if there's any overlap between the filter date range and the listing date range
+          
+          // Case 1: Filter start date is after listing end date - no overlap
+          if (filterFromDate && filterFromDate > listingToDate) {
+            return false;
+          }
+          
+          // Case 2: Filter end date is before listing start date - no overlap
+          if (filterToDate && filterToDate < listingFromDate) {
+            return false;
+          }
+          
+          // All other cases have some overlap, so we keep the listing
         }
         
         // Verified hosts filter
@@ -281,6 +315,8 @@ const Search = () => {
                     location={`${listing.area}, ${listing.district}`}
                     price={listing.price}
                     image={listing.image}
+                    availableFrom={listing.availableFrom}
+                    availableTo={listing.availableTo}
                     verifiedHost={listing.verifiedHost}
                     hygieneBadge={listing.hygieneBadge}
                   />
@@ -291,13 +327,14 @@ const Search = () => {
                 <h3>No properties match your criteria</h3>
                 <p>Try adjusting your filters or explore our featured properties</p>
                 <button className="reset-filters-btn" onClick={() => handleFilterChange({
-                  division: '',
                   district: '',
                   area: '',
                   minPrice: '',
                   maxPrice: '',
                   verifiedHosts: false,
-                  hygieneBadge: false
+                  hygieneBadge: false,
+                  availableFrom: '',
+                  availableTo: ''
                 })}>
                   Reset All Filters
                 </button>

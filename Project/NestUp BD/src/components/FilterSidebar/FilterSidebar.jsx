@@ -3,13 +3,14 @@ import './FilterSidebar.css';
 
 const FilterSidebar = ({ onFilterChange }) => {
   const [filters, setFilters] = useState({
-    division: '',
     district: '',
     area: '',
     minPrice: '',
     maxPrice: '',
     verifiedHosts: false,
-    hygieneBadge: false
+    hygieneBadge: false,
+    availableFrom: '',
+    availableTo: ''
   });
 
   const handleChange = (e) => {
@@ -26,13 +27,14 @@ const FilterSidebar = ({ onFilterChange }) => {
 
   const handleReset = () => {
     const resetFilters = {
-      division: '',
       district: '',
       area: '',
       minPrice: '',
       maxPrice: '',
       verifiedHosts: false,
-      hygieneBadge: false
+      hygieneBadge: false,
+      availableFrom: '',
+      availableTo: ''
     };
     setFilters(resetFilters);
     onFilterChange(resetFilters);
@@ -47,21 +49,6 @@ const FilterSidebar = ({ onFilterChange }) => {
 
       <div className="filter-section">
         <h4>Location</h4>
-        <label>
-          Division
-          <select name="division" value={filters.division} onChange={handleChange}>
-            <option value="">All Divisions</option>
-            <option value="Dhaka Division">Dhaka Division</option>
-            <option value="Chittagong Division">Chittagong Division</option>
-            <option value="Rajshahi Division">Rajshahi Division</option>
-            <option value="Khulna Division">Khulna Division</option>
-            <option value="Barisal Division">Barisal Division</option>
-            <option value="Sylhet Division">Sylhet Division</option>
-            <option value="Rangpur Division">Rangpur Division</option>
-            <option value="Mymensingh Division">Mymensingh Division</option>
-          </select>
-        </label>
-
         <label>
           District
           <select name="district" value={filters.district} onChange={handleChange}>
@@ -111,6 +98,29 @@ const FilterSidebar = ({ onFilterChange }) => {
             placeholder="Max" 
           />
         </div>
+      </div>
+
+      <div className="filter-section">
+        <h4>Availability Period</h4>
+        <label>
+          Available From
+          <input 
+            type="date" 
+            name="availableFrom" 
+            value={filters.availableFrom} 
+            onChange={handleChange} 
+          />
+        </label>
+
+        <label>
+          Available To
+          <input 
+            type="date" 
+            name="availableTo" 
+            value={filters.availableTo} 
+            onChange={handleChange} 
+          />
+        </label>
       </div>
 
       <div className="filter-section">
