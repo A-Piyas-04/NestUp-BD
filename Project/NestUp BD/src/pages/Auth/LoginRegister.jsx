@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm.jsx';
 import './LoginRegister.css';
 
 const LoginRegister = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const location = useLocation();
   const navigate = useNavigate();
+  
+  // Determine if we're on the login or register page
+  const isLogin = location.pathname === '/login';
+  
+  const toggleForm = () => {
+    navigate(isLogin ? '/register' : '/login');
+  };
 
   return (
     <div className="auth-page">
@@ -27,7 +34,7 @@ const LoginRegister = () => {
         
         <p className="toggle-text">
           {isLogin ? "New to NestUp BD?" : 'Already have an account?'}
-          <button onClick={() => setIsLogin(!isLogin)} className="toggle-button">
+          <button onClick={toggleForm} className="toggle-button">
             {isLogin ? 'Create Account' : 'Sign In'}
           </button>
         </p>
