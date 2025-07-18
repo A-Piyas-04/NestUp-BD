@@ -1,15 +1,17 @@
 .filter-sidebar {
   background-color: white;
-  border: 1px solid var(--gray-100);
-  padding: 1.5rem;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  border: none;
+  padding: 1.75rem;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.75rem;
   width: 100%;
   position: relative;
   overflow: hidden;
+  margin-right: 1rem;
+  transform: translateX(-15px);
 }
 
 .filter-sidebar::before {
@@ -17,26 +19,33 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 5px;
+  width: 5px;
+  height: 100%;
   background: var(--primary);
-  border-top-left-radius: var(--radius-lg);
-  border-top-right-radius: var(--radius-lg);
 }
 
 .filter-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--gray-100);
 }
 
 .filter-header h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
   margin: 0;
   color: var(--secondary);
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-icon {
+  font-size: 1.25rem;
 }
 
 .filter-header h3::after {
@@ -52,35 +61,60 @@
 
 .reset-button {
   background: none;
-  border: none;
-  color: var(--primary);
-  font-size: 0.9rem;
+  border: 1px solid var(--gray-200);
+  color: var(--gray-600);
+  font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-md);
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
 }
 
 .reset-button:hover {
-  color: var(--primary-dark);
-  transform: translateX(-3px);
+  color: var(--primary);
+  border-color: var(--primary-light);
+  background-color: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+.reset-button::before {
+  content: '↺';
+  margin-right: 0.35rem;
+  font-size: 1rem;
 }
 
 .filter-section {
-  border-bottom: 1px solid var(--gray-100);
-  padding-bottom: 1.5rem;
+  background-color: var(--gray-50);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  border: 1px solid var(--gray-100);
+  transition: all 0.2s ease;
+}
+
+.filter-section:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  border-color: var(--gray-200);
 }
 
 .filter-section:last-of-type {
-  border-bottom: none;
-  padding-bottom: 0;
+  margin-bottom: 0.5rem;
 }
 
 .filter-section h4 {
   font-size: 1rem;
   font-weight: 600;
   margin: 0 0 1rem 0;
-  color: var(--gray-700);
+  color: var(--secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-icon {
+  font-size: 1.1rem;
 }
 
 .filter-sidebar label {
@@ -88,18 +122,24 @@
   flex-direction: column;
   font-size: 0.9rem;
   font-weight: 500;
-  margin-bottom: 1rem;
-  color: var(--gray-600);
+  margin-bottom: 1.25rem;
+  color: var(--gray-700);
+}
+
+.filter-sidebar label:last-child {
+  margin-bottom: 0;
 }
 
 .filter-sidebar input,
 .filter-sidebar select {
-  padding: 0.75rem;
+  padding: 0.85rem;
   margin-top: 0.5rem;
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-md);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   transition: all 0.2s ease;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
 }
 
 .filter-sidebar input:focus,
@@ -109,19 +149,36 @@
   box-shadow: 0 0 0 3px var(--primary-light);
 }
 
+.filter-sidebar input:hover,
+.filter-sidebar select:hover {
+  border-color: var(--gray-400);
+}
+
+.filter-sidebar input[type="date"] {
+  color: var(--gray-700);
+}
+
 .price-inputs {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .price-separator {
   color: var(--gray-500);
   font-weight: 500;
+  margin-top: 0.5rem;
 }
 
 .price-inputs input {
   flex: 1;
+}
+
+.price-hint {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  margin-top: 0.5rem;
+  font-style: italic;
 }
 
 .checkbox-label {
@@ -130,39 +187,77 @@
   gap: 0.75rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  padding: 0.5rem 0;
+  padding: 0.65rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 0.75rem !important;
+  background-color: white;
+  border: 1px solid transparent;
 }
 
 .checkbox-label:hover {
   color: var(--primary);
+  background-color: var(--primary-light);
+  border-color: var(--primary-light);
 }
 
 .checkbox-label input {
   margin: 0;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   accent-color: var(--primary);
   cursor: pointer;
+  box-shadow: none;
+}
+
+.checkbox-label span {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  font-size: 0.8rem;
 }
 
 .apply-button {
-  margin-top: 0.75rem;
-  padding: 0.75rem;
+  margin-top: 0.5rem;
+  padding: 1rem;
   background-color: var(--primary);
   color: white;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .apply-button:hover {
   background-color: var(--primary-dark);
   transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
+}
+
+.apply-button::after {
+  content: '→';
+  margin-left: 0.5rem;
+  transition: transform 0.2s ease;
+}
+
+.apply-button:hover::after {
+  transform: translateX(3px);
 }
 
 @media (max-width: 768px) {
@@ -170,14 +265,18 @@
     position: relative;
     width: 100%;
     padding: 1.5rem;
+    transform: translateX(0);
+    margin-right: 0;
   }
   
   .filter-section {
-    padding-bottom: 1.5rem;
+    padding: 1rem;
   }
   
   .filter-sidebar label {
     margin-bottom: 1rem;
   }
 }
-  
+.filter-sidebar {
+  border: 2.5px solid #222831;
+}

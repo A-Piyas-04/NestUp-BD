@@ -41,8 +41,8 @@
 
 .search-page-container {
   display: grid;
-  grid-template-columns: 330px 1fr;
-  gap: 2rem;
+  grid-template-columns: 300px 1fr;
+  gap: 2.5rem;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem 4rem;
@@ -54,13 +54,14 @@
   top: 100px;
   height: calc(100vh - 150px);
   overflow-y: auto;
-  padding-right: 10px;
+  padding-right: 5px;
+  margin-left: -15px;
   scrollbar-width: thin;
   scrollbar-color: var(--primary) var(--gray-100);
 }
 
 .search-filter-sidebar::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .search-filter-sidebar::-webkit-scrollbar-track {
@@ -79,8 +80,8 @@
 
 .search-results-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
 }
 
 .loading-state {
@@ -167,6 +168,7 @@
     height: auto;
     max-height: none;
     margin-bottom: 2rem;
+    margin-left: 0;
     overflow-y: visible;
   }
   

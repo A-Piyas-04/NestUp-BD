@@ -43,12 +43,18 @@ const FilterSidebar = ({ onFilterChange }) => {
   return (
     <div className="filter-sidebar">
       <div className="filter-header">
-        <h3>Refine Search</h3>
-        <button className="reset-button" onClick={handleReset}>Reset</button>
+        <h3>
+          <span className="filter-icon">🔍</span> 
+          Find Your Perfect Space
+        </h3>
+        <button className="reset-button" onClick={handleReset}>Reset All</button>
       </div>
 
       <div className="filter-section">
-        <h4>Location</h4>
+        <h4>
+          <span className="section-icon">📍</span> 
+          Location
+        </h4>
         <label>
           District
           <select name="district" value={filters.district} onChange={handleChange}>
@@ -80,14 +86,17 @@ const FilterSidebar = ({ onFilterChange }) => {
       </div>
 
       <div className="filter-section">
-        <h4>Price Range (৳)</h4>
+        <h4>
+          <span className="section-icon">💰</span> 
+          Budget
+        </h4>
         <div className="price-inputs">
           <input 
             type="number" 
             name="minPrice" 
             value={filters.minPrice} 
             onChange={handleChange} 
-            placeholder="Min" 
+            placeholder="Min Price" 
           />
           <span className="price-separator">to</span>
           <input 
@@ -95,15 +104,21 @@ const FilterSidebar = ({ onFilterChange }) => {
             name="maxPrice" 
             value={filters.maxPrice} 
             onChange={handleChange} 
-            placeholder="Max" 
+            placeholder="Max Price" 
           />
+        </div>
+        <div className="price-hint">
+          Enter amount in Bangladeshi Taka (৳)
         </div>
       </div>
 
       <div className="filter-section">
-        <h4>Availability Period</h4>
+        <h4>
+          <span className="section-icon">📅</span> 
+          Availability
+        </h4>
         <label>
-          Available From
+          Move-in Date
           <input 
             type="date" 
             name="availableFrom" 
@@ -113,7 +128,7 @@ const FilterSidebar = ({ onFilterChange }) => {
         </label>
 
         <label>
-          Available To
+          Move-out Date
           <input 
             type="date" 
             name="availableTo" 
@@ -124,7 +139,10 @@ const FilterSidebar = ({ onFilterChange }) => {
       </div>
 
       <div className="filter-section">
-        <h4>Property Features</h4>
+        <h4>
+          <span className="section-icon">✨</span> 
+          Features
+        </h4>
         <label className="checkbox-label">
           <input 
             type="checkbox" 
@@ -132,7 +150,10 @@ const FilterSidebar = ({ onFilterChange }) => {
             checked={filters.verifiedHosts} 
             onChange={handleChange} 
           />
-          <span>Verified Hosts Only</span>
+          <span>
+            <span className="feature-icon">✓</span>
+            Verified Hosts Only
+          </span>
         </label>
 
         <label className="checkbox-label">
@@ -142,11 +163,16 @@ const FilterSidebar = ({ onFilterChange }) => {
             checked={filters.hygieneBadge} 
             onChange={handleChange} 
           />
-          <span>Hygiene Certified</span>
+          <span>
+            <span className="feature-icon">🧹</span>
+            Hygiene Certified
+          </span>
         </label>
       </div>
 
-      <button className="apply-button" onClick={handleApply}>Apply Filters</button>
+      <button className="apply-button" onClick={handleApply}>
+        Apply Filters
+      </button>
     </div>
   );
 };
