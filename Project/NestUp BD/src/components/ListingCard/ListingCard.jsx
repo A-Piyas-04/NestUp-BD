@@ -1,7 +1,16 @@
 import React from 'react';
 import './ListingCard.css';
 
-const ListingCard = ({ title, location, price, image, verifiedHost = false, hygieneBadge = false }) => {
+const ListingCard = ({ title, location, price, image, availableFrom, availableTo, verifiedHost = false, hygieneBadge = false }) => {
+  // Format dates to be more user-friendly
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  const formattedAvailableFrom = availableFrom ? formatDate(availableFrom) : '';
+  const formattedAvailableTo = availableTo ? formatDate(availableTo) : '';
+
   return (
     <div className="listing-card">
       <div className="listing-image-container">
@@ -14,6 +23,9 @@ const ListingCard = ({ title, location, price, image, verifiedHost = false, hygi
         <h3 className="listing-title">{title}</h3>
         <p className="listing-location">
           <span className="location-icon">📍</span> {location}
+        </p>
+        <p className="listing-availability">
+          <span className="calendar-icon">📅</span> {formattedAvailableFrom} - {formattedAvailableTo}
         </p>
         <div className="listing-price-container">
           <p className="listing-price">{price}</p>

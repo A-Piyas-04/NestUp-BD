@@ -79,10 +79,24 @@
   align-items: center;
   font-size: 0.95rem;
   color: var(--gray-600);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .location-icon {
+  margin-right: 0.5rem;
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+.listing-availability {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  color: var(--gray-600);
+  margin-bottom: 1rem;
+}
+
+.calendar-icon {
   margin-right: 0.5rem;
   font-size: 1rem;
   color: var(--primary);
