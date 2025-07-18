@@ -1,10 +1,11 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import Button from '../Shared/Button/Button';
 import { useEffect, useState } from 'react';
 
 const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check token on load
   useEffect(() => {
@@ -20,6 +21,18 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(prev => !prev);
+  };
+
+  const handleLoginRegister = () => {
+    // If on login page, navigate to register and vice versa
+    if (location.pathname === '/login') {
+      navigate('/register');
+    } else {
+      navigate('/login');
+    }
+    if (isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
   };
 
   // Define navLinks based on authentication status
@@ -99,9 +112,14 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
             Logout
           </Button>
         ) : (
-          <Button as="link" to="/login" variant="success" size="md">
-            Login/Register
-          </Button>
+          <>
+            <Button as="link" to="/login" variant="success" size="md">
+              Login
+            </Button>
+            <Button as="link" to="/register" variant="outline" size="md">
+              Register
+            </Button>
+          </>
         )}
       </div>
 
@@ -139,16 +157,28 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                 Logout
               </Button>
             ) : (
-              <Button
-                as="link"
-                to="/login"
-                variant="outline"
-                size="md"
-                className="w-full justify-start"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Login/Register
-              </Button>
+              <>
+                <Button
+                  as="link"
+                  to="/login"
+                  variant="outline"
+                  size="md"
+                  className="w-full justify-start mb-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Login
+                </Button>
+                <Button
+                  as="link"
+                  to="/register"
+                  variant="outline"
+                  size="md"
+                  className="w-full justify-start"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Register
+                </Button>
+              </>
             )}
           </li>
         </ul>

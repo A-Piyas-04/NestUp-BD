@@ -30,6 +30,16 @@ const Header = () => {
     navigate('/login');
   };
 
+  const handleLoginClick = () => {
+    console.log('Login button clicked');
+    navigate('/login');
+  };
+
+  const handleRegisterClick = () => {
+    console.log('Register button clicked');
+    navigate('/register');
+  };
+
   return (
     <header className={`header ${isScrolled ? 'header-scrolled' : ''}`}>
       <div className="header-container">
@@ -55,7 +65,7 @@ const Header = () => {
           {user ? (
             <>
               <Button 
-                as={Link} 
+                as="link" 
                 to="/dashboard" 
                 variant="outline"
                 size="md"
@@ -73,7 +83,7 @@ const Header = () => {
           ) : (
             <>
               <Button 
-                as={Link} 
+                as="link" 
                 to="/login" 
                 variant="outline"
                 size="md"
@@ -81,7 +91,7 @@ const Header = () => {
                 Login
               </Button>
               <Button 
-                as={Link} 
+                as="link" 
                 to="/register" 
                 variant="primary"
                 size="md"
