@@ -4,39 +4,39 @@ import './StatsCards.css';
 const StatsCards = () => {
   const stats = [
     {
-      id: 'views',
-      title: 'Profile Views',
-      value: '124',
-      change: '+12%',
-      positive: true,
-      icon: '👁️',
-      color: 'blue'
-    },
-    {
-      id: 'listings',
-      title: 'Active Listings',
+      id: 'active-nests',
+      title: 'Your Active Nests',
       value: '3',
       change: '+1',
       positive: true,
       icon: '🏠',
+      color: 'blue'
+    },
+    {
+      id: 'latest-reviews',
+      title: 'Latest Reviews',
+      value: '8',
+      change: '+2',
+      positive: true,
+      icon: '⭐',
       color: 'green'
     },
     {
-      id: 'messages',
-      title: 'New Messages',
-      value: '8',
-      change: '+5',
+      id: 'wishlist',
+      title: 'Wishlist',
+      value: '12',
+      change: '+3',
       positive: true,
-      icon: '✉️',
+      icon: '❤️',
       color: 'purple'
     },
     {
-      id: 'saved',
-      title: 'Saved Properties',
-      value: '12',
-      change: '+2',
+      id: 'foreign-nests',
+      title: 'Your Foreign Nests',
+      value: '5',
+      change: '+1',
       positive: true,
-      icon: '❤️',
+      icon: '🌍',
       color: 'red'
     }
   ];
