@@ -5,6 +5,7 @@ import Search from './pages/Search/Search';
 import Dashboard from './pages/Dashboard/Dashboard';
 import NotFound from './pages/NotFound/NotFound';
 import ProvideService from './pages/ProvideService/ProvideService';
+import Payment from './pages/Payment/Payment';
 import './App.css';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="/login" element={<LoginRegister />} />
           <Route path="/register" element={<LoginRegister />} />
           <Route path="/provide-service" element={<ProvideService />} />
+          <Route path="/payment" element={<Payment />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

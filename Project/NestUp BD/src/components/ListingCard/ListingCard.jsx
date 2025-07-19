@@ -1,7 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './ListingCard.css';
 
 const ListingCard = ({ title, location, price, image, availableFrom, availableTo, verifiedHost = false, hygieneBadge = false }) => {
+  const navigate = useNavigate();
+  
   // Format dates to be more user-friendly
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -10,6 +13,35 @@ const ListingCard = ({ title, location, price, image, availableFrom, availableTo
 
   const formattedAvailableFrom = availableFrom ? formatDate(availableFrom) : '';
   const formattedAvailableTo = availableTo ? formatDate(availableTo) : '';
+
+  const handleViewDetails = () => {
+    // Calculate duration in months
+    const fromDate = new Date(availableFrom);
+    const toDate = new Date(availableTo);
+    const durationInMonths = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24 * 30));
+    
+    // Extract price number
+    const priceNumber = parseInt(price.replace(/[^\d]/g, ''));
+    const totalAmount = priceNumber * durationInMonths;
+    
+    const propertyDetails = {
+      title,
+      location,
+      price: `৳${priceNumber.toLocaleString()}`,
+      duration: `${durationInMonths} months`,
+      totalAmount: `৳${totalAmount.toLocaleString()}`,
+      image,
+      availableFrom: formattedAvailableFrom,
+      availableTo: formattedAvailableTo
+    };
+
+    navigate('/payment', { state: { propertyDetails } });
+  };
+
+  const handleSave = () => {
+    // TODO: Implement save functionality
+    console.log('Save property:', title);
+  };
 
   return (
     <div className="listing-card">
@@ -32,8 +64,8 @@ const ListingCard = ({ title, location, price, image, availableFrom, availableTo
           <span className="price-period">per month</span>
         </div>
         <div className="listing-actions">
-          <button className="listing-button primary">View Details</button>
-          <button className="listing-button secondary">Save</button>
+          <button className="listing-button primary" onClick={handleViewDetails}>Book Now</button>
+          <button className="listing-button secondary" onClick={handleSave}>Save</button>
         </div>
       </div>
     </div>
