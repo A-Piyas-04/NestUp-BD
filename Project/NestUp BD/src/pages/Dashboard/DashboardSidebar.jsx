@@ -18,19 +18,29 @@ const DashboardSidebar = ({ isOpen }) => {
       icon: '📊'
     },
     {
-      path: '/dashboard/my-listings',
-      label: 'My Listings',
+      path: '/dashboard/my-nests',
+      label: 'My Nests',
       icon: '🏠'
     },
     {
-      path: '/dashboard/add-listing',
-      label: 'Add Listing',
-      icon: '➕'
+      path: '/dashboard/nest-reviews',
+      label: 'Nest Reviews',
+      icon: '⭐'
     },
     {
-      path: '/dashboard/settings',
-      label: 'Settings',
-      icon: '⚙️'
+      path: '/dashboard/booked-nests',
+      label: 'Booked Nests',
+      icon: '📅'
+    },
+    {
+      path: '/dashboard/profile-info',
+      label: 'Profile Info',
+      icon: '👤'
+    },
+    {
+      path: '/dashboard/payment-history',
+      label: 'Payment History',
+      icon: '💰'
     }
   ];
 

@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import Overview from './views/Overview';
-import MyListings from './views/MyListings';
-import AddListing from './views/AddListing';
-import Settings from './views/Settings';
+import MyNests from './views/MyNests';
+import NestReviews from './views/NestReviews';
+import BookedNests from './views/BookedNests';
+import ProfileInfo from './views/ProfileInfo';
+import PaymentHistory from './views/PaymentHistory';
 
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
@@ -36,9 +38,11 @@ const Dashboard = () => {
         <div className="dashboard-content">
           <Routes>
             <Route path="/" element={<Overview />} />
-            <Route path="/my-listings" element={<MyListings />} />
-            <Route path="/add-listing" element={<AddListing />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/my-nests" element={<MyNests />} />
+            <Route path="/nest-reviews" element={<NestReviews />} />
+            <Route path="/booked-nests" element={<BookedNests />} />
+            <Route path="/profile-info" element={<ProfileInfo />} />
+            <Route path="/payment-history" element={<PaymentHistory />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </div>
