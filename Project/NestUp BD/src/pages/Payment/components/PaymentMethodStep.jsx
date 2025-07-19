@@ -64,10 +64,10 @@ const PaymentMethodStep = ({
 
       {paymentMethod === 'mobile_banking' && (
         <div className="payment-details">
-          <h4>Mobile Banking Details</h4>
+          <h4>bKash Payment Details</h4>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="mobileNumber">Mobile Number *</label>
+              <label htmlFor="mobileNumber">bKash Number *</label>
               <input
                 type="tel"
                 id="mobileNumber"
@@ -79,26 +79,31 @@ const PaymentMethodStep = ({
               {errors.mobileNumber && <span className="error-message">{errors.mobileNumber}</span>}
             </div>
             <div className="form-group">
-              <label htmlFor="transactionId">Transaction ID *</label>
+              <label htmlFor="transactionId">bKash Transaction ID *</label>
               <input
                 type="text"
                 id="transactionId"
                 value={paymentDetails.transactionId}
                 onChange={(e) => handleInputChange('paymentDetails', 'transactionId', e.target.value)}
                 className={errors.transactionId ? 'error' : ''}
-                placeholder="Enter transaction ID"
+                placeholder="Enter bKash transaction ID"
               />
               {errors.transactionId && <span className="error-message">{errors.transactionId}</span>}
             </div>
           </div>
           <div className="payment-instructions">
-            <h5>How to pay:</h5>
+            <h5>How to pay with bKash:</h5>
             <ol>
+              <li>Open your bKash app</li>
               <li>Send ৳{totalAmount} to: <strong>01XXXXXXXXX</strong></li>
               <li>Use "NestUp BD" as reference</li>
-              <li>Copy the transaction ID and paste it above</li>
+              <li>Copy the transaction ID from bKash</li>
+              <li>Paste the transaction ID above</li>
               <li>Click "Proceed to Payment"</li>
             </ol>
+            <div className="bkash-note">
+              <p><strong>Note:</strong> Only bKash payments are accepted for mobile banking. Please ensure you have sufficient balance in your bKash account.</p>
+            </div>
           </div>
         </div>
       )}

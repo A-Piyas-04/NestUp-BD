@@ -3,7 +3,7 @@ export const paymentMethods = [
     id: 'mobile_banking',
     name: 'Mobile Banking',
     icon: '📱',
-    description: 'bKash, Nagad, Rocket, Upay',
+    description: 'bKash',
     popular: true
   },
   {
@@ -17,7 +17,7 @@ export const paymentMethods = [
     id: 'credit_card',
     name: 'Credit/Debit Card',
     icon: '💳',
-    description: 'Visa, Mastercard, American Express',
+    description: 'Visa, Mastercard',
     popular: false
   },
   {
