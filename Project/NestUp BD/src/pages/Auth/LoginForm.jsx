@@ -1,14 +1,27 @@
+// LoginForm.jsx
+// Handles user login form and authentication logic.
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
+/**
+ * LoginForm component for user authentication.
+ * - Submits credentials to backend
+ * - Handles error display and redirects on success
+ */
 const LoginForm = () => {
+  // State for form fields and error message
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  /**
+   * Handles form submission for login.
+   * @param {React.FormEvent} e
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {

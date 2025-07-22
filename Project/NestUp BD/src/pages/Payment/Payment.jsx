@@ -1,3 +1,8 @@
+// Payment.jsx
+// Handles the multi-step payment process for property bookings.
+// Steps: Personal Info -> Payment Method -> Confirmation
+// Uses local state for form data and step navigation.
+
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
@@ -11,10 +16,16 @@ import FormNavigation from './components/FormNavigation';
 import { validateStep } from './utils/validation';
 import './Payment.css';
 
+/**
+ * Payment component for handling the booking payment process.
+ * - Manages step navigation, form state, and validation.
+ * - Integrates with child components for each step.
+ */
 const Payment = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
+  // State for all payment-related data
   const [paymentData, setPaymentData] = useState({
     propertyDetails: location.state?.propertyDetails || {
       title: 'Student Studio Apartment',
@@ -45,10 +56,19 @@ const Payment = () => {
     termsAccepted: false
   });
 
+  // Current step in the payment process (1: Personal Info, 2: Payment Method, 3: Confirmation)
   const [currentStep, setCurrentStep] = useState(1);
+  // Indicates if payment is being processed
   const [isProcessing, setIsProcessing] = useState(false);
+  // Stores validation errors for the current step
   const [errors, setErrors] = useState({});
 
+  /**
+   * Handles input changes for nested form sections.
+   * @param {string} section - The section of paymentData to update
+   * @param {string} field - The field within the section
+   * @param {any} value - The new value
+   */
   const handleInputChange = (section, field, value) => {
     setPaymentData(prev => ({
       ...prev,
@@ -67,14 +87,25 @@ const Payment = () => {
     }
   };
 
+  /**
+   * Sets the selected payment method.
+   * @param {string} method
+   */
   const setPaymentMethod = (method) => {
     setPaymentData(prev => ({ ...prev, paymentMethod: method }));
   };
 
+  /**
+   * Sets whether the user has accepted the terms.
+   * @param {boolean} accepted
+   */
   const setTermsAccepted = (accepted) => {
     setPaymentData(prev => ({ ...prev, termsAccepted: accepted }));
   };
 
+  /**
+   * Advances to the next step after validation.
+   */
   const nextStep = () => {
     const newErrors = validateStep(currentStep, paymentData);
     setErrors(newErrors);
@@ -84,10 +115,16 @@ const Payment = () => {
     }
   };
 
+  /**
+   * Returns to the previous step.
+   */
   const prevStep = () => {
     setCurrentStep(prev => prev - 1);
   };
 
+  /**
+   * Handles the final payment action (simulated here).
+   */
   const handlePayment = async () => {
     const newErrors = validateStep(currentStep, paymentData);
     setErrors(newErrors);
@@ -107,6 +144,9 @@ const Payment = () => {
     }, 3000);
   };
 
+  /**
+   * Renders the current step's component.
+   */
   const renderCurrentStep = () => {
     switch (currentStep) {
       case 1:
@@ -182,4 +222,4 @@ const Payment = () => {
   );
 };
 
-export default Payment; 
+export default Payment; // Main export 
