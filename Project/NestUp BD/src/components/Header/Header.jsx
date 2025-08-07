@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../Shared/Button/Button';
 import './Header.css';
@@ -9,6 +9,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleScroll = () => {
     if (window.scrollY > 10) {
@@ -54,15 +55,14 @@ const Header = () => {
         <div className="user-actions">
           {user ? (
             <>
-              <Button 
-                as="link" 
+              <NavLink 
                 to="/dashboard" 
-                variant="dashboardBtn"
-                size="md"
-                className="dashboard-btn"
+                className={({ isActive }) => 
+                  `btn btn-dashboardBtn btn-md dashboard-btn ${isActive ? 'active' : ''}`
+                }
               >
                 Dashboard
-              </Button>
+              </NavLink>
               <Button 
                 onClick={handleLogout}
                 variant="logoutBtn"
@@ -74,24 +74,22 @@ const Header = () => {
             </>
           ) : (
             <>
-              <Button 
-                as="link" 
+              <NavLink 
                 to="/login" 
-                variant="loginBtn"
-                size="md"
-                className="login-btn"
+                className={({ isActive }) => 
+                  `btn btn-loginBtn btn-md login-btn ${isActive ? 'active' : ''}`
+                }
               >
                 Login
-              </Button>
-              <Button 
-                as="link" 
+              </NavLink>
+              <NavLink 
                 to="/register" 
-                variant="registerBtn"
-                size="md"
-                className="register-btn"
+                className={({ isActive }) => 
+                  `btn btn-registerBtn btn-md register-btn ${isActive ? 'active' : ''}`
+                }
               >
                 Register
-              </Button>
+              </NavLink>
             </>
           )}
         </div>
