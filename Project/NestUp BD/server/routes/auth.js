@@ -3,6 +3,7 @@
 
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
 const router = express.Router();
 
@@ -14,35 +15,36 @@ const users = [];
  * @desc Register a new user and return JWT token
  * @access Public
  */
-router.post('/register', (req, res) => {
-  const { email, password, name } = req.body;
-  // Check if user already exists
-  if (users.some(user => user.email === email)) {
-    return res.status(400).json({ error: 'User already exists' });
+// REGISTER
+router.post('/register', async (req, res) => {
+  const { name, email, password } = req.body;
+  try {
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(400).json({ error: 'User already exists' });
+
+    const newUser = await User.create({ name, email, password });
+    const token = jwt.sign({ id: newUser._id, name: newUser.name }, 'secret_key', { expiresIn: '1h' });
+
+    res.status(201).json({ token, name: newUser.name });
+  } catch (err) {
+    res.status(500).json({ error: 'Registration failed' });
   }
-  // Create new user
-  const newUser = { email, password, name };
-  users.push(newUser);
-  // Generate JWT token
-  const token = jwt.sign({ email, name }, 'secret_key', { expiresIn: '1h' });
-  res.status(201).json({ token, name });
 });
 
-/**
- * @route POST /login
- * @desc Authenticate user and return JWT token
- * @access Public
- */
-router.post('/login', (req, res) => {
+// LOGIN
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  // Find user
-  const user = users.find(user => user.email === email);
-  if (!user || user.password !== password) {
-    return res.status(401).json({ error: 'Invalid credentials' });
+  try {
+    const user = await User.findOne({ email });
+    if (!user || user.password !== password) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign({ id: user._id, name: user.name }, 'secret_key', { expiresIn: '1h' });
+    res.json({ token, name: user.name });
+  } catch (err) {
+    res.status(500).json({ error: 'Login failed' });
   }
-  // Generate JWT token
-  const token = jwt.sign({ email, name: user.name }, 'secret_key', { expiresIn: '1h' });
-  res.json({ token, name: user.name });
 });
 
 export default router;
