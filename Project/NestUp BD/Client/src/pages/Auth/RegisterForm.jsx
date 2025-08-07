@@ -8,17 +8,40 @@ const RegisterForm = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(''); // Clear previous errors
+    
+    // Validate required fields
+    if (!name.trim() || !email.trim() || !password || !confirmPassword) {
+      setError('All fields are required');
+      return;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    
+    // Validate password length
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
     
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
+    setIsLoading(true);
+    
     try {
       const response = await fetch('http://localhost:3000/api/auth/register', {
         method: 'POST',
@@ -40,7 +63,10 @@ const RegisterForm = () => {
         setError(data.error || 'Registration failed');
       }
     } catch (err) {
-      setError('An error occurred during registration');
+      console.error('Registration error:', err);
+      setError('An error occurred during registration. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -83,7 +109,9 @@ const RegisterForm = () => {
         required 
       />
 
-      <button type="submit" className="submit-button">Register</button>
+      <button type="submit" className="submit-button" disabled={isLoading}>
+        {isLoading ? 'Creating Account...' : 'Register'}
+      </button>
     </form>
   );
 };

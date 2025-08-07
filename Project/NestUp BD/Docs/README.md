@@ -47,9 +47,9 @@ NestUp BD is a modern web application designed to connect property seekers with 
 
 ### Backend Setup
 
-1. Navigate to the server directory:
+1. Navigate to the Server directory:
    ```
-   cd server
+   cd Server
    ```
 
 2. Install server dependencies:
@@ -59,26 +59,52 @@ NestUp BD is a modern web application designed to connect property seekers with 
 
 3. Start the server:
    ```
-   node server.js
+   npm start
    ```
 
 The backend will run on [http://localhost:3000](http://localhost:3000).
+
+### Frontend Setup
+
+1. Navigate to the Client directory:
+   ```
+   cd Client
+   ```
+
+2. Install client dependencies:
+   ```
+   npm install
+   ```
+
+3. Start the development server:
+   ```
+   npm run dev
+   ```
+
+The frontend will run on [http://localhost:5174](http://localhost:5174).
 
 ## Project Structure
 
 ```
 nestup-bd/
-├── public/             # Static assets
-├── server/             # Backend server code
+├── Client/             # Frontend application
+│   ├── public/         # Static assets
+│   ├── src/            # React source code
+│   │   ├── assets/     # Images, icons, etc.
+│   │   ├── components/ # Reusable UI components
+│   │   ├── context/    # React context providers
+│   │   ├── pages/      # Page components
+│   │   └── App.jsx     # Main app component
+│   ├── package.json    # Frontend dependencies
+│   └── vite.config.js  # Vite configuration
+├── Server/             # Backend server code
 │   ├── middleware/     # Express middleware
+│   ├── models/         # Database models
 │   ├── routes/         # API routes
+│   ├── .env            # Environment variables
+│   ├── package.json    # Backend dependencies
 │   └── server.js       # Server entry point
-└── src/
-    ├── assets/         # Images, icons, etc.
-    ├── components/     # Reusable UI components
-    ├── context/        # React context providers
-    ├── pages/          # Page components
-    └── App.jsx         # Main app component
+└── Docs/               # Documentation
 ```
 
 ## Design System

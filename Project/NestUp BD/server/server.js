@@ -1,52 +1,53 @@
 // server.js
-// Main Express server setup for NestUp BD backend.
-
 import express from 'express';
+import mongoose from 'mongoose';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import authRoutes from './routes/auth.js';
-import apiRoutes from './routes/api.js';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
-export const app = express();
-const dbPORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI;
+// Import routes
+import authRoutes from './routes/auth.js';
+import apiRoutes from './routes/api.js';
+
+// Load environment variables
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/nestupdb';
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // Allow frontend dev server
+  origin: 'http://localhost:5174', // Frontend URL
   credentials: true
 }));
-app.use(express.json()); // Parse JSON bodies
-app.use(cookieParser()); // Parse cookies
+app.use(express.json());
+app.use(cookieParser());
 
 // Routes
-app.use('/api/auth', authRoutes); // Auth endpoints
-app.use('/api', apiRoutes); // Other API endpoints
+app.use('/api/auth', authRoutes);
+app.use('/api', apiRoutes);
+
+// Basic route
+app.get('/', (req, res) => {
+  res.json({ message: 'NestUp BD Server is running!' });
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
+  console.error('Error:', err);
+  res.status(500).json({ message: 'Internal server error' });
 });
 
-const PORT = process.env.PORT || 3000;
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-// Connect to MongoDB
-
-mongoose.connect(MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
-  console.log("Connected to MongoDB");
-  app.listen(dbPORT, () => {
-    console.log(`Server running on port ${dbPORT}`);
+// Connect to MongoDB and start server
+mongoose.connect(MONGO_URI).then(() => {
+  console.log('Connected to MongoDB');
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
-}).catch((err) => {
-  console.error("MongoDB connection error:", err);
+}).catch((error) => {
+  console.error('MongoDB connection error:', error);
+  process.exit(1);
 });
+
+export default app;
