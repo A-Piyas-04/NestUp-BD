@@ -24,17 +24,21 @@ router.get('/protected', verifyToken, checkAuth, (req, res) => {
 // Get all services
 router.get('/services', async (req, res) => {
   try {
-    const { category, city, minPrice, maxPrice, page = 1, limit = 10 } = req.query;
+    const { propertyType, district, area, minPrice, maxPrice, page = 1, limit = 10 } = req.query;
     
     // Build filter object
-    const filter = { availability: true };
+    const filter = { 'availability.isAvailable': true };
     
-    if (category) {
-      filter.category = category;
+    if (propertyType) {
+      filter.propertyType = propertyType;
     }
     
-    if (city) {
-      filter['location.city'] = new RegExp(city, 'i');
+    if (district) {
+      filter['location.district'] = new RegExp(district, 'i');
+    }
+    
+    if (area) {
+      filter['location.area'] = new RegExp(area, 'i');
     }
     
     if (minPrice || maxPrice) {
@@ -71,6 +75,38 @@ router.get('/services', async (req, res) => {
   }
 });
 
+// Get user's own services (protected)
+router.get('/my-services', verifyToken, checkAuth, async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+    
+    // Get user's services with pagination
+    const services = await Service.find({ owner: req.user._id })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit));
+    
+    // Get total count for pagination
+    const total = await Service.countDocuments({ owner: req.user._id });
+    
+    res.json({
+      services,
+      pagination: {
+        current: Number(page),
+        total: Math.ceil(total / limit),
+        count: services.length,
+        totalServices: total
+      }
+    });
+  } catch (error) {
+    console.error('Get user services error:', error);
+    res.status(500).json({ message: 'Failed to fetch your services' });
+  }
+});
+
 // Get single service
 router.get('/services/:id', async (req, res) => {
   try {
@@ -92,8 +128,66 @@ router.get('/services/:id', async (req, res) => {
 // Create new service (protected)
 router.post('/services', verifyToken, checkAuth, async (req, res) => {
   try {
+    const {
+      title,
+      propertyType,
+      description,
+      district,
+      area,
+      address,
+      price,
+      availableFrom,
+      availableTo,
+      bedrooms,
+      bathrooms,
+      squareFeet,
+      furnishing,
+      amenities,
+      contactName,
+      contactPhone,
+      contactEmail,
+      contactWhatsapp
+    } = req.body;
+    
+    // Structure the data according to the new schema
     const serviceData = {
-      ...req.body,
+      title,
+      propertyType,
+      description,
+      location: {
+        district,
+        area,
+        address
+      },
+      price: Number(price),
+      availability: {
+        from: new Date(availableFrom),
+        to: new Date(availableTo),
+        isAvailable: true
+      },
+      propertyDetails: {
+        bedrooms,
+        bathrooms,
+        squareFeet: squareFeet ? Number(squareFeet) : undefined,
+        furnishing: furnishing || 'unfurnished'
+      },
+      amenities: amenities || {
+        wifi: false,
+        ac: false,
+        parking: false,
+        kitchen: false,
+        laundry: false,
+        studyArea: false,
+        securityGuard: false,
+        cctv: false
+      },
+      contact: {
+        name: contactName,
+        phone: contactPhone,
+        email: contactEmail,
+        whatsapp: contactWhatsapp || ''
+      },
+      photos: [], // Will be handled by file upload later
       owner: req.user._id
     };
     

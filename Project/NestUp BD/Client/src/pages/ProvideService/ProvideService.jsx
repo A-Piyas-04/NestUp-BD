@@ -183,18 +183,60 @@ const ProvideService = () => {
     setIsSubmitting(true);
     
     try {
-      // In a real app, you would submit the form data to your backend here
-      console.log('Form submitted:', formData);
+      // Get token from localStorage
+      const token = localStorage.getItem('token');
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (!token) {
+        alert('Please login to submit a listing.');
+        navigate('/login');
+        return;
+      }
       
-      // Show success message and redirect
-      alert('Your listing has been submitted successfully!');
-      navigate('/dashboard');
+      // Prepare form data for submission
+      const submitData = {
+        title: formData.title,
+        propertyType: formData.propertyType,
+        description: formData.description,
+        district: formData.district,
+        area: formData.area,
+        address: formData.address,
+        price: formData.price,
+        availableFrom: formData.availableFrom,
+        availableTo: formData.availableTo,
+        bedrooms: formData.bedrooms,
+        bathrooms: formData.bathrooms,
+        squareFeet: formData.squareFeet,
+        furnishing: formData.furnishing,
+        amenities: formData.amenities,
+        contactName: formData.contactName,
+        contactPhone: formData.contactPhone,
+        contactEmail: formData.contactEmail,
+        contactWhatsapp: formData.contactWhatsapp
+      };
+      
+      console.log('Submitting form data:', submitData);
+      
+      // Submit to backend API
+      const response = await fetch('/api/services', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(submitData)
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        alert('Your listing has been submitted successfully!');
+        navigate('/dashboard');
+      } else {
+        throw new Error(result.message || 'Failed to submit listing');
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('There was an error submitting your listing. Please try again.');
+      alert(`There was an error submitting your listing: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -813,4 +855,4 @@ const ProvideService = () => {
   );
 };
 
-export default ProvideService; 
+export default ProvideService;
