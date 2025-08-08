@@ -30,6 +30,99 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // Profile Information
+  profile: {
+    phone: {
+      type: String,
+      trim: true
+    },
+    nidNumber: {
+      type: String,
+      trim: true
+    },
+    dateOfBirth: {
+      type: Date
+    },
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'other']
+    },
+    occupation: {
+      type: String,
+      enum: ['student', 'professional', 'business', 'government', 'other'],
+      default: 'student'
+    },
+    institution: {
+      type: String,
+      trim: true
+    },
+    department: {
+      type: String,
+      trim: true
+    },
+    studentId: {
+      type: String,
+      trim: true
+    },
+    address: {
+      division: {
+        type: String,
+        trim: true
+      },
+      district: {
+        type: String,
+        trim: true
+      },
+      area: {
+        type: String,
+        trim: true
+      },
+      fullAddress: {
+        type: String,
+        trim: true
+      },
+      postalCode: {
+        type: String,
+        trim: true
+      }
+    },
+    emergencyContact: {
+      name: {
+        type: String,
+        trim: true
+      },
+      relation: {
+        type: String,
+        trim: true
+      },
+      phone: {
+        type: String,
+        trim: true
+      }
+    },
+    preferences: {
+      receiveNotifications: {
+        type: Boolean,
+        default: true
+      },
+      newsletterSubscription: {
+        type: Boolean,
+        default: false
+      },
+      twoFactorAuth: {
+        type: Boolean,
+        default: false
+      },
+      language: {
+        type: String,
+        enum: ['english', 'bangla'],
+        default: 'english'
+      }
+    },
+    profilePicture: {
+      type: String // URL to profile picture
+    }
+  },
   createdAt: {
     type: Date,
     default: Date.now

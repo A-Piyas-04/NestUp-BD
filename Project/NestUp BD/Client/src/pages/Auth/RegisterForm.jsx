@@ -56,8 +56,8 @@ const RegisterForm = () => {
       if (response.ok) {
         // Store both token and user name
         localStorage.setItem('token', data.token);
-        localStorage.setItem('userName', name);
-        login(data.token, name);
+        localStorage.setItem('userName', data.user.name);
+        await login(data.token, data.user.name);
         navigate('/dashboard');
       } else {
         setError(data.error || 'Registration failed');

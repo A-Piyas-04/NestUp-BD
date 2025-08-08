@@ -1,29 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../../context/AuthContext';
 import '../Dashboard.css';
 
 const ProfileInfo = () => {
+  const { user, updateUser } = useAuth();
   const [profileData, setProfileData] = useState({
-    fullName: 'Mehedi Hassan',
-    email: 'mehedi@example.com',
-    phone: '01712345678',
-    nidNumber: '1234567890',
-    dateOfBirth: '1998-05-15',
+    fullName: '',
+    email: '',
+    phone: '',
+    nidNumber: '',
+    dateOfBirth: '',
     gender: 'male',
     occupation: 'student',
-    institution: 'University of Dhaka',
-    department: 'Computer Science and Engineering',
-    studentId: 'CSE-2018-001',
+    institution: '',
+    department: '',
+    studentId: '',
     address: {
-      division: 'Dhaka',
-      district: 'Dhaka',
-      area: 'Mohammadpur',
-      fullAddress: '15/A, Road 5, Block B',
-      postalCode: '1207'
+      division: '',
+      district: '',
+      area: '',
+      fullAddress: '',
+      postalCode: ''
     },
     emergencyContact: {
-      name: 'Abdul Karim',
-      relation: 'Father',
-      phone: '01812345678'
+      name: '',
+      relation: '',
+      phone: ''
     },
     preferences: {
       receiveNotifications: true,
@@ -36,6 +38,45 @@ const ProfileInfo = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Load user data when component mounts or user changes
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        fullName: user.name || '',
+        email: user.email || '',
+        phone: user.profile?.phone || '',
+        nidNumber: user.profile?.nidNumber || '',
+        dateOfBirth: user.profile?.dateOfBirth ? user.profile.dateOfBirth.split('T')[0] : '',
+        gender: user.profile?.gender || 'male',
+        occupation: user.profile?.occupation || 'student',
+        institution: user.profile?.institution || '',
+        department: user.profile?.department || '',
+        studentId: user.profile?.studentId || '',
+        address: {
+          division: user.profile?.address?.division || '',
+          district: user.profile?.address?.district || '',
+          area: user.profile?.address?.area || '',
+          fullAddress: user.profile?.address?.fullAddress || '',
+          postalCode: user.profile?.address?.postalCode || ''
+        },
+        emergencyContact: {
+          name: user.profile?.emergencyContact?.name || '',
+          relation: user.profile?.emergencyContact?.relation || '',
+          phone: user.profile?.emergencyContact?.phone || ''
+        },
+        preferences: {
+          receiveNotifications: user.profile?.preferences?.receiveNotifications ?? true,
+          newsletterSubscription: user.profile?.preferences?.newsletterSubscription ?? false,
+          twoFactorAuth: user.profile?.preferences?.twoFactorAuth ?? false,
+          language: user.profile?.preferences?.language || 'english'
+        },
+        profilePicture: user.profile?.profilePicture || null
+      });
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -73,17 +114,51 @@ const ProfileInfo = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, you would send this data to a server
-    console.log('Profile data submitted:', profileData);
-    setSuccessMessage('Profile updated successfully!');
-    setIsEditing(false);
-    
-    // Clear success message after 3 seconds
-    setTimeout(() => {
-      setSuccessMessage('');
-    }, 3000);
+    setIsLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      // Prepare data for server
+      const updateData = {
+        name: profileData.fullName,
+        profile: {
+          phone: profileData.phone,
+          nidNumber: profileData.nidNumber,
+          dateOfBirth: profileData.dateOfBirth,
+          gender: profileData.gender,
+          occupation: profileData.occupation,
+          institution: profileData.institution,
+          department: profileData.department,
+          studentId: profileData.studentId,
+          address: profileData.address,
+          emergencyContact: profileData.emergencyContact,
+          preferences: profileData.preferences,
+          profilePicture: profileData.profilePicture
+        }
+      };
+
+      const success = await updateUser(updateData, true);
+      
+      if (success) {
+        setSuccessMessage('Profile updated successfully!');
+        setIsEditing(false);
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setSuccessMessage('');
+        }, 3000);
+      } else {
+        setErrorMessage('Failed to update profile. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setErrorMessage('An error occurred while updating your profile.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -96,6 +171,12 @@ const ProfileInfo = () => {
       {successMessage && (
         <div className="success-message">
           {successMessage}
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="error-message">
+          {errorMessage}
         </div>
       )}
 
@@ -462,11 +543,18 @@ const ProfileInfo = () => {
 
           {isEditing && (
             <div className="form-actions">
-              <button type="submit" className="save-button">Save Changes</button>
+              <button 
+                type="submit" 
+                className="save-button"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Saving...' : 'Save Changes'}
+              </button>
               <button 
                 type="button" 
                 className="cancel-button"
                 onClick={() => setIsEditing(false)}
+                disabled={isLoading}
               >
                 Cancel
               </button>
@@ -478,4 +566,4 @@ const ProfileInfo = () => {
   );
 };
 
-export default ProfileInfo; 
+export default ProfileInfo;

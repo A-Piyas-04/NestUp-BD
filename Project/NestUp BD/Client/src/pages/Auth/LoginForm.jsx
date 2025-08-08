@@ -37,8 +37,8 @@ const LoginForm = () => {
       const data = await response.json();
       if (response.ok) {
         localStorage.setItem('token', data.token);
-        localStorage.setItem('userName', data.name);
-        login(data.token, data.name);
+        localStorage.setItem('userName', data.user.name);
+        await login(data.token, data.user.name);
         navigate('/dashboard');
       } else {
         setError(data.error || 'Login failed');

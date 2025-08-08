@@ -17,28 +17,98 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // On mount, check for saved token and user info in localStorage
-  useEffect(() => {
-    // Check for saved token in localStorage
+  // Fetch user data from server
+  const fetchUserData = async () => {
     const token = localStorage.getItem('token');
-    const userName = localStorage.getItem('userName');
-    
-    if (token && userName) {
-      setUser({ name: userName });
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+      } else {
+        // Token is invalid, clear it
+        localStorage.removeItem('token');
+        localStorage.removeItem('userName');
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+      localStorage.removeItem('token');
+      localStorage.removeItem('userName');
+      setUser(null);
     }
     
     setLoading(false);
+  };
+
+  // On mount, fetch user data if token exists
+  useEffect(() => {
+    fetchUserData();
   }, []);
 
   /**
-   * Logs in the user and saves token/name to localStorage.
+   * Logs in the user and saves token to localStorage, then fetches user data.
    * @param {string} token
    * @param {string} name
    */
-  const login = (token, name) => {
+  const login = async (token, name) => {
     localStorage.setItem('token', token);
     localStorage.setItem('userName', name);
-    setUser({ name });
+    
+    // Fetch complete user data after login
+    await fetchUserData();
+  };
+
+  /**
+   * Updates user data in context and optionally on server.
+   * @param {object} userData
+   * @param {boolean} saveToServer
+   */
+  const updateUser = async (userData, saveToServer = false) => {
+    if (saveToServer) {
+      const token = localStorage.getItem('token');
+      if (!token) return false;
+
+      try {
+        const response = await fetch('/api/auth/profile', {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify(userData)
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+          return true;
+        } else {
+          console.error('Failed to update profile on server');
+          return false;
+        }
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        return false;
+      }
+    } else {
+      // Just update local state
+      setUser(prev => ({ ...prev, ...userData }));
+      return true;
+    }
   };
 
   /**
@@ -51,7 +121,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, loading }}>
       {children}
     </AuthContext.Provider>
   );
