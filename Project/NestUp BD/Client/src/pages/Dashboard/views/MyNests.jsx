@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ServiceModal from '../../../components/ServiceModal/ServiceModal';
 
 const MyNests = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedService, setSelectedService] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,6 +46,80 @@ const MyNests = () => {
 
   const handleAddNewNest = () => {
     navigate('/provide-service');
+  };
+
+  const handleDeleteService = async (serviceId) => {
+    if (!window.confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        alert('Please login to delete services');
+        return;
+      }
+
+      const response = await fetch(`/api/services/${serviceId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        // Remove the deleted service from the state
+        setServices(services.filter(service => service._id !== serviceId));
+        alert('Service deleted successfully!');
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete service');
+      }
+    } catch (error) {
+      console.error('Error deleting service:', error);
+      alert('Failed to delete service. Please try again.');
+    }
+  };
+
+  const handleToggleActive = async (serviceId, currentStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/services/${serviceId}/toggle-active`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Update the service in the local state
+        setServices(services.map(service => 
+          service._id === serviceId 
+            ? { ...service, isActive: data.service.isActive }
+            : service
+        ));
+        alert(data.message);
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Failed to update service status');
+      }
+    } catch (error) {
+      console.error('Error toggling service status:', error);
+      alert('An error occurred while updating the service status');
+    }
+  };
+
+  const handleViewDetails = (service) => {
+    setSelectedService(service);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedService(null);
   };
 
   const formatDate = (dateString) => {
@@ -117,16 +194,16 @@ const MyNests = () => {
             {services.map((service) => (
               <div key={service._id} className="listing-card">
                 <div className="listing-image">
-                  {service.photos && service.photos.length > 0 ? (
-                    <img src={service.photos[0]} alt={service.title} />
+                  {service.thumbnail ? (
+                    <img src={service.thumbnail} alt={service.title} />
                   ) : (
                     <div style={{ 
                       height: '200px', 
-                      backgroundColor: '#f3f4f6', 
+                      backgroundColor: '#f0f0f0', 
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center',
-                      color: '#9ca3af'
+                      color: '#666'
                     }}>
                       📷 No Image
                     </div>
@@ -134,7 +211,12 @@ const MyNests = () => {
                   {getStatusBadge(service)}
                 </div>
                 <div className="listing-content">
-                  <h3>{service.title}</h3>
+                  <div className="listing-header">
+                    <h3>{service.title}</h3>
+                    <span className={`status-badge ${service.isActive ? 'active' : 'inactive'}`}>
+                      {service.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
                   <p className="location">📍 {service.location.area}, {service.location.district}</p>
                   <p className="price">৳{service.price.toLocaleString()}/month</p>
                   <div className="listing-stats">
@@ -146,8 +228,24 @@ const MyNests = () => {
                     <span>📅 Available: {formatDate(service.availability.from)} - {formatDate(service.availability.to)}</span>
                   </div>
                   <div className="listing-actions">
-                    <button className="btn-secondary">Edit</button>
-                    <button className="btn-secondary">View Details</button>
+                    <button 
+                      className="btn-secondary"
+                      onClick={() => handleViewDetails(service)}
+                    >
+                      View Details
+                    </button>
+                    <button 
+                      className={service.isActive ? "btn-warning" : "btn-success"}
+                      onClick={() => handleToggleActive(service._id, service.isActive)}
+                    >
+                      {service.isActive ? 'Deactivate' : 'Activate'}
+                    </button>
+                    <button 
+                      className="btn-danger"
+                      onClick={() => handleDeleteService(service._id)}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>
@@ -155,6 +253,12 @@ const MyNests = () => {
           </div>
         )}
       </div>
+      
+      <ServiceModal 
+        service={selectedService}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };

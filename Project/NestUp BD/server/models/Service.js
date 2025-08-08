@@ -97,16 +97,16 @@ const serviceSchema = new mongoose.Schema({
     cctv: { type: Boolean, default: false }
   },
   
-  // Photos & Media
-  photos: [{
+  // Thumbnail image for listing card display
+  thumbnail: {
     type: String,
     validate: {
       validator: function(v) {
-        return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(v) || v.startsWith('/uploads/');
+        return !v || /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(v) || v.startsWith('/uploads/');
       },
-      message: 'Please provide a valid image URL or path'
+      message: 'Please provide a valid thumbnail image URL or path'
     }
-  }],
+  },
   
   // Contact Information
   contact: {
@@ -176,6 +176,12 @@ const serviceSchema = new mongoose.Schema({
   isVerified: {
     type: Boolean,
     default: false
+  },
+  
+  // Active status for listing visibility
+  isActive: {
+    type: Boolean,
+    default: true
   },
   createdAt: {
     type: Date,

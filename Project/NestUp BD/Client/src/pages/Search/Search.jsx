@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Search.css';
 import FilterSidebar from '../../components/FilterSidebar/FilterSidebar';
 import ListingCard from '../../components/ListingCard/ListingCard';
+import ServiceModal from '../../components/ServiceModal/ServiceModal';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 
@@ -22,6 +23,8 @@ const Search = () => {
   const [filteredListings, setFilteredListings] = useState([]);
   const [totalListings, setTotalListings] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedService, setSelectedService] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchServices = async (filters = {}) => {
     setIsLoading(true);
@@ -46,9 +49,7 @@ const Search = () => {
           district: service.location.district,
           area: service.location.area,
           price: `৳${service.price.toLocaleString()}/month`,
-          image: service.photos && service.photos.length > 0 
-            ? service.photos[0] 
-            : 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+          image: service.thumbnail || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
           verifiedHost: service.isVerified || false,
           hygieneBadge: service.amenities?.wifi || false, // Using wifi as hygiene indicator for now
           priceNumeric: service.price,
@@ -57,7 +58,9 @@ const Search = () => {
           propertyType: service.propertyType,
           bedrooms: service.propertyDetails?.bedrooms,
           bathrooms: service.propertyDetails?.bathrooms,
-          owner: service.owner
+          owner: service.owner,
+          // Keep the original service data for modal
+          originalService: service
         }));
         
         // Apply client-side filters for date range and other filters not handled by backend
@@ -113,6 +116,16 @@ const Search = () => {
     fetchServices(filters);
   };
 
+  const handleViewServiceDetails = (service) => {
+    setSelectedService(service);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedService(null);
+  };
+
   // Initial load effect
   useEffect(() => {
     fetchServices();
@@ -157,6 +170,8 @@ const Search = () => {
                     availableTo={listing.availableTo}
                     verifiedHost={listing.verifiedHost}
                     hygieneBadge={listing.hygieneBadge}
+                    service={listing.originalService}
+                    onViewDetails={handleViewServiceDetails}
                   />
                 ))}
               </div>
@@ -183,6 +198,12 @@ const Search = () => {
       </div>
 
       <Footer />
+      
+      <ServiceModal 
+        service={selectedService}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };

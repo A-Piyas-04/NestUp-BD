@@ -42,7 +42,7 @@ const ProvideService = () => {
     },
     
     // Photos & Media
-    photos: [],
+    thumbnail: null,
     
     // Contact Information
     contactName: '',
@@ -56,7 +56,7 @@ const ProvideService = () => {
   
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [previewImages, setPreviewImages] = useState([]);
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -78,19 +78,21 @@ const ProvideService = () => {
         });
       }
     } else if (type === 'file') {
-      const selectedFiles = Array.from(files);
-      setFormData({
-        ...formData,
-        photos: [...formData.photos, ...selectedFiles]
-      });
-      
-      // Create preview URLs for the selected images
-      const newPreviewImages = selectedFiles.map(file => ({
-        file,
-        url: URL.createObjectURL(file)
-      }));
-      
-      setPreviewImages([...previewImages, ...newPreviewImages]);
+      if (name === 'thumbnail') {
+        const file = files[0];
+        if (file) {
+          setFormData({
+            ...formData,
+            thumbnail: file
+          });
+          
+          // Create preview URL for thumbnail
+          if (thumbnailPreview) {
+            URL.revokeObjectURL(thumbnailPreview);
+          }
+          setThumbnailPreview(URL.createObjectURL(file));
+        }
+      }
     } else {
       setFormData({
         ...formData,
@@ -107,19 +109,15 @@ const ProvideService = () => {
     }
   };
 
-  const removeImage = (index) => {
-    const updatedPhotos = [...formData.photos];
-    updatedPhotos.splice(index, 1);
-    
-    const updatedPreviews = [...previewImages];
-    URL.revokeObjectURL(updatedPreviews[index].url);
-    updatedPreviews.splice(index, 1);
-    
+  const removeThumbnail = () => {
+    if (thumbnailPreview) {
+      URL.revokeObjectURL(thumbnailPreview);
+    }
     setFormData({
       ...formData,
-      photos: updatedPhotos
+      thumbnail: null
     });
-    setPreviewImages(updatedPreviews);
+    setThumbnailPreview(null);
   };
 
   const validateStep = (step) => {
@@ -151,11 +149,13 @@ const ProvideService = () => {
       if (!formData.bedrooms) newErrors.bedrooms = 'Number of bedrooms is required';
       if (!formData.bathrooms) newErrors.bathrooms = 'Number of bathrooms is required';
     } else if (step === 6) {
+      // Photos step - thumbnail is required
+      if (!formData.thumbnail) newErrors.thumbnail = 'Thumbnail image is required';
+    } else if (step === 7) {
       if (!formData.contactName.trim()) newErrors.contactName = 'Contact name is required';
       if (!formData.contactPhone.trim()) newErrors.contactPhone = 'Contact phone is required';
       if (!formData.contactEmail.trim()) newErrors.contactEmail = 'Contact email is required';
       else if (!/\S+@\S+\.\S+/.test(formData.contactEmail)) newErrors.contactEmail = 'Email is invalid';
-    } else if (step === 7) {
       if (!formData.termsAgreed) newErrors.termsAgreed = 'You must agree to the terms and conditions';
     }
     
@@ -211,7 +211,8 @@ const ProvideService = () => {
         contactName: formData.contactName,
         contactPhone: formData.contactPhone,
         contactEmail: formData.contactEmail,
-        contactWhatsapp: formData.contactWhatsapp
+        contactWhatsapp: formData.contactWhatsapp,
+        thumbnail: formData.thumbnail ? formData.thumbnail.name : null
       };
       
       console.log('Submitting form data:', submitData);
@@ -642,44 +643,47 @@ const ProvideService = () => {
         return (
           <div className="form-step">
             <h3>Photos & Media</h3>
-            <p className="step-description">Upload photos of your property (max 10 photos)</p>
+            <p className="step-description">Upload a thumbnail image and additional photos of your property</p>
             
-            <div className="photo-upload-container">
-              <label className="photo-upload-label">
-                <input
-                  type="file"
-                  name="photos"
-                  onChange={handleChange}
-                  accept="image/*"
-                  multiple
-                  disabled={formData.photos.length >= 10}
-                  className="photo-input"
-                />
-                <div className="upload-icon">📷</div>
-                <span>Click to upload photos</span>
-                <span className="upload-hint">Maximum 10 photos, JPEG or PNG format</span>
-              </label>
+            {/* Thumbnail Upload Section */}
+            <div className="form-group">
+              <label>Thumbnail Image <span className="required">*</span></label>
+              <p className="field-description">This image will be displayed as the main thumbnail in search results</p>
+              
+              <div className="photo-upload-container">
+                <label className="photo-upload-label">
+                  <input
+                    type="file"
+                    name="thumbnail"
+                    onChange={handleChange}
+                    accept="image/*"
+                    className="photo-input"
+                  />
+                  <div className="upload-icon">🖼️</div>
+                  <span>Click to upload thumbnail</span>
+                  <span className="upload-hint">JPEG or PNG format, recommended size: 400x300px</span>
+                </label>
+              </div>
+              
+              {thumbnailPreview && (
+                 <div className="photo-preview-container">
+                   <h4>Thumbnail Preview</h4>
+                   <div className="thumbnail-preview">
+                     <img src={thumbnailPreview} alt="Thumbnail Preview" />
+                     <button
+                       type="button"
+                       className="remove-photo"
+                       onClick={removeThumbnail}
+                     >
+                       ×
+                     </button>
+                   </div>
+                 </div>
+               )}
+               {errors.thumbnail && <div className="error-message">{errors.thumbnail}</div>}
             </div>
             
-            {previewImages.length > 0 && (
-              <div className="photo-preview-container">
-                <h4>Uploaded Photos ({previewImages.length}/10)</h4>
-                <div className="photo-grid">
-                  {previewImages.map((image, index) => (
-                    <div key={index} className="photo-preview">
-                      <img src={image.url} alt={`Preview ${index + 1}`} />
-                      <button
-                        type="button"
-                        className="remove-photo"
-                        onClick={() => removeImage(index)}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </div>
         );
         
