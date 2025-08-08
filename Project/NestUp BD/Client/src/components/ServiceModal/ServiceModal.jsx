@@ -38,7 +38,7 @@ const ServiceModal = ({ service, isOpen, onClose }) => {
             {service.thumbnail ? (
               <div className="image-gallery">
                 <img 
-                  src={service.thumbnail} 
+                  src={`http://localhost:3000${service.thumbnail}`} 
                   alt={service.title} 
                   className="main-image"
                 />

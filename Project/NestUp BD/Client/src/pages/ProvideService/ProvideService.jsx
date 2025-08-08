@@ -192,39 +192,44 @@ const ProvideService = () => {
         return;
       }
       
-      // Prepare form data for submission
-      const submitData = {
-        title: formData.title,
-        propertyType: formData.propertyType,
-        description: formData.description,
-        district: formData.district,
-        area: formData.area,
-        address: formData.address,
-        price: formData.price,
-        availableFrom: formData.availableFrom,
-        availableTo: formData.availableTo,
-        bedrooms: formData.bedrooms,
-        bathrooms: formData.bathrooms,
-        squareFeet: formData.squareFeet,
-        furnishing: formData.furnishing,
-        amenities: formData.amenities,
-        contactName: formData.contactName,
-        contactPhone: formData.contactPhone,
-        contactEmail: formData.contactEmail,
-        contactWhatsapp: formData.contactWhatsapp,
-        thumbnail: formData.thumbnail ? formData.thumbnail.name : null
-      };
+      // Prepare form data for submission using FormData for file upload
+      const submitData = new FormData();
       
-      console.log('Submitting form data:', submitData);
+      // Add all form fields
+      submitData.append('title', formData.title);
+      submitData.append('propertyType', formData.propertyType);
+      submitData.append('description', formData.description);
+      submitData.append('district', formData.district);
+      submitData.append('area', formData.area);
+      submitData.append('address', formData.address);
+      submitData.append('price', formData.price);
+      submitData.append('availableFrom', formData.availableFrom);
+      submitData.append('availableTo', formData.availableTo);
+      submitData.append('bedrooms', formData.bedrooms);
+      submitData.append('bathrooms', formData.bathrooms);
+      submitData.append('squareFeet', formData.squareFeet);
+      submitData.append('furnishing', formData.furnishing);
+      submitData.append('amenities', JSON.stringify(formData.amenities));
+      submitData.append('contactName', formData.contactName);
+      submitData.append('contactPhone', formData.contactPhone);
+      submitData.append('contactEmail', formData.contactEmail);
+      submitData.append('contactWhatsapp', formData.contactWhatsapp);
+      
+      // Add thumbnail file if present
+      if (formData.thumbnail) {
+        submitData.append('thumbnail', formData.thumbnail);
+      }
+      
+      console.log('Submitting form data with file:', formData.thumbnail ? 'File included' : 'No file');
       
       // Submit to backend API
       const response = await fetch('/api/services', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
+          // Note: Don't set Content-Type header when using FormData
         },
-        body: JSON.stringify(submitData)
+        body: submitData
       });
       
       const result = await response.json();

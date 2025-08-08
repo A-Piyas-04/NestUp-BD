@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 // Import routes
 import authRoutes from './routes/auth.js';
 import apiRoutes from './routes/api.js';
+import uploadRoutes from './routes/upload.js';
 
 // Load environment variables
 dotenv.config();
@@ -24,8 +25,12 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
+
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/upload', uploadRoutes);
 app.use('/api', apiRoutes);
 
 // Basic route

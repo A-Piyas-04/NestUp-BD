@@ -195,7 +195,7 @@ const MyNests = () => {
               <div key={service._id} className="listing-card">
                 <div className="listing-image">
                   {service.thumbnail ? (
-                    <img src={service.thumbnail} alt={service.title} />
+                    <img src={`http://localhost:3000${service.thumbnail}`} alt={service.title} />
                   ) : (
                     <div style={{ 
                       height: '200px', 

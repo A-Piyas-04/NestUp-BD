@@ -62,7 +62,7 @@ const ListingCard = ({
     <div className="listing-card">
       <div className="listing-image-container">
         {service && service.thumbnail ? (
-          <img src={service.thumbnail} alt={title} className="listing-image" />
+          <img src={`http://localhost:3000${service.thumbnail}`} alt={title} className="listing-image" />
         ) : (
           <div className="no-image">
             <span>📷 No Image</span>
