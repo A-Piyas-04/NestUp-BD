@@ -41,7 +41,7 @@ const LoginForm = () => {
         await login(data.token, data.user.name);
         navigate('/dashboard');
       } else {
-        setError(data.error || 'Login failed');
+        setError(data.message || 'Login failed');
       }
     } catch (err) {
       setError('An error occurred during login');

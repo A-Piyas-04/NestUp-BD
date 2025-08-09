@@ -60,7 +60,7 @@ const RegisterForm = () => {
         await login(data.token, data.user.name);
         navigate('/dashboard');
       } else {
-        setError(data.error || 'Registration failed');
+        setError(data.message || 'Registration failed');
       }
     } catch (err) {
       console.error('Registration error:', err);
