@@ -19,7 +19,7 @@ const PaymentHistory = () => {
     const fetchPaymentHistory = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/my-payments?status=${filter === 'all' ? '' : filter}&page=1&limit=10`, {
+        const response = await fetch(`/api/payments?status=${filter === 'all' ? '' : filter}&page=1&limit=10`, {
           method: 'GET',
           credentials: 'include',
           headers: {

@@ -202,9 +202,20 @@ const Payment = () => {
 
       const paymentResult = await paymentResponse.json();
       
-      // Show success message
-      alert('Payment initiated successfully! You will receive a confirmation email shortly.');
-      navigate('/dashboard');
+      // Show success message with better UX
+      const successMessage = `Payment initiated successfully!\n\nTransaction ID: ${paymentResult.payment.transactionId}\nAmount: ৳${paymentResult.payment.amount}\n\nYou will receive a confirmation email shortly.\nRedirecting to your dashboard...`;
+      alert(successMessage);
+      
+      // Wait a moment for user to read the message, then redirect
+      setTimeout(() => {
+        navigate('/dashboard/booked-nests', { 
+          state: { 
+            paymentSuccess: true, 
+            transactionId: paymentResult.payment.transactionId,
+            amount: paymentResult.payment.amount
+          } 
+        });
+      }, 1000);
       
     } catch (error) {
       console.error('Payment error:', error);
