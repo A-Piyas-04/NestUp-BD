@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from "../../context/AuthContext";
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import PaymentStepIndicator from './components/PaymentStepIndicator';
@@ -24,6 +25,7 @@ import './Payment.css';
 const Payment = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   // State for all payment-related data
   const [paymentData, setPaymentData] = useState({
@@ -123,7 +125,7 @@ const Payment = () => {
   };
 
   /**
-   * Handles the final payment action (simulated here).
+   * Handles the final payment action with backend integration.
    */
   const handlePayment = async () => {
     const newErrors = validateStep(currentStep, paymentData);
@@ -133,15 +135,83 @@ const Payment = () => {
       return;
     }
 
+    if (!user) {
+      alert('Please log in to complete your booking.');
+      navigate('/login');
+      return;
+    }
+
     setIsProcessing(true);
     
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      // In a real app, you would handle the payment response here
-      alert('Payment successful! You will receive a confirmation email shortly.');
+    try {
+      // Validate serviceId before making the request
+      if (!paymentData.propertyDetails.serviceId) {
+        throw new Error('Service ID is missing. Please select a property again.');
+      }
+      
+      // Step 1: Create booking
+      const bookingResponse = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          serviceId: paymentData.propertyDetails.serviceId,
+          startDate: paymentData.propertyDetails.startDate,
+          endDate: paymentData.propertyDetails.endDate,
+          guestInfo: {
+            numberOfGuests: 1,
+            specialRequests: ''
+          },
+          contactInfo: {
+            phone: paymentData.personalInfo.phone,
+            email: paymentData.personalInfo.email
+          }
+        })
+      });
+
+      if (!bookingResponse.ok) {
+        const errorData = await bookingResponse.json();
+        throw new Error(errorData.message || 'Failed to create booking');
+      }
+
+      const bookingData = await bookingResponse.json();
+      const bookingId = bookingData.booking._id;
+
+      // Step 2: Process payment
+      const paymentResponse = await fetch('/api/payments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          bookingId: bookingId,
+          paymentMethod: paymentData.paymentMethod,
+          paymentDetails: paymentData.paymentDetails,
+          personalInfo: paymentData.personalInfo,
+          termsAccepted: paymentData.termsAccepted
+        })
+      });
+
+      if (!paymentResponse.ok) {
+        const errorData = await paymentResponse.json();
+        throw new Error(errorData.message || 'Payment processing failed');
+      }
+
+      const paymentResult = await paymentResponse.json();
+      
+      // Show success message
+      alert('Payment initiated successfully! You will receive a confirmation email shortly.');
       navigate('/dashboard');
-    }, 3000);
+      
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert(`Payment failed: ${error.message}`);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   /**
@@ -222,4 +292,4 @@ const Payment = () => {
   );
 };
 
-export default Payment; // Main export 
+export default Payment; // Main export

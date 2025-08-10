@@ -1,52 +1,79 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../../context/AuthContext';
 
 const PaymentHistory = () => {
-  const paymentHistory = [
-    {
-      id: 1,
-      transactionId: 'TXN-2024-001',
-      nestName: 'Modern Apartment in Banani',
-      hostName: 'Sarah Ahmed',
-      amount: '৳45,000',
-      paymentMethod: 'Credit Card',
-      status: 'completed',
-      date: '2024-02-01',
-      description: '3 months rent payment'
-    },
-    {
-      id: 2,
-      transactionId: 'TXN-2024-002',
-      nestName: 'Student Housing near DU',
-      hostName: 'Rahim Khan',
-      amount: '৳57,000',
-      paymentMethod: 'Mobile Banking',
-      status: 'completed',
-      date: '2024-01-15',
-      description: '6 months rent payment'
-    },
-    {
-      id: 3,
-      transactionId: 'TXN-2024-003',
-      nestName: 'Cozy Room in Gulshan',
-      hostName: 'Fatima Rahman',
-      amount: '৳12,000',
-      paymentMethod: 'Bank Transfer',
-      status: 'completed',
-      date: '2023-12-01',
-      description: '1 month rent payment'
-    },
-    {
-      id: 4,
-      transactionId: 'TXN-2024-004',
-      nestName: 'Studio in Dhanmondi',
-      hostName: 'Ahmed Khan',
-      amount: '৳8,000',
-      paymentMethod: 'Credit Card',
-      status: 'pending',
-      date: '2024-02-15',
-      description: '1 month rent payment'
+  const { user } = useAuth();
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [filter, setFilter] = useState('all');
+  const [pagination, setPagination] = useState({
+    current: 1,
+    total: 1,
+    count: 0,
+    totalPayments: 0
+  });
+
+  // Fetch payment history from backend
+  useEffect(() => {
+    const fetchPaymentHistory = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/my-payments?status=${filter === 'all' ? '' : filter}&page=1&limit=10`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch payment history');
+        }
+
+        const data = await response.json();
+        setPaymentHistory(data.payments || []);
+        setPagination(data.pagination || {
+          current: 1,
+          total: 1,
+          count: 0,
+          totalPayments: 0
+        });
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching payment history:', err);
+        setError(err.message);
+        setPaymentHistory([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchPaymentHistory();
     }
-  ];
+  }, [user, filter]);
+
+  // Format payment method display
+  const formatPaymentMethod = (method) => {
+    const methodMap = {
+      'mobile_banking': 'Mobile Banking',
+      'bank_transfer': 'Bank Transfer',
+      'credit_card': 'Credit Card',
+      'cash': 'Cash'
+    };
+    return methodMap[method] || method;
+  };
+
+  // Format date display
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-GB');
+  };
+
+  // Format amount display
+  const formatAmount = (amount, currency = 'BDT') => {
+    return `৳${amount.toLocaleString()}`;
+  };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -60,9 +87,43 @@ const PaymentHistory = () => {
     return <span className={`status-badge ${config.class}`}>{config.text}</span>;
   };
 
+  // Calculate totals from real data
   const totalSpent = paymentHistory
     .filter(payment => payment.status === 'completed')
-    .reduce((sum, payment) => sum + parseInt(payment.amount.replace('৳', '').replace(',', '')), 0);
+    .reduce((sum, payment) => sum + payment.amount, 0);
+
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value);
+  };
+
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="page-header">
+          <h1>Payment History</h1>
+          <p>Loading your payment history...</p>
+        </div>
+        <div className="loading-spinner">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page-container">
+        <div className="page-header">
+          <h1>Payment History</h1>
+          <p>Error loading payment history</p>
+        </div>
+        <div className="error-message">
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()} className="btn-primary">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container">
@@ -74,20 +135,20 @@ const PaymentHistory = () => {
       <div className="payment-summary">
         <div className="summary-card">
           <h3>Total Spent</h3>
-          <div className="total-amount">৳{totalSpent.toLocaleString()}</div>
+          <div className="total-amount">{formatAmount(totalSpent)}</div>
           <p>All time payments</p>
         </div>
         
         <div className="summary-card">
           <h3>Total Transactions</h3>
-          <div className="transaction-count">{paymentHistory.length}</div>
+          <div className="transaction-count">{pagination.totalPayments}</div>
           <p>Payment records</p>
         </div>
         
         <div className="summary-card">
           <h3>Pending Payments</h3>
           <div className="pending-count">
-            {paymentHistory.filter(p => p.status === 'pending').length}
+            {paymentHistory.filter(p => p.status === 'pending' || p.status === 'processing').length}
           </div>
           <p>Awaiting completion</p>
         </div>
@@ -97,58 +158,86 @@ const PaymentHistory = () => {
         <div className="section-header">
           <h2>Transaction History</h2>
           <div className="filter-options">
-            <select className="filter-select">
+            <select className="filter-select" value={filter} onChange={handleFilterChange}>
               <option value="all">All Transactions</option>
               <option value="completed">Completed</option>
               <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
               <option value="failed">Failed</option>
+              <option value="refunded">Refunded</option>
             </select>
           </div>
         </div>
         
         <div className="transactions-list">
-          {paymentHistory.map((transaction) => (
-            <div key={transaction.id} className="transaction-card">
-              <div className="transaction-header">
-                <div className="transaction-info">
-                  <h3>{transaction.nestName}</h3>
-                  <p className="host-name">Hosted by {transaction.hostName}</p>
-                  <p className="transaction-id">Transaction ID: {transaction.transactionId}</p>
-                </div>
-                <div className="transaction-amount">
-                  <span className="amount">{transaction.amount}</span>
-                  {getStatusBadge(transaction.status)}
-                </div>
-              </div>
-              
-              <div className="transaction-details">
-                <div className="detail-row">
-                  <span className="detail-label">Payment Method:</span>
-                  <span className="detail-value">{transaction.paymentMethod}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Date:</span>
-                  <span className="detail-value">{transaction.date}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Description:</span>
-                  <span className="detail-value">{transaction.description}</span>
-                </div>
-              </div>
-              
-              <div className="transaction-actions">
-                <button className="btn-secondary">View Receipt</button>
-                <button className="btn-secondary">Download Invoice</button>
-                {transaction.status === 'pending' && (
-                  <button className="btn-primary">Complete Payment</button>
-                )}
-              </div>
+          {paymentHistory.length === 0 ? (
+            <div className="empty-state">
+              <p>No payment history found.</p>
+              {filter !== 'all' && (
+                <button onClick={() => setFilter('all')} className="btn-secondary">
+                  View All Transactions
+                </button>
+              )}
             </div>
-          ))}
+          ) : (
+            paymentHistory.map((payment) => (
+              <div key={payment._id} className="transaction-card">
+                <div className="transaction-header">
+                  <div className="transaction-info">
+                    <h3>{payment.service?.title || 'Property Booking'}</h3>
+                    <p className="host-name">{payment.service?.location?.area}, {payment.service?.location?.district}</p>
+                    <p className="transaction-id">
+                      Transaction ID: {payment.paymentDetails?.transactionId || payment._id.slice(-8)}
+                    </p>
+                  </div>
+                  <div className="transaction-amount">
+                    <span className="amount">{formatAmount(payment.amount, payment.currency)}</span>
+                    {getStatusBadge(payment.status)}
+                  </div>
+                </div>
+                
+                <div className="transaction-details">
+                  <div className="detail-row">
+                    <span className="detail-label">Payment Method:</span>
+                    <span className="detail-value">{formatPaymentMethod(payment.paymentMethod)}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Date:</span>
+                    <span className="detail-value">{formatDate(payment.createdAt)}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Booking Period:</span>
+                    <span className="detail-value">
+                      {payment.booking?.startDate && payment.booking?.endDate
+                        ? `${formatDate(payment.booking.startDate)} - ${formatDate(payment.booking.endDate)}`
+                        : 'N/A'
+                      }
+                    </span>
+                  </div>
+                  {payment.processedAt && (
+                    <div className="detail-row">
+                      <span className="detail-label">Processed:</span>
+                      <span className="detail-value">{formatDate(payment.processedAt)}</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="transaction-actions">
+                  <button className="btn-secondary">View Details</button>
+                  {payment.status === 'completed' && (
+                    <button className="btn-secondary">Download Receipt</button>
+                  )}
+                  {(payment.status === 'pending' || payment.status === 'processing') && (
+                    <button className="btn-primary">Check Status</button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-export default PaymentHistory; 
+export default PaymentHistory;

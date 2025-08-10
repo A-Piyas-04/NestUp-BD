@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import './Search.css';
 import FilterSidebar from '../../components/FilterSidebar/FilterSidebar';
 import ListingCard from '../../components/ListingCard/ListingCard';
@@ -9,6 +10,7 @@ import Footer from '../../components/Footer/Footer';
 // Services will be fetched from API
 
 const Search = () => {
+  const { user } = useAuth();
   const [activeFilters, setActiveFilters] = useState({
     district: '',
     area: '',
@@ -48,7 +50,7 @@ const Search = () => {
           title: service.title,
           district: service.location.district,
           area: service.location.area,
-          price: `৳${service.price.toLocaleString()}/month`,
+          price: `৳${service.price.toLocaleString()}`,
           image: service.thumbnail || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
           verifiedHost: service.isVerified || false,
           hygieneBadge: service.amenities?.wifi || false, // Using wifi as hygiene indicator for now
@@ -171,6 +173,7 @@ const Search = () => {
                     verifiedHost={listing.verifiedHost}
                     hygieneBadge={listing.hygieneBadge}
                     service={listing.originalService}
+                    user={user}
                     onViewDetails={handleViewServiceDetails}
                   />
                 ))}

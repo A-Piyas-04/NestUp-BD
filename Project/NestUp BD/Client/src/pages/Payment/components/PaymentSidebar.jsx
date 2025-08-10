@@ -16,7 +16,7 @@ const PaymentSidebar = ({ propertyDetails }) => {
         
         <div className="price-breakdown">
           <div className="price-row">
-            <span>Monthly Rent:</span>
+            <span>Rent:</span>
             <span>{propertyDetails.price}</span>
           </div>
           <div className="price-row">
@@ -48,4 +48,4 @@ const PaymentSidebar = ({ propertyDetails }) => {
   );
 };
 
-export default PaymentSidebar; 
+export default PaymentSidebar;

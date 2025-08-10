@@ -1,7 +1,6 @@
 import express from 'express';
 import { verifyToken, checkAuth } from '../middleware/auth.js';
 import Service from '../models/Service.js';
-import upload from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -127,7 +126,7 @@ router.get('/services/:id', async (req, res) => {
 });
 
 // Create new service (protected)
-router.post('/services', verifyToken, checkAuth, upload.single('thumbnail'), async (req, res) => {
+router.post('/services', verifyToken, checkAuth, async (req, res) => {
   try {
     const {
       title,
@@ -172,7 +171,7 @@ router.post('/services', verifyToken, checkAuth, upload.single('thumbnail'), asy
         squareFeet: squareFeet ? Number(squareFeet) : undefined,
         furnishing: furnishing || 'unfurnished'
       },
-      amenities: amenities ? JSON.parse(amenities) : {
+      amenities: amenities || {
         wifi: false,
         ac: false,
         parking: false,
@@ -188,7 +187,7 @@ router.post('/services', verifyToken, checkAuth, upload.single('thumbnail'), asy
         email: contactEmail,
         whatsapp: contactWhatsapp || ''
       },
-      thumbnail: req.file ? `/uploads/${req.file.filename}` : null,
+      photos: [], // Will be handled by file upload later
       owner: req.user._id
     };
     

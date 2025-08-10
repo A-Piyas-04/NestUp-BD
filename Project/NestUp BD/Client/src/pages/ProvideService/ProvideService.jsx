@@ -413,7 +413,7 @@ const ProvideService = () => {
             
             <div className="form-group">
               <label htmlFor="price">
-                Monthly Rent (৳) <span className="required">*</span>
+                Rent (৳) <span className="required">*</span>
               </label>
               <input
                 type="text"

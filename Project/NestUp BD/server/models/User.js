@@ -123,6 +123,11 @@ const userSchema = new mongoose.Schema({
       type: String // URL to profile picture
     }
   },
+  // Wishlist for saved properties
+  wishlist: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Service'
+  }],
   createdAt: {
     type: Date,
     default: Date.now
