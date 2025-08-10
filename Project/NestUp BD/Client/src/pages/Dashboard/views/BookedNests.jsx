@@ -102,7 +102,7 @@ const BookedNests = () => {
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Price:</span>
-                  <span className="detail-value">{booking.price}/month</span>
+                  <span className="detail-value">{booking.price}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Period:</span>
@@ -129,4 +129,4 @@ const BookedNests = () => {
   );
 };
 
-export default BookedNests; 
+export default BookedNests;
