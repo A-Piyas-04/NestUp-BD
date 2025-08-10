@@ -38,7 +38,7 @@ const ServiceModal = ({ service, isOpen, onClose }) => {
             {service.thumbnail ? (
               <div className="image-gallery">
                 <img 
-                  src={`http://localhost:3000${service.thumbnail}`} 
+                  src={service.thumbnail} 
                   alt={service.title} 
                   className="main-image"
                 />
@@ -100,8 +100,8 @@ const ServiceModal = ({ service, isOpen, onClose }) => {
                   <span className="detail-value">📅 {formatDate(service.availability?.to)}</span>
                 </div>
                 <div className="detail-item price-item">
-                  <span className="detail-label">Monthly Rent:</span>
-                  <span className="detail-value price">৳{service.price?.toLocaleString()}/month</span>
+                  <span className="detail-label">Rent:</span>
+                  <span className="detail-value price">৳{service.price?.toLocaleString()}</span>
                 </div>
               </div>
             </div>
