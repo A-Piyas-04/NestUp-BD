@@ -33,6 +33,11 @@ const DashboardSidebar = ({ isOpen }) => {
       icon: '📅'
     },
     {
+      path: '/dashboard/wishlist',
+      label: 'Wishlist',
+      icon: '❤️'
+    },
+    {
       path: '/dashboard/profile-info',
       label: 'Profile Info',
       icon: '👤'
