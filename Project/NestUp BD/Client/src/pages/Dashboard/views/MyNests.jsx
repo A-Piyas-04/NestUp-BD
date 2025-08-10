@@ -195,7 +195,7 @@ const MyNests = () => {
               <div key={service._id} className="listing-card">
                 <div className="listing-image">
                   {service.thumbnail ? (
-                    <img src={`http://localhost:3000${service.thumbnail}`} alt={service.title} />
+                    <img src={service.thumbnail} alt={service.title} />
                   ) : (
                     <div style={{ 
                       height: '200px', 
@@ -218,7 +218,7 @@ const MyNests = () => {
                     </span>
                   </div>
                   <p className="location">📍 {service.location.area}, {service.location.district}</p>
-                  <p className="price">৳{service.price.toLocaleString()}/month</p>
+                  <p className="price">৳{service.price.toLocaleString()}</p>
                   <div className="listing-stats">
                     <span>🏠 {service.propertyType}</span>
                     <span>🛏️ {service.propertyDetails.bedrooms} bed</span>
