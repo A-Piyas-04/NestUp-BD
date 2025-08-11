@@ -819,6 +819,44 @@
   gap: 0.5rem;
 }
 
+/* Success Message Styles */
+.success-message {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: var(--radius-md);
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #155724;
+}
+
+.success-message-content h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.success-message-content p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.success-message-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #155724;
+  padding: 0;
+  margin-left: 1rem;
+}
+
+.success-message-close:hover {
+  opacity: 0.7;
+}
+
 /* Booked Nests Styles */
 .bookings-summary {
   display: grid;

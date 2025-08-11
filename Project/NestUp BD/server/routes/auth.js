@@ -131,50 +131,87 @@ router.post('/logout', (req, res) => {
 });
 
 // Get current user route
+// Get current user profile - requires authentication
 router.get('/me', verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    // User is already attached to req by verifyToken middleware
+    const user = req.user;
+    
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json({ user });
+
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      }
+    });
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ message: 'Failed to get user information' });
   }
 });
 
-// Update user profile route
+// Update user profile - requires authentication
 router.put('/profile', verifyToken, async (req, res) => {
   try {
-    const { name, profile } = req.body;
+    const { name, email } = req.body;
+    const userId = req.user._id;
+
+    // Validation
+    if (!name || !email) {
+      return res.status(400).json({ message: 'Name and email are required' });
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Please provide a valid email address' });
+    }
+
+    // Check if email is already taken by another user
+    const existingUser = await User.findOne({ 
+      email: email.toLowerCase(), 
+      _id: { $ne: userId } 
+    });
     
-    const updateData = {};
-    if (name) updateData.name = name;
-    if (profile) updateData.profile = profile;
-    
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      updateData,
-      { new: true, runValidators: true }
-    ).select('-password');
-    
-    if (!user) {
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email is already taken by another user' });
+    }
+
+    // Update user
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        updatedAt: new Date()
+      },
+      { new: true, select: '-password' }
+    );
+
+    if (!updatedUser) {
       return res.status(404).json({ message: 'User not found' });
     }
-    
-    res.json({ 
+
+    res.json({
+      success: true,
       message: 'Profile updated successfully',
-      user 
+      user: {
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt
+      }
     });
   } catch (error) {
     console.error('Update profile error:', error);
-    
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(err => err.message);
-      return res.status(400).json({ message: messages.join(', ') });
-    }
-    
     res.status(500).json({ message: 'Failed to update profile' });
   }
 });

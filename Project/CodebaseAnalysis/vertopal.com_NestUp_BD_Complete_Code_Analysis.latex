@@ -1,0 +1,1556 @@
+% NestUp BD - Complete Code Analysis and Architecture Documentation
+% Professional LaTeX Document
+% Compiled for Overleaf compatibility
+
+\documentclass[12pt,a4paper]{article}
+
+% Essential packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{textcomp}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{bookmark}
+\usepackage{url}
+
+% Page geometry
+\geometry{
+    left=2.5cm,
+    right=2.5cm,
+    top=3cm,
+    bottom=3cm,
+    headheight=15pt
+}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textbf{NestUp BD - Code Analysis}}
+\fancyhead[R]{\thepage}
+\fancyfoot[C]{\textit{Complete Architecture Documentation}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% Title formatting
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{blue!70!black}}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{blue!50!black}}
+  {\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{blue!30!black}}
+  {\thesubsubsection}{1em}{}
+
+% Code listing settings
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    framerule=0.5pt,
+    rulecolor=\color{gray!30},
+    breaklines=true,
+    breakatwhitespace=true,
+    showstringspaces=false,
+    tabsize=2,
+    captionpos=b,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt
+}
+
+% Custom colors
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Document metadata
+\title{\Huge\textbf{NestUp BD}\\[0.5cm]
+       \Large Complete Code Analysis and Architecture Documentation\\[0.3cm]
+       \large Property Rental Platform for Bangladesh}
+\author{\textbf{Software Project Lab - 2}\\[0.2cm]
+        Department of Computer Science and Engineering\\[0.1cm]
+        Islamic University of Technology}
+\date{\today}
+
+% Custom commands
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\file}[1]{\textbf{\texttt{#1}}}
+\newcommand{\folder}[1]{\textbf{\textit{#1}}}
+
+% Prevent overfull lines
+\setlength{\emergencystretch}{3em}
+
+% List formatting
+\setlist[itemize]{leftmargin=*,topsep=0pt,itemsep=2pt}
+\setlist[enumerate]{leftmargin=*,topsep=0pt,itemsep=2pt}
+
+\begin{document}
+
+% Title page
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% Table of contents
+\tableofcontents
+\newpage
+
+\section{Executive Summary}
+\label{sec:executive-summary}
+
+This document provides a comprehensive technical analysis of the NestUp BD platform, a modern property rental solution designed specifically for the Bangladeshi market. The platform serves students and professionals seeking accommodation through an intuitive web-based interface that facilitates property listing, searching, booking, and secure payment processing.
+
+\vspace{0.5cm}
+
+\section{Project Overview}
+\label{sec:project-overview}
+
+NestUp BD is a comprehensive property rental platform designed specifically for students and professionals in Bangladesh. The application facilitates property listing, searching, booking, and payment processing with a modern web-based interface.
+
+\subsection{Technology Stack}
+\label{subsec:technology-stack}
+
+The platform is built using modern web technologies to ensure scalability, maintainability, and optimal performance:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Component} & \textbf{Technology} \\
+\midrule
+Frontend Framework & React.js with Vite build tool \\
+Backend Framework & Node.js with Express.js \\
+Database & MongoDB with Mongoose ODM \\
+Authentication & JWT (JSON Web Tokens) \\
+File Upload & Multer middleware \\
+Styling & CSS with custom variables and responsive design \\
+Development Tools & ESLint, Prettier, Nodemon \\
+Version Control & Git with GitHub \\
+\bottomrule
+\end{tabular}
+\caption{Technology Stack Overview}
+\label{tab:tech-stack}
+\end{table}
+
+\subsection{Key Features}
+\label{subsec:key-features}
+
+\begin{itemize}
+\item \textbf{Multi-tenant Architecture}: Support for property owners and tenants
+\item \textbf{Advanced Search}: Location-based filtering with multiple criteria
+\item \textbf{Secure Payments}: Multiple payment methods with transaction tracking
+\item \textbf{Real-time Updates}: Live availability and booking status
+\item \textbf{Mobile Responsive}: Optimized for all device types
+\item \textbf{Admin Dashboard}: Comprehensive management interface
+\end{itemize}
+
+\section{Project Structure}
+\label{sec:project-structure}
+
+The project follows a well-organized modular structure that separates concerns between frontend and backend components:
+
+\begin{lstlisting}[caption=Project Directory Structure, label=lst:project-structure]
+NestUp BD/
+├── Client/                          # Frontend React application
+│   ├── src/
+│   │   ├── components/              # Reusable UI components
+│   │   ├── pages/                   # Main application pages
+│   │   ├── context/                 # React Context for state management
+│   │   ├── utils/                   # Utility functions
+│   │   └── assets/                  # Static assets
+│   ├── public/                      # Public static files
+│   ├── package.json                 # Frontend dependencies
+│   └── vite.config.js              # Vite configuration
+├── server/                          # Backend Node.js application
+│   ├── models/                      # MongoDB schemas and models
+│   ├── routes/                      # API route handlers
+│   ├── middleware/                  # Custom middleware functions
+│   ├── uploads/                     # File upload storage
+│   ├── server.js                    # Main server entry point
+│   ├── package.json                 # Backend dependencies
+│   └── .env                         # Environment variables
+├── Docs/                            # Documentation files
+└── test-payment.js                  # Payment testing script
+\end{lstlisting}
+
+\subsection{Architecture Principles}
+\label{subsec:architecture-principles}
+
+\begin{itemize}
+\item \textbf{Separation of Concerns}: Clear distinction between frontend and backend responsibilities
+\item \textbf{Modular Design}: Components are organized into logical modules for maintainability
+\item \textbf{RESTful API}: Standard HTTP methods and status codes for API communication
+\item \textbf{Security First}: JWT authentication and input validation at all levels
+\item \textbf{Scalable Structure}: Organized codebase that supports future enhancements
+\end{itemize}
+
+\section{Backend Architecture}
+\label{sec:backend-architecture}
+
+\subsection{Server Entry Point}
+\label{subsec:server-entry-point}
+
+\textbf{File}: \file{server/server.js}
+
+\textbf{Purpose}: Main application server that initializes the Express app, connects to MongoDB, sets up middleware, and starts the server.
+
+\subsubsection{Key Functionalities}
+\begin{itemize}
+\item Express server initialization and configuration
+\item MongoDB connection using Mongoose ODM
+\item CORS configuration for cross-origin requests
+\item Cookie parser for JWT token handling
+\item Static file serving for uploaded content
+\item API route mounting and error handling
+\item Server startup on port 3000
+\end{itemize}
+
+\subsubsection{Server Initialization Flow}
+\begin{enumerate}
+\item Load environment variables from \file{.env} file
+\item Create Express application instance
+\item Configure middleware (CORS, JSON parser, cookie parser)
+\item Establish MongoDB database connection
+\item Mount API routes and middleware
+\item Start server and listen on specified port
+\end{enumerate}
+
+\subsection{Database Models}
+\label{subsec:database-models}
+
+\textbf{Location}: \folder{server/models/}
+
+The application uses MongoDB with Mongoose ODM for data modeling. Each model defines the schema, validation rules, and business logic for different entities.
+
+\subsubsection{User Model}
+\label{subsubsec:user-model}
+
+\textbf{File}: \file{User.js}
+
+\textbf{Purpose}: Defines the user schema for authentication and profile management.
+
+\paragraph{Schema Fields}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Constraints} \\
+\midrule
+name & String & Required, trimmed, min 2 chars \\
+email & String & Required, unique, lowercase, email validation \\
+password & String & Required, min 6 chars, hashed \\
+role & Enum & ['user', 'admin'], default: 'user' \\
+isVerified & Boolean & Default: true \\
+profile.phone & String & Optional \\
+profile.nidNumber & String & Optional \\
+profile.dateOfBirth & Date & Optional \\
+profile.gender & Enum & ['male', 'female', 'other'] \\
+profile.occupation & String & Optional \\
+profile.emergencyContact & Object & name and phone \\
+profile.address & Object & street, city, district, postalCode \\
+preferences & Object & User settings \\
+createdAt, updatedAt & Timestamps & Auto-generated \\
+\bottomrule
+\end{tabular}
+\caption{User Model Schema}
+\label{tab:user-schema}
+\end{table}
+
+\paragraph{Methods and Middleware}
+\begin{itemize}
+\item \code{comparePassword()}: Compares plain text password with hashed password
+\item \textbf{Pre-save middleware}: Automatically hashes password before saving
+\end{itemize}
+
+\subsubsection{Service Model}
+\label{subsubsec:service-model}
+
+\textbf{File}: \file{Service.js}
+
+\textbf{Purpose}: Defines the property/service schema for rental listings.
+
+\paragraph{Core Schema Fields}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Constraints} \\
+\midrule
+title & String & Required, max 200 chars \\
+propertyType & Enum & ['apartment', 'house', 'room', 'hostel', 'dormitory', 'sublet'] \\
+description & String & Required, max 2000 chars \\
+location.district & String & Required \\
+location.area & String & Required \\
+location.address & String & Required \\
+location.coordinates & Object & latitude and longitude \\
+price & Number & Required, min 0 \\
+availability.from & Date & Required \\
+availability.to & Date & Required \\
+availability.isAvailable & Boolean & Default: true \\
+\bottomrule
+\end{tabular}
+\caption{Service Model - Core Fields}
+\label{tab:service-core-schema}
+\end{table}
+
+\paragraph{Property Details and Features}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\midrule
+propertyDetails.bedrooms & String & Number of bedrooms \\
+propertyDetails.bathrooms & String & Number of bathrooms \\
+propertyDetails.squareFeet & Number & Property size \\
+propertyDetails.furnishing & Enum & ['unfurnished', 'semi-furnished', 'fully-furnished'] \\
+amenities & Object & Boolean flags for various amenities \\
+images & Array & Image URLs \\
+thumbnail & String & Main image URL \\
+contact & Object & name, phone, email, whatsapp \\
+owner & ObjectId & Reference to User \\
+rating & Object & average and count \\
+reviews & Array & Review objects \\
+isVerified & Boolean & Default: false \\
+isActive & Boolean & Default: true \\
+\bottomrule
+\end{tabular}
+\caption{Service Model - Property Details}
+\label{tab:service-details-schema}
+\end{table}
+
+\paragraph{Methods and Indexes}
+\begin{itemize}
+\item \textbf{Pre-save middleware}: Updates the updatedAt field automatically
+\item \textbf{Database Indexes}: Created on location fields and price for efficient querying
+\item \textbf{Virtual Properties}: Computed fields for enhanced functionality
+\end{itemize}
+
+\subsubsection{Booking Model}
+\label{subsubsec:booking-model}
+
+\textbf{File}: \file{Booking.js}
+
+\textbf{Purpose}: Manages property booking information and status.
+
+\paragraph{Core Schema Fields}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Constraints} \\
+\midrule
+service & ObjectId & Reference to Service (required) \\
+user & ObjectId & Reference to User (required) \\
+startDate & Date & Required \\
+endDate & Date & Required \\
+duration & Object & days and months \\
+basePrice & Number & Required \\
+totalAmount & Number & Required \\
+fees & Object & service fee, cleaning fee, security deposit \\
+status & Enum & ['pending', 'confirmed', 'active', 'completed', 'cancelled', 'rejected'] \\
+paymentStatus & Enum & ['pending', 'partial', 'paid', 'refunded', 'failed'] \\
+\bottomrule
+\end{tabular}
+\caption{Booking Model - Core Fields}
+\label{tab:booking-core-schema}
+\end{table}
+
+\paragraph{Additional Information Fields}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\midrule
+guestInfo & Object & numberOfGuests and specialRequests \\
+contactInfo & Object & phone and email (required) \\
+confirmationCode & String & Auto-generated unique identifier \\
+confirmedAt & Date & Timestamp when booking was confirmed \\
+createdAt & Date & Auto-generated creation timestamp \\
+updatedAt & Date & Auto-updated modification timestamp \\
+\bottomrule
+\end{tabular}
+\caption{Booking Model - Additional Fields}
+\label{tab:booking-additional-schema}
+\end{table}
+
+\paragraph{Methods and Business Logic}
+\begin{itemize}
+\item \textbf{confirm()}: Updates status to confirmed and sets confirmedAt timestamp
+\item \textbf{checkAvailability()}: Static method to check date conflicts with existing bookings
+\item \textbf{Pre-save middleware}: Automatically calculates duration and generates confirmation code
+\item \textbf{Virtual property}: durationInDays for easy access to booking duration
+\item \textbf{Status management}: Comprehensive booking lifecycle tracking
+\end{itemize}
+
+\subsubsection{Payment Model}
+\label{subsubsec:payment-model}
+
+\textbf{File}: \file{Payment.js}
+
+\textbf{Purpose}: Handles payment processing and transaction records.
+
+\paragraph{Core Transaction Fields}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Constraints} \\
+\midrule
+booking & ObjectId & Reference to Booking (required) \\
+user & ObjectId & Reference to User (required) \\
+service & ObjectId & Reference to Service (required) \\
+amount & Number & Required, min 0 \\
+currency & String & Default: 'BDT' \\
+paymentMethod & Enum & ['mobile\_banking', 'bank\_transfer', 'credit\_card', 'cash'] \\
+paymentDetails & Object & Method-specific payment details \\
+status & Enum & ['pending', 'processing', 'completed', 'failed', 'refunded', 'cancelled'] \\
+\bottomrule
+\end{tabular}
+\caption{Payment Model - Core Fields}
+\label{tab:payment-core-schema}
+\end{table}
+
+\paragraph{Additional Transaction Data}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\midrule
+personalInfo & Object & User's personal information for payment \\
+termsAccepted & Boolean & Required consent flag \\
+processedAt & Date & Timestamp when payment was processed \\
+failureReason & String & Reason for payment failure \\
+gatewayResponse & Object & Payment gateway response data \\
+refund & Object & Refund details and status \\
+createdAt & Date & Auto-generated creation timestamp \\
+updatedAt & Date & Auto-updated modification timestamp \\
+\bottomrule
+\end{tabular}
+\caption{Payment Model - Additional Fields}
+\label{tab:payment-additional-schema}
+\end{table}
+
+\paragraph{Payment Processing Methods}
+\begin{itemize}
+\item \textbf{markAsCompleted()}: Updates status to completed and sets processedAt timestamp
+\item \textbf{markAsFailed()}: Sets status to failed with detailed failure reason
+\item \textbf{processRefund()}: Handles refund processing and status updates
+\item \textbf{getPaymentStats()}: Static method for payment analytics and reporting
+\item \textbf{Gateway Integration}: Seamless integration with multiple payment gateways
+\end{itemize}
+
+\subsection{API Routes}
+\label{subsec:api-routes}
+
+\textbf{Directory}: \file{server/routes/}
+
+\textbf{Purpose}: Defines RESTful API endpoints for client-server communication.
+
+\subsubsection{Authentication Routes}
+\label{subsubsec:auth-routes}
+
+\textbf{File}: \file{auth.js}
+
+\textbf{Purpose}: Handles user authentication, registration, and session management.
+
+\paragraph{API Endpoints}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Purpose} & \textbf{Protection} \\
+\midrule
+POST & /register & User registration with validation & Public \\
+POST & /login & User login with JWT token generation & Public \\
+POST & /logout & User logout with token clearing & Public \\
+GET & /me & Get current user profile & Protected \\
+PUT & /profile & Update user profile & Protected \\
+\bottomrule
+\end{tabular}
+\caption{Authentication API Endpoints}
+\label{tab:auth-endpoints}
+\end{table}
+
+\paragraph{Authentication Flow}
+\begin{enumerate}
+\item User submits credentials through registration or login form
+\item Server validates input data and checks business rules
+\item For login: verify password hash and generate JWT token
+\item For registration: hash password, create user, and generate token
+\item Set HTTP-only cookie with JWT token for secure session management
+\item Return user data (excluding sensitive information like password)
+\item Implement proper error handling for invalid credentials or duplicate users
+\end{enumerate}
+
+\subsubsection{Main API Routes}
+\label{subsubsec:main-api-routes}
+
+\textbf{File}: \file{api.js}
+
+\textbf{Purpose}: Core application API endpoints for services, bookings, and payments.
+
+\paragraph{Service Management Endpoints}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Purpose} & \textbf{Protection} \\
+\midrule
+GET & /services & Fetch all services with filtering and pagination & Public \\
+GET & /services/:id & Get specific service details & Public \\
+POST & /services & Create new service & Protected \\
+PUT & /services/:id & Update service & Protected (owner only) \\
+DELETE & /services/:id & Delete service & Protected (owner only) \\
+\bottomrule
+\end{tabular}
+\caption{Service Management API Endpoints}
+\label{tab:service-endpoints}
+\end{table}
+
+\paragraph{Booking Management Endpoints}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Purpose} & \textbf{Protection} \\
+\midrule
+POST & /bookings & Create new booking & Protected \\
+GET & /bookings & Get user's bookings & Protected \\
+GET & /bookings/:id & Get specific booking & Protected \\
+PUT & /bookings/:id/confirm & Confirm booking & Protected \\
+PUT & /bookings/:id/cancel & Cancel booking & Protected \\
+\bottomrule
+\end{tabular}
+\caption{Booking Management API Endpoints}
+\label{tab:booking-endpoints}
+\end{table}
+
+\paragraph{Payment Processing Endpoints}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Purpose} & \textbf{Protection} \\
+\midrule
+POST & /payments & Process payment & Protected \\
+GET & /payments/:paymentId & Get payment status & Protected \\
+GET & /my-payments & Get user's payment history & Protected \\
+\bottomrule
+\end{tabular}
+\caption{Payment Processing API Endpoints}
+\label{tab:payment-endpoints}
+\end{table}
+
+\paragraph{Wishlist Management Endpoints}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Purpose} & \textbf{Protection} \\
+\midrule
+POST & /wishlist/add & Add service to wishlist & Protected \\
+DELETE & /wishlist/remove/:serviceId & Remove from wishlist & Protected \\
+GET & /wishlist & Get user's wishlist & Protected \\
+GET & /wishlist/check/:serviceId & Check if service is in wishlist & Protected \\
+\bottomrule
+\end{tabular}
+\caption{Wishlist Management API Endpoints}
+\label{tab:wishlist-endpoints}
+\end{table}
+
+\subsection{Middleware}
+\label{subsec:middleware}
+
+\textbf{Directory}: \file{server/middleware/}
+
+\textbf{Purpose}: Implements cross-cutting concerns like authentication, validation, and error handling.
+
+\subsubsection{Authentication Middleware}
+\label{subsubsec:auth-middleware}
+
+\textbf{File}: \file{auth.js}
+
+\textbf{Purpose}: Verifies JWT tokens and protects routes from unauthorized access.
+
+\paragraph{Key Features}
+\begin{itemize}
+\item \textbf{Token Verification}: Validates JWT tokens from HTTP-only cookies
+\item \textbf{User Context}: Attaches authenticated user information to request object
+\item \textbf{Route Protection}: Prevents unauthorized access to protected endpoints
+\item \textbf{Error Handling}: Provides clear error messages for authentication failures
+\end{itemize}
+
+\paragraph{Authentication Functions}
+\begin{itemize}
+\item \textbf{verifyToken()}: Extracts and verifies JWT from cookies or Authorization headers
+\item \textbf{checkAuth()}: Ensures user exists and attaches user object to request
+\item \textbf{requireAuth()}: Middleware wrapper for protected routes
+\end{itemize}
+
+\paragraph{Authentication Process}
+\begin{enumerate}
+\item Extract JWT token from HTTP-only cookies or Authorization header
+\item Verify token signature using JWT secret key
+\item Decode token to extract user ID and other claims
+\item Query database to find user by decoded token ID
+\item Attach complete user object to request for downstream middleware
+\item Call next middleware in chain or return authentication error
+\end{enumerate}
+
+\subsubsection{File Upload Middleware}
+\label{subsubsec:upload-middleware}
+
+\textbf{File}: \file{upload.js}
+
+\textbf{Purpose}: Handles file uploads using Multer middleware for property images.
+
+\paragraph{Upload Configuration}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Setting} & \textbf{Value} \\
+\midrule
+Storage Type & Local disk storage \\
+Upload Directory & uploads/ \\
+File Naming & Timestamp + original name \\
+File Types & Images only (jpg, jpeg, png, gif) \\
+Size Limit & 5MB per file \\
+Field Name & 'images' (multiple files) \\
+\bottomrule
+\end{tabular}
+\caption{File Upload Configuration}
+\label{tab:upload-config}
+\end{table}
+
+\section{Frontend Architecture}
+\label{sec:frontend-architecture}
+
+\textbf{Technology Stack}: React 18, React Router, Context API, CSS Modules
+
+\textbf{Architecture Pattern}: Component-based architecture with centralized state management
+
+\subsection{Application Entry Point}
+\label{subsec:app-entry}
+
+\textbf{File}: \file{Client/src/main.jsx}
+
+\textbf{Purpose}: React application initialization and root component rendering.
+
+\paragraph{Core Functionality}
+\begin{itemize}
+\item \textbf{React Initialization}: Imports React 18 and ReactDOM for modern rendering
+\item \textbf{Root Rendering}: Renders the main App component using createRoot API
+\item \textbf{DOM Mounting}: Mounts application to DOM element with id 'root'
+\item \textbf{Strict Mode}: Enables React.StrictMode for development checks
+\end{itemize}
+
+\subsection{Main App Component}
+\label{subsec:main-app}
+
+\textbf{File}: \file{Client/src/App.jsx}
+
+\textbf{Purpose}: Root component that orchestrates routing and global providers.
+
+\paragraph{Application Structure}
+\begin{itemize}
+\item \textbf{Context Providers}: Wraps application in AuthProvider for global authentication state
+\item \textbf{Routing Setup}: Configures React Router with BrowserRouter for client-side navigation
+\item \textbf{Route Definitions}: Defines all application routes and their corresponding components
+\item \textbf{Global Styles}: Imports and applies global CSS styles and theme configurations
+\item \textbf{Error Boundaries}: Implements error handling for robust user experience
+\end{itemize}
+
+\subsection{Context Management}
+\label{subsec:context-management}
+
+\textbf{Directory}: \file{Client/src/context/}
+
+\textbf{Purpose}: Centralized state management using React Context API.
+
+\subsubsection{Authentication Context}
+\label{subsubsec:auth-context}
+
+\textbf{File}: \file{AuthContext.js}
+
+\textbf{Purpose}: Global state management for user authentication and session handling.
+
+\paragraph{State Properties}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Property} & \textbf{Type} & \textbf{Description} \\
+\midrule
+user & Object/null & Current authenticated user object \\
+loading & Boolean & Authentication check status \\
+isAuthenticated & Boolean & User authentication state \\
+error & String/null & Authentication error messages \\
+\bottomrule
+\end{tabular}
+\caption{Authentication Context State}
+\label{tab:auth-context-state}
+\end{table}
+
+\paragraph{Authentication Methods}
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Method} & \textbf{Parameters} & \textbf{Purpose} \\
+\midrule
+login() & credentials & Handles user login process \\
+logout() & none & Handles user logout and cleanup \\
+checkAuth() & none & Verifies current authentication status \\
+register() & userData & Handles new user registration \\
+updateProfile() & profileData & Updates user profile information \\
+\bottomrule
+\end{tabular}
+\caption{Authentication Context Methods}
+\label{tab:auth-context-methods}
+\end{table}
+
+\paragraph{Key Features}
+\begin{itemize}
+\item \textbf{Persistent Sessions}: Maintains authentication state across page refreshes
+\item \textbf{Global Access}: Provides authentication methods to all components via useAuth hook
+\item \textbf{Loading States}: Manages loading indicators during authentication operations
+\item \textbf{Token Management}: Handles JWT token storage and retrieval securely
+\item \textbf{Error Handling}: Comprehensive error management for authentication failures
+\end{itemize}
+
+\hypertarget{page-components-clientsrcpages}{%
+\subsubsection{4.4 Page Components
+(Client/src/pages/)}\label{page-components-clientsrcpages}}
+
+\hypertarget{home-page-homehome.jsx}{%
+\paragraph{4.4.1 Home Page
+(Home/Home.jsx)}\label{home-page-homehome.jsx}}
+
+\textbf{Purpose}: Landing page with hero section and service overview.
+
+\textbf{Components Used}: - Header: Navigation and user menu -
+HeroSection: Main banner with search functionality - ServiceCards:
+Available service categories - HowItWorks: Process explanation -
+TrustBadges: Trust indicators - Footer: Site footer with links
+
+\hypertarget{authentication-pages}{%
+\paragraph{4.4.2 Authentication Pages}\label{authentication-pages}}
+
+\textbf{Login Page (Login/Login.jsx)}: - User login form with email and
+password - Form validation and error handling - Redirects to dashboard
+on successful login - Links to registration page
+
+\textbf{Register Page (Register/Register.jsx)}: - User registration form
+with multiple fields - Password confirmation validation - Terms and
+conditions acceptance - Automatic login after successful registration
+
+\hypertarget{search-page-searchsearch.jsx}{%
+\paragraph{4.4.3 Search Page
+(Search/Search.jsx)}\label{search-page-searchsearch.jsx}}
+
+\textbf{Purpose}: Property search and listing display.
+
+\textbf{Key Features}: - Fetches services from backend API - Implements
+filtering by location, price, amenities - Displays results in grid
+layout using ListingCard components - Handles loading states and empty
+results - Integrates with ServiceModal for detailed views
+
+\textbf{Data Flow}: 1. Fetch services from /api/services endpoint 2.
+Transform backend data to frontend format 3. Apply client-side filters
+4. Render filtered results 5. Handle user interactions (view details,
+book, save)
+
+\hypertarget{payment-page-paymentpayment.jsx}{%
+\paragraph{4.4.4 Payment Page
+(Payment/Payment.jsx)}\label{payment-page-paymentpayment.jsx}}
+
+\textbf{Purpose}: Multi-step payment process for property bookings.
+
+\textbf{Step Structure}: 1. Personal Information: User details
+collection 2. Payment Method: Payment option selection 3. Confirmation:
+Review and submit
+
+\textbf{Payment Flow}: 1. Validate service ID and user authentication 2.
+Create booking via POST /api/bookings 3. Process payment via POST
+/api/payments 4. Handle success/error responses 5. Navigate to dashboard
+on completion
+
+\textbf{Components}: - PaymentStepIndicator: Progress visualization -
+PersonalInfoStep: Personal details form - PaymentMethodStep: Payment
+method selection - ConfirmationStep: Final review - PaymentSidebar:
+Booking summary - FormNavigation: Step navigation controls
+
+\hypertarget{dashboard-page-dashboarddashboard.jsx}{%
+\paragraph{4.4.5 Dashboard Page
+(Dashboard/Dashboard.jsx)}\label{dashboard-page-dashboarddashboard.jsx}}
+
+\textbf{Purpose}: User dashboard with multiple views and
+functionalities.
+
+\textbf{Dashboard Views}: - Overview: Summary statistics and recent
+activity - MyListings: User's property listings management -
+PaymentHistory: Transaction history and details - Wishlist: Saved
+properties - Profile: User profile management
+
+\textbf{State Management}: - activeView: Current dashboard section -
+userData: User profile information - listings: User's property listings
+- payments: Payment transaction history - wishlist: Saved properties
+list
+
+\hypertarget{service-provision-page-provideserviceprovideservice.jsx}{%
+\paragraph{4.4.6 Service Provision Page
+(ProvideService/ProvideService.jsx)}\label{service-provision-page-provideserviceprovideservice.jsx}}
+
+\textbf{Purpose}: Multi-step form for property listing creation.
+
+\textbf{Form Steps}: 1. Basic Information: Title, type, description 2.
+Location Details: Address and area information 3. Pricing \&
+Availability: Rent and date ranges 4. Property Details: Bedrooms,
+bathrooms, features 5. Amenities \& Features: Available facilities 6.
+Photos \& Contact: Images and contact information 7. Review \& Submit:
+Final review before submission
+
+\textbf{Form Management}: - Comprehensive form validation - Step-by-step
+navigation - Data persistence across steps - Image upload handling -
+Error handling and user feedback
+
+\hypertarget{reusable-components-clientsrccomponents}{%
+\subsubsection{4.5 Reusable Components
+(Client/src/components/)}\label{reusable-components-clientsrccomponents}}
+
+\hypertarget{header-component-headerheader.jsx}{%
+\paragraph{4.5.1 Header Component
+(Header/Header.jsx)}\label{header-component-headerheader.jsx}}
+
+\textbf{Purpose}: Main navigation bar with authentication-aware menu.
+
+\textbf{Features}: - Responsive navigation menu - User authentication
+status display - Dropdown menu for authenticated users - Mobile-friendly
+hamburger menu - Logo and brand navigation
+
+\hypertarget{listingcard-component-listingcardlistingcard.jsx}{%
+\paragraph{4.5.2 ListingCard Component
+(ListingCard/ListingCard.jsx)}\label{listingcard-component-listingcardlistingcard.jsx}}
+
+\textbf{Purpose}: Property listing display card with interactive
+features.
+
+\textbf{Features}: - Property image display with fallback - Property
+details (title, location, price, availability) - Action buttons (View
+Details, Book, Save) - Wishlist integration - Owner listing detection -
+Responsive design
+
+\textbf{Interaction Flow}: - View Details: Opens ServiceModal or
+navigates to payment - Book: Navigates to payment page with property
+data - Save: Adds/removes from wishlist via API
+
+\hypertarget{servicemodal-component-servicemodalservicemodal.jsx}{%
+\paragraph{4.5.3 ServiceModal Component
+(ServiceModal/ServiceModal.jsx)}\label{servicemodal-component-servicemodalservicemodal.jsx}}
+
+\textbf{Purpose}: Detailed property information modal dialog.
+
+\textbf{Content Sections}: - Image gallery with main image and
+thumbnails - Property details (type, location, features) - Availability
+and pricing information - Amenities grid with icons - Property
+description - Contact information - Action buttons
+
+\hypertarget{filtersidebar-component-filtersidebarfiltersidebar.jsx}{%
+\paragraph{4.5.4 FilterSidebar Component
+(FilterSidebar/FilterSidebar.jsx)}\label{filtersidebar-component-filtersidebarfiltersidebar.jsx}}
+
+\textbf{Purpose}: Search filtering interface for property listings.
+
+\textbf{Filter Options}: - Location filters (district, area) - Price
+range (minimum and maximum) - Date range (availability period) -
+Property features (verified hosts, hygiene badge) - Real-time filter
+application
+
+\hypertarget{utility-functions-clientsrcutils}{%
+\subsubsection{4.6 Utility Functions
+(Client/src/utils/)}\label{utility-functions-clientsrcutils}}
+
+\hypertarget{validation-utilities-validation.js}{%
+\paragraph{4.6.1 Validation Utilities
+(validation.js)}\label{validation-utilities-validation.js}}
+
+\textbf{Purpose}: Form validation functions for payment and other forms.
+
+\textbf{Validation Functions}: - validateStep(): Step-specific
+validation for payment form - Email validation with regex patterns -
+Phone number validation for Bangladesh format - Required field
+validation - Payment method specific validation
+
+================================================================================
+
+\hypertarget{database-implementation}{%
+\subsection{5. DATABASE IMPLEMENTATION}\label{database-implementation}}
+
+\hypertarget{mongodb-connection}{%
+\subsubsection{5.1 MongoDB Connection}\label{mongodb-connection}}
+
+\textbf{Location}: server/server.js \textbf{Connection String}:
+mongodb://localhost:27017/nestup\_bd \textbf{ODM}: Mongoose for schema
+definition and data modeling
+
+\textbf{Connection Process}: 1. Load MongoDB URI from environment
+variables 2. Use mongoose.connect() with connection options 3. Handle
+connection events (connected, error, disconnected) 4. Implement graceful
+shutdown on process termination
+
+\hypertarget{database-schema-design}{%
+\subsubsection{5.2 Database Schema
+Design}\label{database-schema-design}}
+
+\hypertarget{collections-overview}{%
+\paragraph{5.2.1 Collections Overview}\label{collections-overview}}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{users}: User accounts and profiles
+\item
+  \textbf{services}: Property listings and details
+\item
+  \textbf{bookings}: Booking requests and status
+\item
+  \textbf{payments}: Payment transactions and history
+\end{itemize}
+
+\hypertarget{relationships}{%
+\paragraph{5.2.2 Relationships}\label{relationships}}
+
+\begin{itemize}
+\tightlist
+\item
+  User → Services (One-to-Many): User can own multiple properties
+\item
+  Service → Bookings (One-to-Many): Property can have multiple bookings
+\item
+  User → Bookings (One-to-Many): User can make multiple bookings
+\item
+  Booking → Payment (One-to-One): Each booking has one payment
+\item
+  User → Payments (One-to-Many): User can have multiple payments
+\end{itemize}
+
+\hypertarget{indexes}{%
+\paragraph{5.2.3 Indexes}\label{indexes}}
+
+\begin{itemize}
+\tightlist
+\item
+  Users: email (unique), createdAt
+\item
+  Services: location.district, location.area, price, createdAt
+\item
+  Bookings: user, service, startDate, endDate
+\item
+  Payments: user, booking, status, createdAt
+\end{itemize}
+
+\hypertarget{data-validation}{%
+\subsubsection{5.3 Data Validation}\label{data-validation}}
+
+\textbf{Schema-Level Validation}: - Required fields enforcement - Data
+type validation - Enum value restrictions - String length limits -
+Number range validation - Email format validation
+
+\textbf{Application-Level Validation}: - Business logic validation -
+Cross-field validation - Custom validation functions - Error message
+customization
+
+================================================================================
+
+\hypertarget{api-endpoints-and-data-flow}{%
+\subsection{6. API ENDPOINTS AND DATA
+FLOW}\label{api-endpoints-and-data-flow}}
+
+\hypertarget{authentication-flow}{%
+\subsubsection{6.1 Authentication Flow}\label{authentication-flow}}
+
+\textbf{Registration Process}: 1. Frontend: User submits registration
+form 2. Frontend: POST /api/auth/register with user data 3. Backend:
+Validate input data 4. Backend: Hash password using bcrypt 5. Backend:
+Create user in database 6. Backend: Generate JWT token 7. Backend: Set
+HTTP-only cookie with token 8. Backend: Return user data (excluding
+password) 9. Frontend: Update AuthContext with user data 10. Frontend:
+Redirect to dashboard
+
+\textbf{Login Process}: 1. Frontend: User submits login form 2.
+Frontend: POST /api/auth/login with credentials 3. Backend: Find user by
+email 4. Backend: Compare password with stored hash 5. Backend: Generate
+JWT token if valid 6. Backend: Set HTTP-only cookie with token 7.
+Backend: Return user data 8. Frontend: Update AuthContext 9. Frontend:
+Redirect to intended page
+
+\hypertarget{service-management-flow}{%
+\subsubsection{6.2 Service Management
+Flow}\label{service-management-flow}}
+
+\textbf{Service Creation}: 1. Frontend: User fills ProvideService form
+2. Frontend: Upload images via FormData 3. Frontend: POST /api/services
+with service data 4. Backend: Validate user authentication 5. Backend:
+Process uploaded images 6. Backend: Create service in database 7.
+Backend: Return created service data 8. Frontend: Show success message
+and redirect
+
+\textbf{Service Search}: 1. Frontend: User applies filters on Search
+page 2. Frontend: GET /api/services with query parameters 3. Backend:
+Build MongoDB filter object 4. Backend: Execute paginated query with
+population 5. Backend: Return services array with pagination info 6.
+Frontend: Transform data for display 7. Frontend: Render ListingCard
+components
+
+\hypertarget{booking-and-payment-flow}{%
+\subsubsection{6.3 Booking and Payment
+Flow}\label{booking-and-payment-flow}}
+
+\textbf{Complete Booking Process}: 1. Frontend: User clicks ``Book'' on
+ListingCard 2. Frontend: Navigate to Payment page with property data 3.
+Frontend: User completes payment form steps 4. Frontend: POST
+/api/bookings to create booking 5. Backend: Validate service exists and
+availability 6. Backend: Check for booking conflicts 7. Backend:
+Calculate total amount and fees 8. Backend: Create booking with
+`pending' status 9. Backend: Return booking data with ID 10. Frontend:
+POST /api/payments with booking ID 11. Backend: Validate payment details
+12. Backend: Create payment record 13. Backend: Update booking payment
+status 14. Backend: Return payment confirmation 15. Frontend: Show
+success message 16. Frontend: Navigate to dashboard
+
+\hypertarget{wishlist-management}{%
+\subsubsection{6.4 Wishlist Management}\label{wishlist-management}}
+
+\textbf{Add to Wishlist}: 1. Frontend: User clicks ``Save'' on
+ListingCard 2. Frontend: POST /api/wishlist/add with serviceId 3.
+Backend: Validate authentication and service 4. Backend: Check if
+already in wishlist 5. Backend: Add to user's wishlist array 6. Backend:
+Return success response 7. Frontend: Update UI state
+
+================================================================================
+
+\hypertarget{authentication-system}{%
+\subsection{7. AUTHENTICATION SYSTEM}\label{authentication-system}}
+
+\hypertarget{jwt-implementation}{%
+\subsubsection{7.1 JWT Implementation}\label{jwt-implementation}}
+
+\textbf{Token Generation}: - Payload: \{ userId, email, iat, exp \} -
+Secret: Stored in environment variables - Expiration: 7 days - Storage:
+HTTP-only cookies for security
+
+\textbf{Token Verification}: - Middleware: verifyToken() function -
+Extraction: From cookies or Authorization header - Validation: JWT
+signature and expiration - User Lookup: Find user by decoded ID -
+Request Attachment: Add user object to req.user
+
+\hypertarget{password-security}{%
+\subsubsection{7.2 Password Security}\label{password-security}}
+
+\textbf{Hashing}: - Algorithm: bcrypt with salt rounds (10) - Timing:
+Pre-save middleware in User model - Comparison: comparePassword() method
+- Storage: Never store plain text passwords
+
+\hypertarget{route-protection}{%
+\subsubsection{7.3 Route Protection}\label{route-protection}}
+
+\textbf{Protected Routes}: - All routes requiring authentication use
+verifyToken middleware - Additional checkAuth middleware ensures user
+exists - Role-based access control for admin functions - Owner-only
+access for service management
+
+================================================================================
+
+\hypertarget{payment-system}{%
+\subsection{8. PAYMENT SYSTEM}\label{payment-system}}
+
+\hypertarget{payment-methods}{%
+\subsubsection{8.1 Payment Methods}\label{payment-methods}}
+
+\textbf{Supported Methods}: - Mobile Banking (bKash, Nagad, Rocket) -
+Bank Transfer - Credit/Debit Card - Cash Payment
+
+\textbf{Method-Specific Data}: - Mobile Banking: Phone number,
+transaction ID - Bank Transfer: Bank name, account number - Credit Card:
+Card number, expiry, CVV, holder name - Cash: Contact information for
+arrangement
+
+\hypertarget{payment-processing}{%
+\subsubsection{8.2 Payment Processing}\label{payment-processing}}
+
+\textbf{Payment States}: - pending: Initial state after creation -
+processing: Payment being processed - completed: Payment successful -
+failed: Payment failed with reason - refunded: Payment refunded -
+cancelled: Payment cancelled by user
+
+\textbf{Processing Flow}: 1. Create booking first 2. Validate payment
+details 3. Create payment record 4. Process payment (simulated) 5.
+Update payment status 6. Update booking payment status 7. Send
+confirmation
+
+\hypertarget{payment-history}{%
+\subsubsection{8.3 Payment History}\label{payment-history}}
+
+\textbf{Data Tracking}: - All payment transactions stored - Status
+change history - Payment method details - Associated booking information
+- Refund tracking
+
+\textbf{Dashboard Integration}: - Payment history view in dashboard -
+Filtering by status and date - Detailed payment information -
+Download/export capabilities
+
+================================================================================
+
+\hypertarget{file-by-file-analysis}{%
+\subsection{9. FILE-BY-FILE ANALYSIS}\label{file-by-file-analysis}}
+
+\hypertarget{backend-files}{%
+\subsubsection{9.1 Backend Files}\label{backend-files}}
+
+\hypertarget{serverserver.js}{%
+\paragraph{server/server.js}\label{serverserver.js}}
+
+\textbf{Purpose}: Main server application entry point \textbf{Key
+Functions}: - Express app initialization - Middleware configuration -
+Database connection - Route mounting - Server startup
+\textbf{Dependencies}: express, mongoose, cors, cookie-parser, dotenv
+\textbf{Exports}: None (entry point)
+
+\hypertarget{servermodelsuser.js}{%
+\paragraph{server/models/User.js}\label{servermodelsuser.js}}
+
+\textbf{Purpose}: User data model and schema \textbf{Key Functions}: -
+User schema definition - Password hashing middleware - Password
+comparison method - Profile data structure \textbf{Dependencies}:
+mongoose, bcryptjs \textbf{Exports}: User model
+
+\hypertarget{servermodelsservice.js}{%
+\paragraph{server/models/Service.js}\label{servermodelsservice.js}}
+
+\textbf{Purpose}: Property service data model \textbf{Key Functions}: -
+Service schema definition - Location and pricing structure - Amenities
+and features - Review system integration \textbf{Dependencies}: mongoose
+\textbf{Exports}: Service model
+
+\hypertarget{servermodelsbooking.js}{%
+\paragraph{server/models/Booking.js}\label{servermodelsbooking.js}}
+
+\textbf{Purpose}: Booking management data model \textbf{Key Functions}:
+- Booking schema definition - Date validation - Status management -
+Availability checking \textbf{Dependencies}: mongoose \textbf{Exports}:
+Booking model
+
+\hypertarget{servermodelspayment.js}{%
+\paragraph{server/models/Payment.js}\label{servermodelspayment.js}}
+
+\textbf{Purpose}: Payment processing data model \textbf{Key Functions}:
+- Payment schema definition - Payment method handling - Status tracking
+- Refund management \textbf{Dependencies}: mongoose \textbf{Exports}:
+Payment model
+
+\hypertarget{serverroutesauth.js}{%
+\paragraph{server/routes/auth.js}\label{serverroutesauth.js}}
+
+\textbf{Purpose}: Authentication route handlers \textbf{Key Functions}:
+- User registration - User login/logout - Profile management - JWT token
+handling \textbf{Dependencies}: express, bcryptjs, jsonwebtoken, User
+model \textbf{Exports}: Express router
+
+\hypertarget{serverroutesapi.js}{%
+\paragraph{server/routes/api.js}\label{serverroutesapi.js}}
+
+\textbf{Purpose}: Main API route handlers \textbf{Key Functions}: -
+Service CRUD operations - Booking management - Payment processing -
+Wishlist operations \textbf{Dependencies}: express, all models, auth
+middleware \textbf{Exports}: Express router
+
+\hypertarget{servermiddlewareauth.js}{%
+\paragraph{server/middleware/auth.js}\label{servermiddlewareauth.js}}
+
+\textbf{Purpose}: Authentication middleware \textbf{Key Functions}: -
+JWT token verification - User authentication checking - Request user
+attachment \textbf{Dependencies}: jsonwebtoken, User model
+\textbf{Exports}: verifyToken, checkAuth functions
+
+\hypertarget{servermiddlewareupload.js}{%
+\paragraph{server/middleware/upload.js}\label{servermiddlewareupload.js}}
+
+\textbf{Purpose}: File upload middleware \textbf{Key Functions}: -
+Multer configuration - File storage setup - File type filtering - Size
+limitations \textbf{Dependencies}: multer, path \textbf{Exports}: upload
+middleware
+
+\hypertarget{frontend-files}{%
+\subsubsection{9.2 Frontend Files}\label{frontend-files}}
+
+\hypertarget{clientsrcmain.jsx}{%
+\paragraph{Client/src/main.jsx}\label{clientsrcmain.jsx}}
+
+\textbf{Purpose}: React application entry point \textbf{Key Functions}:
+- React DOM rendering - App component mounting \textbf{Dependencies}:
+react, react-dom, App component \textbf{Exports}: None (entry point)
+
+\hypertarget{clientsrcapp.jsx}{%
+\paragraph{Client/src/App.jsx}\label{clientsrcapp.jsx}}
+
+\textbf{Purpose}: Root application component \textbf{Key Functions}: -
+Router setup - Global providers - Route definitions
+\textbf{Dependencies}: react-router-dom, AuthProvider, all page
+components \textbf{Exports}: App component
+
+\hypertarget{clientsrccontextauthcontext.js}{%
+\paragraph{Client/src/context/AuthContext.js}\label{clientsrccontextauthcontext.js}}
+
+\textbf{Purpose}: Authentication context provider \textbf{Key
+Functions}: - Global auth state management - Login/logout functions -
+Authentication checking \textbf{Dependencies}: react, createContext,
+useState, useEffect \textbf{Exports}: AuthProvider, useAuth hook
+
+\hypertarget{clientsrcpageshomehome.jsx}{%
+\paragraph{Client/src/pages/Home/Home.jsx}\label{clientsrcpageshomehome.jsx}}
+
+\textbf{Purpose}: Landing page component \textbf{Key Functions}: - Hero
+section display - Service overview - Navigation integration
+\textbf{Dependencies}: react, Header, HeroSection, ServiceCards, etc.
+\textbf{Exports}: Home component
+
+\hypertarget{clientsrcpagesloginlogin.jsx}{%
+\paragraph{Client/src/pages/Login/Login.jsx}\label{clientsrcpagesloginlogin.jsx}}
+
+\textbf{Purpose}: User login page \textbf{Key Functions}: - Login form
+handling - Authentication API calls - Error handling - Redirect logic
+\textbf{Dependencies}: react, react-router-dom, AuthContext
+\textbf{Exports}: Login component
+
+\hypertarget{clientsrcpagesregisterregister.jsx}{%
+\paragraph{Client/src/pages/Register/Register.jsx}\label{clientsrcpagesregisterregister.jsx}}
+
+\textbf{Purpose}: User registration page \textbf{Key Functions}: -
+Registration form handling - Form validation - API integration - Success
+handling \textbf{Dependencies}: react, react-router-dom, AuthContext
+\textbf{Exports}: Register component
+
+\hypertarget{clientsrcpagessearchsearch.jsx}{%
+\paragraph{Client/src/pages/Search/Search.jsx}\label{clientsrcpagessearchsearch.jsx}}
+
+\textbf{Purpose}: Property search and listing page \textbf{Key
+Functions}: - Service data fetching - Filter application - Results
+display - Modal integration \textbf{Dependencies}: react, AuthContext,
+FilterSidebar, ListingCard, ServiceModal \textbf{Exports}: Search
+component
+
+\hypertarget{clientsrcpagespaymentpayment.jsx}{%
+\paragraph{Client/src/pages/Payment/Payment.jsx}\label{clientsrcpagespaymentpayment.jsx}}
+
+\textbf{Purpose}: Multi-step payment processing page \textbf{Key
+Functions}: - Payment form management - Step navigation - API
+integration - Booking creation \textbf{Dependencies}: react,
+react-router-dom, AuthContext, payment components \textbf{Exports}:
+Payment component
+
+\hypertarget{clientsrcpagesdashboarddashboard.jsx}{%
+\paragraph{Client/src/pages/Dashboard/Dashboard.jsx}\label{clientsrcpagesdashboarddashboard.jsx}}
+
+\textbf{Purpose}: User dashboard with multiple views \textbf{Key
+Functions}: - View management - Data fetching - User profile display -
+Navigation handling \textbf{Dependencies}: react, AuthContext, dashboard
+view components \textbf{Exports}: Dashboard component
+
+\hypertarget{clientsrcpagesprovideserviceprovideservice.jsx}{%
+\paragraph{Client/src/pages/ProvideService/ProvideService.jsx}\label{clientsrcpagesprovideserviceprovideservice.jsx}}
+
+\textbf{Purpose}: Property listing creation page \textbf{Key Functions}:
+- Multi-step form handling - Image upload - Form validation - Service
+creation API \textbf{Dependencies}: react, react-router-dom, AuthContext
+\textbf{Exports}: ProvideService component
+
+\hypertarget{clientsrccomponentsheaderheader.jsx}{%
+\paragraph{Client/src/components/Header/Header.jsx}\label{clientsrccomponentsheaderheader.jsx}}
+
+\textbf{Purpose}: Main navigation header \textbf{Key Functions}: -
+Navigation menu - User authentication display - Mobile responsiveness
+\textbf{Dependencies}: react, react-router-dom, AuthContext
+\textbf{Exports}: Header component
+
+\hypertarget{clientsrccomponentslistingcardlistingcard.jsx}{%
+\paragraph{Client/src/components/ListingCard/ListingCard.jsx}\label{clientsrccomponentslistingcardlistingcard.jsx}}
+
+\textbf{Purpose}: Property listing display card \textbf{Key Functions}:
+- Property information display - Action button handling - Wishlist
+integration - Navigation to payment \textbf{Dependencies}: react,
+react-router-dom \textbf{Exports}: ListingCard component
+
+\hypertarget{clientsrccomponentsservicemodalservicemodal.jsx}{%
+\paragraph{Client/src/components/ServiceModal/ServiceModal.jsx}\label{clientsrccomponentsservicemodalservicemodal.jsx}}
+
+\textbf{Purpose}: Detailed property information modal \textbf{Key
+Functions}: - Detailed property display - Image gallery - Contact
+information - Modal controls \textbf{Dependencies}: react
+\textbf{Exports}: ServiceModal component
+
+\hypertarget{clientsrccomponentsfiltersidebarfiltersidebar.jsx}{%
+\paragraph{Client/src/components/FilterSidebar/FilterSidebar.jsx}\label{clientsrccomponentsfiltersidebarfiltersidebar.jsx}}
+
+\textbf{Purpose}: Search filter interface \textbf{Key Functions}: -
+Filter option display - Filter state management - Real-time filtering
+\textbf{Dependencies}: react \textbf{Exports}: FilterSidebar component
+
+================================================================================
+
+\hypertarget{frontend-backend-connection-flow}{%
+\subsection{10. FRONTEND-BACKEND CONNECTION
+FLOW}\label{frontend-backend-connection-flow}}
+
+\hypertarget{api-communication-pattern}{%
+\subsubsection{10.1 API Communication
+Pattern}\label{api-communication-pattern}}
+
+\textbf{Standard Request Flow}: 1. Frontend component initiates action
+(user interaction) 2. Component calls fetch() with appropriate endpoint
+3. Request includes authentication cookies automatically 4. Backend
+middleware verifies authentication 5. Route handler processes request 6.
+Database operations performed if needed 7. Response sent back to
+frontend 8. Frontend updates UI based on response
+
+\hypertarget{authentication-integration}{%
+\subsubsection{10.2 Authentication
+Integration}\label{authentication-integration}}
+
+\textbf{Cookie-Based Authentication}: - JWT tokens stored in HTTP-only
+cookies - Automatic inclusion in all requests - No manual token
+management in frontend - Secure against XSS attacks
+
+\textbf{AuthContext Integration}: - Global authentication state -
+Automatic login status checking - Protected route handling - User data
+availability across components
+
+\hypertarget{error-handling}{%
+\subsubsection{10.3 Error Handling}\label{error-handling}}
+
+\textbf{Frontend Error Handling}: - Try-catch blocks around API calls -
+User-friendly error messages - Loading state management - Fallback UI
+for errors
+
+\textbf{Backend Error Handling}: - Consistent error response format -
+HTTP status codes - Detailed error messages - Logging for debugging
+
+\hypertarget{data-transformation}{%
+\subsubsection{10.4 Data Transformation}\label{data-transformation}}
+
+\textbf{Backend to Frontend}: - MongoDB ObjectId to string conversion -
+Date formatting - Price formatting - Image URL construction
+
+\textbf{Frontend to Backend}: - Form data serialization - Date object
+conversion - File upload handling - Validation before sending
+
+================================================================================
+
+\hypertarget{core-functionalities}{%
+\subsection{11. CORE FUNCTIONALITIES}\label{core-functionalities}}
+
+\hypertarget{user-management}{%
+\subsubsection{11.1 User Management}\label{user-management}}
+
+\textbf{Registration and Authentication}: - Secure user registration
+with validation - JWT-based authentication system - Password hashing and
+security - Profile management capabilities
+
+\textbf{User Roles}: - Regular users: Can search, book, and manage
+bookings - Property owners: Can list properties and manage listings -
+Admins: Can manage all aspects of the platform
+
+\hypertarget{property-management}{%
+\subsubsection{11.2 Property Management}\label{property-management}}
+
+\textbf{Property Listing}: - Multi-step property creation form - Image
+upload and management - Detailed property information - Availability
+calendar
+
+\textbf{Property Search}: - Advanced filtering options - Location-based
+search - Price range filtering - Amenity-based filtering
+
+\hypertarget{booking-system}{%
+\subsubsection{11.3 Booking System}\label{booking-system}}
+
+\textbf{Booking Process}: - Date availability checking - Conflict
+prevention - Booking confirmation system - Status tracking
+
+\textbf{Booking Management}: - User booking history - Booking status
+updates - Cancellation handling - Owner booking management
+
+\hypertarget{payment-processing-1}{%
+\subsubsection{11.4 Payment Processing}\label{payment-processing-1}}
+
+\textbf{Payment Methods}: - Multiple payment options - Secure payment
+processing - Payment status tracking - Refund handling
+
+\textbf{Financial Management}: - Payment history tracking - Transaction
+records - Revenue analytics - Fee calculation
+
+\hypertarget{wishlist-system}{%
+\subsubsection{11.5 Wishlist System}\label{wishlist-system}}
+
+\textbf{Wishlist Management}: - Save favorite properties - Easy access
+to saved items - Wishlist sharing capabilities - Notification for saved
+items
+
+================================================================================
+
+\hypertarget{mongodb-collections-and-schema}{%
+\subsection{12. MONGODB COLLECTIONS AND
+SCHEMA}\label{mongodb-collections-and-schema}}
+
+\hypertarget{collection-initialization}{%
+\subsubsection{12.1 Collection
+Initialization}\label{collection-initialization}}
+
+\textbf{Location}: Models are defined in server/models/ directory
+\textbf{Initialization}: Mongoose automatically creates collections when
+first document is inserted \textbf{Connection}: Established in
+server/server.js using mongoose.connect()
+
+\hypertarget{collection-details}{%
+\subsubsection{12.2 Collection Details}\label{collection-details}}
+
+\hypertarget{users-collection}{%
+\paragraph{12.2.1 users Collection}\label{users-collection}}
+
+\textbf{Schema File}: server/models/User.js \textbf{Purpose}: Store user
+account information and profiles \textbf{Key Fields}: - \_id: MongoDB
+ObjectId (auto-generated) - name: User's full name - email: Unique email
+address - password: Hashed password - role: User role (user/admin) -
+profile: Nested object with personal information - createdAt, updatedAt:
+Timestamps
+
+\textbf{Indexes}: - email: Unique index for fast lookup - createdAt: For
+sorting and analytics
+
+\hypertarget{services-collection}{%
+\paragraph{12.2.2 services Collection}\label{services-collection}}
+
+\textbf{Schema File}: server/models/Service.js \textbf{Purpose}: Store
+property listing information \textbf{Key Fields}: - \_id: MongoDB
+ObjectId (auto-generated) - title: Property title - propertyType: Type
+of property - location: Nested object with address details - price:
+Monthly rent amount - availability: Date range and status -
+propertyDetails: Bedrooms, bathrooms, etc. - amenities: Available
+facilities - owner: Reference to users collection - createdAt,
+updatedAt: Timestamps
+
+\textbf{Indexes}: - location.district: For location-based queries -
+location.area: For area-specific searches - price: For price range
+filtering - owner: For owner's listings
+
+\hypertarget{bookings-collection}{%
+\paragraph{12.2.3 bookings Collection}\label{bookings-collection}}
+
+\textbf{Schema File}: server/models/Booking.js \textbf{Purpose}: Store
+booking requests and status \textbf{Key Fields}: - \_id: MongoDB
+ObjectId (auto-generated) - service: Reference to services collection -
+user: Reference to users collection - startDate, endDate: Booking period
+- totalAmount: Total booking cost - status: Booking status -
+paymentStatus: Payment status - confirmationCode: Unique booking code -
+createdAt, updatedAt: Timestamps
+
+\textbf{Indexes}: - user: For user's booking history - service: For
+property booking history - startDate, endDate: For availability checking
+
+\hypertarget{payments-collection}{%
+\paragraph{12.2.4 payments Collection}\label{payments-collection}}
+
+\textbf{Schema File}: server/models/Payment.js \textbf{Purpose}: Store
+payment transaction records \textbf{Key Fields}: - \_id: MongoDB
+ObjectId (auto-generated) - booking: Reference to bookings collection -
+user: Reference to users collection - service: Reference to services
+collection - amount: Payment amount - paymentMethod: Method used for
+payment - status: Payment status - paymentDetails: Method-specific
+details - createdAt, updatedAt: Timestamps
+
+\textbf{Indexes}: - user: For user's payment history - booking: For
+booking-payment relationship - status: For status-based queries -
+createdAt: For chronological sorting
+
+\hypertarget{data-relationships}{%
+\subsubsection{12.3 Data Relationships}\label{data-relationships}}
+
+\textbf{Reference Relationships}: - User → Services (One-to-Many) - User
+→ Bookings (One-to-Many) - User → Payments (One-to-Many) - Service →
+Bookings (One-to-Many) - Booking → Payment (One-to-One)
+
+\textbf{Population Usage}: - Services populated with owner information -
+Bookings populated with user and service details - Payments populated
+with booking and user information
+
+\hypertarget{database-operations}{%
+\subsubsection{12.4 Database Operations}\label{database-operations}}
+
+\textbf{Common Operations}: - CRUD operations for all collections -
+Complex queries with filtering and sorting - Aggregation pipelines for
+analytics - Population for related data - Indexing for performance
+optimization
+
+\textbf{Performance Considerations}: - Proper indexing on frequently
+queried fields - Pagination for large result sets - Efficient query
+patterns - Connection pooling - Query optimization
+
+================================================================================
+
+\hypertarget{conclusion}{%
+\subsection{CONCLUSION}\label{conclusion}}
+
+This comprehensive analysis covers the complete architecture and
+implementation of the NestUp BD platform. The system demonstrates a
+well-structured full-stack application with proper separation of
+concerns, secure authentication, robust data modeling, and user-friendly
+interfaces. The modular design allows for easy maintenance and future
+enhancements while providing a solid foundation for a property rental
+platform.
+
+The codebase follows modern web development best practices with React
+for the frontend, Node.js/Express for the backend, and MongoDB for data
+persistence. The authentication system ensures security, while the
+payment system provides multiple options for users. The comprehensive
+API design enables smooth communication between frontend and backend
+components.
+
+This documentation serves as a complete reference for understanding,
+maintaining, and extending the NestUp BD platform.
+
+\end{document}

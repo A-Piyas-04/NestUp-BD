@@ -1,10 +1,8 @@
 import express from 'express';
 import { verifyToken, checkAuth } from '../middleware/auth.js';
 import Service from '../models/Service.js';
-import Payment from '../models/Payment.js';
 import Booking from '../models/Booking.js';
-import User from '../models/User.js';
-import upload from '../middleware/upload.js';
+import Payment from '../models/Payment.js';
 
 const router = express.Router();
 
@@ -32,6 +30,16 @@ router.get('/services', async (req, res) => {
     
     // Build filter object
     const filter = { 'availability.isAvailable': true };
+    
+    // Get list of booked service IDs to exclude
+    const bookedServices = await Booking.find({
+      status: { $in: ['confirmed', 'active'] },
+      paymentStatus: 'paid'
+    }).distinct('service');
+    
+    if (bookedServices.length > 0) {
+      filter._id = { $nin: bookedServices };
+    }
     
     if (propertyType) {
       filter.propertyType = propertyType;
@@ -130,7 +138,7 @@ router.get('/services/:id', async (req, res) => {
 });
 
 // Create new service (protected)
-router.post('/services', verifyToken, checkAuth, upload.single('thumbnail'), async (req, res) => {
+router.post('/services', verifyToken, checkAuth, async (req, res) => {
   try {
     const {
       title,
@@ -175,7 +183,7 @@ router.post('/services', verifyToken, checkAuth, upload.single('thumbnail'), asy
         squareFeet: squareFeet ? Number(squareFeet) : undefined,
         furnishing: furnishing || 'unfurnished'
       },
-      amenities: amenities ? JSON.parse(amenities) : {
+      amenities: amenities || {
         wifi: false,
         ac: false,
         parking: false,
@@ -191,7 +199,7 @@ router.post('/services', verifyToken, checkAuth, upload.single('thumbnail'), asy
         email: contactEmail,
         whatsapp: contactWhatsapp || ''
       },
-      thumbnail: req.file ? `/uploads/${req.file.filename}` : null,
+      photos: [], // Will be handled by file upload later
       owner: req.user._id
     };
     
@@ -279,378 +287,279 @@ router.delete('/services/:id', verifyToken, checkAuth, async (req, res) => {
 // Create booking (protected)
 router.post('/bookings', verifyToken, checkAuth, async (req, res) => {
   try {
-    const {
-      serviceId,
-      startDate,
-      endDate,
-      guestInfo,
-      contactInfo
-    } = req.body;
-
+    const { serviceId, startDate, endDate, guestInfo, contactInfo } = req.body;
+    
+    // Validate required fields
+    if (!serviceId || !startDate || !endDate) {
+      return res.status(400).json({ message: 'Service ID, start date, and end date are required' });
+    }
+    
     // Check if service exists
     const service = await Service.findById(serviceId);
     if (!service) {
       return res.status(404).json({ message: 'Service not found' });
     }
-
-    // Check if user is trying to book their own service
-    if (service.owner.toString() === req.user._id.toString()) {
-      return res.status(400).json({ message: 'You cannot book your own listing' });
+    
+    // Check if service is available for booking
+    if (!service.availability.isAvailable) {
+      return res.status(400).json({ message: 'This service is no longer available for booking' });
     }
-
-    // Check availability
+    
+    // Check if user has already booked this service
+    const existingBooking = await Booking.findOne({
+      service: serviceId,
+      user: req.user._id,
+      status: { $in: ['pending', 'confirmed', 'active'] }
+    });
+    
+    if (existingBooking) {
+      return res.status(400).json({ message: 'You have already booked this service' });
+    }
+    
+    // Check if service is already booked by anyone
+    const serviceBooked = await Booking.findOne({
+      service: serviceId,
+      status: { $in: ['confirmed', 'active'] },
+      paymentStatus: 'paid'
+    });
+    
+    if (serviceBooked) {
+      return res.status(400).json({ message: 'This service has already been booked by another user' });
+    }
+    
+    // Check availability for the specific dates
     const isAvailable = await Booking.checkAvailability(serviceId, new Date(startDate), new Date(endDate));
     if (!isAvailable) {
       return res.status(400).json({ message: 'Service is not available for the selected dates' });
     }
-
+    
     // Calculate duration and total amount
     const start = new Date(startDate);
     const end = new Date(endDate);
     const durationInDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-    const totalAmount = service.price * durationInDays;
-
+    const durationInMonths = Math.ceil(durationInDays / 30);
+    
+    const basePrice = service.price;
+    const totalAmount = basePrice * durationInMonths;
+    
     // Create booking
     const booking = new Booking({
       service: serviceId,
       user: req.user._id,
       startDate: start,
       endDate: end,
-      basePrice: service.price,
+      duration: {
+        days: durationInDays,
+        months: durationInMonths
+      },
+      basePrice,
       totalAmount,
-      guestInfo,
-      contactInfo,
-      status: 'pending',
-      paymentStatus: 'pending'
+      guestInfo: guestInfo || { numberOfGuests: 1 },
+      contactInfo: contactInfo || {
+        phone: req.user.phone || '',
+        email: req.user.email
+      }
     });
-
+    
     await booking.save();
-
+    
+    // Populate the booking with service and user details
     const populatedBooking = await Booking.findById(booking._id)
-      .populate('service', 'title location price')
+      .populate('service', 'title propertyType location price images')
       .populate('user', 'name email');
-
+    
     res.status(201).json({
       message: 'Booking created successfully',
       booking: populatedBooking
     });
   } catch (error) {
     console.error('Create booking error:', error);
-    res.status(500).json({ message: 'Failed to create booking' });
-  }
-});
-
-// Get user's bookings (protected)
-router.get('/my-bookings', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const { page = 1, limit = 10, status } = req.query;
     
-    const filter = { user: req.user._id };
-    if (status) {
-      filter.status = status;
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ message: messages.join(', ') });
     }
     
-    const skip = (page - 1) * limit;
-    
-    const bookings = await Booking.find(filter)
-      .populate('service', 'title location price thumbnail')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit));
-    
-    const total = await Booking.countDocuments(filter);
-    
-    res.json({
-      bookings,
-      pagination: {
-        current: Number(page),
-        total: Math.ceil(total / limit),
-        count: bookings.length,
-        totalBookings: total
-      }
-    });
-  } catch (error) {
-    console.error('Get user bookings error:', error);
-    res.status(500).json({ message: 'Failed to fetch bookings' });
-  }
-});
-
-// Get host's bookings (protected)
-router.get('/host-bookings', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const { page = 1, limit = 10, status } = req.query;
-    
-    const skip = (page - 1) * limit;
-    
-    const bookings = await Booking.aggregate([
-      {
-        $lookup: {
-          from: 'services',
-          localField: 'service',
-          foreignField: '_id',
-          as: 'service'
-        }
-      },
-      { $unwind: '$service' },
-      { $match: { 'service.owner': req.user._id } },
-      ...(status ? [{ $match: { status } }] : []),
-      { $sort: { createdAt: -1 } },
-      { $skip: skip },
-      { $limit: Number(limit) },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'user',
-          foreignField: '_id',
-          as: 'user'
-        }
-      },
-      { $unwind: '$user' },
-      {
-        $project: {
-          'user.password': 0,
-          'user.refreshToken': 0
-        }
-      }
-    ]);
-    
-    res.json({ bookings });
-  } catch (error) {
-    console.error('Get host bookings error:', error);
-    res.status(500).json({ message: 'Failed to fetch host bookings' });
+    res.status(500).json({ message: 'Failed to create booking' });
   }
 });
 
 // Process payment (protected)
 router.post('/payments', verifyToken, checkAuth, async (req, res) => {
   try {
-    const {
-      bookingId,
-      paymentMethod,
-      paymentDetails,
-      personalInfo,
-      termsAccepted
-    } = req.body;
-
-    // Check if booking exists
-    const booking = await Booking.findById(bookingId)
-      .populate('service', 'title price owner')
-      .populate('user', 'name email');
-      
+    const { bookingId, paymentMethod, paymentDetails, personalInfo, termsAccepted } = req.body;
+    
+    // Validate required fields
+    if (!bookingId || !paymentMethod || !personalInfo || !termsAccepted) {
+      return res.status(400).json({ message: 'All payment fields are required and terms must be accepted' });
+    }
+    
+    // Check if booking exists and belongs to user
+    const booking = await Booking.findById(bookingId).populate('service');
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
-
-    // Check if user owns the booking
-    if (booking.user._id.toString() !== req.user._id.toString()) {
+    
+    if (booking.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized to pay for this booking' });
     }
-
-    // Check if booking is already paid
-    if (booking.paymentStatus === 'paid') {
-      return res.status(400).json({ message: 'Booking is already paid' });
+    
+    // Check if payment already exists for this booking
+    const existingPayment = await Payment.findOne({ booking: bookingId });
+    if (existingPayment) {
+      return res.status(400).json({ message: 'Payment already exists for this booking' });
     }
-
+    
+    // Generate transaction ID
+    const transactionId = `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
     // Create payment record
     const payment = new Payment({
       booking: bookingId,
       user: req.user._id,
       service: booking.service._id,
       amount: booking.totalAmount,
-      currency: 'BDT',
       paymentMethod,
-      paymentDetails,
+      paymentDetails: {
+        ...paymentDetails,
+        transactionId
+      },
       personalInfo,
       termsAccepted,
       status: 'processing'
     });
-
+    
     await payment.save();
-
-    // Simulate payment processing (in real implementation, integrate with payment gateway)
+    
+    // Simulate payment processing (replace with real payment gateway integration)
     setTimeout(async () => {
       try {
         // Mark payment as completed
-        await payment.markAsCompleted('TXN' + Date.now());
+        payment.markAsCompleted(transactionId, { gateway: 'simulated', success: true });
+        await payment.save();
         
-        // Update booking status
-        await booking.confirm();
+        // Update booking payment status
+        booking.paymentStatus = 'paid';
+        booking.status = 'confirmed';
+        await booking.save();
+        
+        // Mark service as booked (unavailable)
+        const service = await Service.findById(booking.service._id);
+        if (service) {
+          service.availability.isAvailable = false;
+          await service.save();
+        }
         
         console.log(`Payment ${payment._id} completed successfully`);
+        console.log(`Service ${booking.service._id} marked as booked`);
       } catch (error) {
         console.error('Payment processing error:', error);
-        await payment.markAsFailed('Payment processing failed');
+        payment.markAsFailed('Processing failed', { error: error.message });
+        await payment.save();
       }
-    }, 2000);
-
+    }, 2000); // 2 second delay to simulate processing
+    
     res.status(201).json({
       message: 'Payment initiated successfully',
       payment: {
-        id: payment._id,
-        status: payment.status,
+        _id: payment._id,
+        transactionId,
         amount: payment.amount,
-        currency: payment.currency
+        status: payment.status,
+        paymentMethod: payment.paymentMethod
       }
     });
   } catch (error) {
-    console.error('Process payment error:', error);
-    res.status(500).json({ message: 'Failed to process payment' });
-  }
-});
-
-// Get payment status (protected)
-router.get('/payments/:paymentId', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const payment = await Payment.findById(req.params.paymentId)
-      .populate('booking', 'startDate endDate status')
-      .populate('service', 'title location')
-      .populate('user', 'name email');
-      
-    if (!payment) {
-      return res.status(404).json({ message: 'Payment not found' });
-    }
-
-    // Check if user owns the payment
-    if (payment.user._id.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to view this payment' });
-    }
-
-    res.json(payment);
-  } catch (error) {
-    console.error('Get payment error:', error);
-    res.status(500).json({ message: 'Failed to fetch payment' });
-  }
-});
-
-// Get user's payment history (protected)
-router.get('/my-payments', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const { page = 1, limit = 10, status } = req.query;
+    console.error('Payment processing error:', error);
     
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ message: messages.join(', ') });
+    }
+    
+    res.status(500).json({ message: 'Payment processing failed' });
+  }
+});
+
+// Get user's bookings (protected)
+router.get('/bookings', verifyToken, checkAuth, async (req, res) => {
+  try {
+    const { status, page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+    
+    // Build filter object
     const filter = { user: req.user._id };
-    if (status) {
+    if (status && status !== 'all') {
       filter.status = status;
     }
     
-    const skip = (page - 1) * limit;
+    // Get total count for pagination
+    const totalBookings = await Booking.countDocuments(filter);
     
-    const payments = await Payment.find(filter)
-      .populate('booking', 'startDate endDate duration')
-      .populate('service', 'title location thumbnail')
+    // Fetch bookings with pagination
+    const bookings = await Booking.find(filter)
+      .populate('service', 'title propertyType location price images')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(Number(limit));
+      .limit(parseInt(limit));
     
-    const total = await Payment.countDocuments(filter);
+    // Calculate pagination info
+    const totalPages = Math.ceil(totalBookings / limit);
     
-    res.json({
-      payments,
-      pagination: {
-        current: Number(page),
-        total: Math.ceil(total / limit),
-        count: payments.length,
-        totalPayments: total
-      }
-    });
-  } catch (error) {
-    console.error('Get payment history error:', error);
-    res.status(500).json({ message: 'Failed to fetch payment history' });
-  }
-});
+    res.json({ 
+       bookings,
+       pagination: {
+         current: parseInt(page),
+         total: totalPages,
+         count: bookings.length,
+         totalBookings
+       }
+     });
+   } catch (error) {
+     console.error('Get bookings error:', error);
+     res.status(500).json({ message: 'Failed to fetch bookings' });
+   }
+ });
 
-// Wishlist endpoints
-
-// Add to wishlist
-router.post('/wishlist/add', verifyToken, checkAuth, async (req, res) => {
+// Get user's payments (protected)
+router.get('/payments', verifyToken, checkAuth, async (req, res) => {
   try {
-    const { serviceId } = req.body;
-    const userId = req.user._id;
-
-    if (!serviceId) {
-      return res.status(400).json({ message: 'Service ID is required' });
-    }
-
-    // Check if service exists
-    const service = await Service.findById(serviceId);
-    if (!service) {
-      return res.status(404).json({ message: 'Service not found' });
-    }
-
-    // Add to user's wishlist if not already present
-    const user = await User.findById(userId);
-    if (!user.wishlist.includes(serviceId)) {
-      user.wishlist.push(serviceId);
-      await user.save();
-    }
-
-    res.json({ message: 'Added to wishlist successfully' });
-  } catch (error) {
-    console.error('Add to wishlist error:', error);
-    res.status(500).json({ message: 'Failed to add to wishlist' });
-  }
-});
-
-// Remove from wishlist
-router.delete('/wishlist/remove/:serviceId', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const { serviceId } = req.params;
-    const userId = req.user._id;
-
-    // Remove from user's wishlist
-    await User.findByIdAndUpdate(
-      userId,
-      { $pull: { wishlist: serviceId } },
-      { new: true }
-    );
-
-    res.json({ message: 'Removed from wishlist successfully' });
-  } catch (error) {
-    console.error('Remove from wishlist error:', error);
-    res.status(500).json({ message: 'Failed to remove from wishlist' });
-  }
-});
-
-// Get user's wishlist
-router.get('/wishlist', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const userId = req.user._id;
+    const { status, page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
     
-    const user = await User.findById(userId).populate({
-      path: 'wishlist',
-      populate: {
-        path: 'owner',
-        select: 'name email profile.phone'
-      }
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    // Build filter object
+    const filter = { user: req.user._id };
+    if (status && status !== 'all') {
+      filter.status = status;
     }
-
-    res.json({
-      success: true,
-      wishlist: user.wishlist
-    });
-  } catch (error) {
-    console.error('Get wishlist error:', error);
-    res.status(500).json({ message: 'Failed to fetch wishlist' });
-  }
-});
-
-// Check if service is in wishlist
-router.get('/wishlist/check/:serviceId', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const { serviceId } = req.params;
-    const userId = req.user._id;
-
-    const user = await User.findById(userId);
-    const isInWishlist = user.wishlist.includes(serviceId);
-
-    res.json({ isInWishlist });
-  } catch (error) {
-    console.error('Check wishlist error:', error);
-    res.status(500).json({ message: 'Failed to check wishlist status' });
-  }
-});
+    
+    // Get total count for pagination
+    const totalPayments = await Payment.countDocuments(filter);
+    
+    // Fetch payments with pagination
+    const payments = await Payment.find(filter)
+      .populate('booking', 'startDate endDate confirmationCode')
+      .populate('service', 'title propertyType location images')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    // Calculate pagination info
+    const totalPages = Math.ceil(totalPayments / limit);
+    
+    res.json({ 
+       payments,
+       pagination: {
+         current: parseInt(page),
+         total: totalPages,
+         count: payments.length,
+         totalPayments
+       }
+     });
+   } catch (error) {
+     console.error('Get payments error:', error);
+     res.status(500).json({ message: 'Failed to fetch payments' });
+   }
+ });
 
 export default router;

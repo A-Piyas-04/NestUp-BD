@@ -1,0 +1,1179 @@
+# NestUp BD - Complete Code Analysis and Architecture Documentation
+
+## Table of Contents
+1. Project Overview
+2. Project Structure
+3. Backend Architecture
+4. Frontend Architecture
+5. Database Implementation
+6. API Endpoints and Data Flow
+7. Authentication System
+8. Payment System
+9. File-by-File Analysis
+10. Frontend-Backend Connection Flow
+11. Core Functionalities
+12. MongoDB Collections and Schema
+
+================================================================================
+
+## 1. PROJECT OVERVIEW
+
+NestUp BD is a comprehensive property rental platform designed specifically for students and professionals in Bangladesh. The application facilitates property listing, searching, booking, and payment processing with a modern web-based interface.
+
+### Technology Stack:
+- **Frontend**: React.js with Vite build tool
+- **Backend**: Node.js with Express.js framework
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT (JSON Web Tokens)
+- **File Upload**: Multer middleware
+- **Styling**: CSS with custom variables and responsive design
+
+================================================================================
+
+## 2. PROJECT STRUCTURE
+
+```
+NestUp BD/
+├── Client/                          # Frontend React application
+│   ├── src/
+│   │   ├── components/              # Reusable UI components
+│   │   ├── pages/                   # Main application pages
+│   │   ├── context/                 # React Context for state management
+│   │   ├── utils/                   # Utility functions
+│   │   └── assets/                  # Static assets
+│   ├── public/                      # Public static files
+│   ├── package.json                 # Frontend dependencies
+│   └── vite.config.js              # Vite configuration
+├── server/                          # Backend Node.js application
+│   ├── models/                      # MongoDB schemas and models
+│   ├── routes/                      # API route handlers
+│   ├── middleware/                  # Custom middleware functions
+│   ├── uploads/                     # File upload storage
+│   ├── server.js                    # Main server entry point
+│   ├── package.json                 # Backend dependencies
+│   └── .env                         # Environment variables
+├── Docs/                            # Documentation files
+└── test-payment.js                  # Payment testing script
+```
+
+================================================================================
+
+## 3. BACKEND ARCHITECTURE
+
+### 3.1 Server Entry Point (server/server.js)
+
+**Purpose**: Main application server that initializes the Express app, connects to MongoDB, sets up middleware, and starts the server.
+
+**Key Functionalities**:
+- Express server initialization
+- MongoDB connection using Mongoose
+- CORS configuration for cross-origin requests
+- Cookie parser for JWT token handling
+- Static file serving for uploads
+- Route mounting and error handling
+- Server startup on port 3000
+
+**Code Flow**:
+1. Load environment variables from .env file
+2. Create Express application instance
+3. Configure middleware (CORS, JSON parser, cookie parser)
+4. Connect to MongoDB database
+5. Mount API routes
+6. Start server and listen on specified port
+
+### 3.2 Database Models (server/models/)
+
+#### 3.2.1 User Model (User.js)
+**Purpose**: Defines the user schema for authentication and profile management.
+
+**Schema Fields**:
+- name: String (required, trimmed, min 2 chars)
+- email: String (required, unique, lowercase, email validation)
+- password: String (required, min 6 chars, hashed)
+- role: Enum ['user', 'admin'] (default: 'user')
+- isVerified: Boolean (default: true)
+- profile: Object containing:
+  - phone: String
+  - nidNumber: String
+  - dateOfBirth: Date
+  - gender: Enum ['male', 'female', 'other']
+  - occupation: String
+  - emergencyContact: Object with name and phone
+  - address: Object with street, city, district, postalCode
+- preferences: Object for user settings
+- createdAt, updatedAt: Timestamps
+
+**Methods**:
+- comparePassword(): Compares plain text password with hashed password
+- Pre-save middleware: Hashes password before saving
+
+#### 3.2.2 Service Model (Service.js)
+**Purpose**: Defines the property/service schema for rental listings.
+
+**Schema Fields**:
+- title: String (required, max 200 chars)
+- propertyType: Enum ['apartment', 'house', 'room', 'hostel', 'dormitory', 'sublet']
+- description: String (required, max 2000 chars)
+- location: Object containing:
+  - district: String (required)
+  - area: String (required)
+  - address: String (required)
+  - coordinates: Object with latitude and longitude
+- price: Number (required, min 0)
+- availability: Object containing:
+  - from: Date (required)
+  - to: Date (required)
+  - isAvailable: Boolean (default: true)
+- propertyDetails: Object containing:
+  - bedrooms: String
+  - bathrooms: String
+  - squareFeet: Number
+  - furnishing: Enum ['unfurnished', 'semi-furnished', 'fully-furnished']
+- amenities: Object with boolean flags for various amenities
+- images: Array of image URLs
+- thumbnail: String (main image URL)
+- contact: Object with name, phone, email, whatsapp
+- owner: ObjectId reference to User
+- rating: Object with average and count
+- reviews: Array of review objects
+- isVerified: Boolean (default: false)
+- isActive: Boolean (default: true)
+- createdAt, updatedAt: Timestamps
+
+**Methods**:
+- Pre-save middleware: Updates the updatedAt field
+- Indexes: Created on location fields and price for efficient querying
+
+#### 3.2.3 Booking Model (Booking.js)
+**Purpose**: Manages property booking information and status.
+
+**Schema Fields**:
+- service: ObjectId reference to Service (required)
+- user: ObjectId reference to User (required)
+- startDate: Date (required)
+- endDate: Date (required)
+- duration: Object with days and months
+- basePrice: Number (required)
+- totalAmount: Number (required)
+- fees: Object containing service fee, cleaning fee, security deposit
+- status: Enum ['pending', 'confirmed', 'active', 'completed', 'cancelled', 'rejected']
+- paymentStatus: Enum ['pending', 'partial', 'paid', 'refunded', 'failed']
+- guestInfo: Object with numberOfGuests and specialRequests
+- contactInfo: Object with phone and email (required)
+- confirmationCode: String (auto-generated)
+- confirmedAt: Date
+- createdAt, updatedAt: Timestamps
+
+**Methods**:
+- confirm(): Updates status to confirmed and sets confirmedAt
+- checkAvailability(): Static method to check date conflicts
+- Pre-save middleware: Calculates duration and generates confirmation code
+- Virtual property: durationInDays for easy access
+
+#### 3.2.4 Payment Model (Payment.js)
+**Purpose**: Handles payment processing and transaction records.
+
+**Schema Fields**:
+- booking: ObjectId reference to Booking (required)
+- user: ObjectId reference to User (required)
+- service: ObjectId reference to Service (required)
+- amount: Number (required, min 0)
+- currency: String (default: 'BDT')
+- paymentMethod: Enum ['mobile_banking', 'bank_transfer', 'credit_card', 'cash']
+- paymentDetails: Object containing method-specific details
+- status: Enum ['pending', 'processing', 'completed', 'failed', 'refunded', 'cancelled']
+- personalInfo: Object with user's personal information
+- termsAccepted: Boolean (required)
+- processedAt: Date
+- failureReason: String
+- gatewayResponse: Object for payment gateway data
+- refund: Object with refund details
+- createdAt, updatedAt: Timestamps
+
+**Methods**:
+- markAsCompleted(): Updates status and processedAt
+- markAsFailed(): Sets status to failed with reason
+- processRefund(): Handles refund processing
+- getPaymentStats(): Static method for payment analytics
+
+### 3.3 API Routes (server/routes/)
+
+#### 3.3.1 Authentication Routes (auth.js)
+**Purpose**: Handles user authentication, registration, and session management.
+
+**Endpoints**:
+- POST /register: User registration with validation
+- POST /login: User login with JWT token generation
+- POST /logout: User logout with token clearing
+- GET /me: Get current user profile (protected)
+- PUT /profile: Update user profile (protected)
+
+**Authentication Flow**:
+1. User submits credentials
+2. Server validates input
+3. For login: verify password, generate JWT token
+4. For register: hash password, create user, generate token
+5. Set HTTP-only cookie with JWT token
+6. Return user data (excluding password)
+
+#### 3.3.2 Main API Routes (api.js)
+**Purpose**: Core application API endpoints for services, bookings, and payments.
+
+**Service Endpoints**:
+- GET /services: Fetch all services with filtering and pagination
+- GET /services/:id: Get specific service details
+- POST /services: Create new service (protected)
+- PUT /services/:id: Update service (protected, owner only)
+- DELETE /services/:id: Delete service (protected, owner only)
+
+**Booking Endpoints**:
+- POST /bookings: Create new booking (protected)
+- GET /bookings: Get user's bookings (protected)
+- GET /bookings/:id: Get specific booking (protected)
+- PUT /bookings/:id/confirm: Confirm booking (protected)
+- PUT /bookings/:id/cancel: Cancel booking (protected)
+
+**Payment Endpoints**:
+- POST /payments: Process payment (protected)
+- GET /payments/:paymentId: Get payment status (protected)
+- GET /my-payments: Get user's payment history (protected)
+
+**Wishlist Endpoints**:
+- POST /wishlist/add: Add service to wishlist (protected)
+- DELETE /wishlist/remove/:serviceId: Remove from wishlist (protected)
+- GET /wishlist: Get user's wishlist (protected)
+- GET /wishlist/check/:serviceId: Check if service is in wishlist (protected)
+
+### 3.4 Middleware (server/middleware/)
+
+#### 3.4.1 Authentication Middleware (auth.js)
+**Purpose**: Verifies JWT tokens and protects routes.
+
+**Functions**:
+- verifyToken(): Extracts and verifies JWT from cookies or headers
+- checkAuth(): Ensures user exists and attaches to request object
+
+**Process**:
+1. Extract token from cookies or Authorization header
+2. Verify token using JWT secret
+3. Find user by decoded token ID
+4. Attach user object to request
+5. Call next middleware or return error
+
+#### 3.4.2 File Upload Middleware (upload.js)
+**Purpose**: Handles file uploads using Multer.
+
+**Configuration**:
+- Storage: Local disk storage in uploads/ directory
+- File naming: Timestamp + original name
+- File filtering: Images only (jpg, jpeg, png, gif)
+- Size limit: 5MB per file
+
+================================================================================
+
+## 4. FRONTEND ARCHITECTURE
+
+### 4.1 Application Entry Point (Client/src/main.jsx)
+**Purpose**: React application initialization and root component rendering.
+
+**Functionality**:
+- Imports React and ReactDOM
+- Renders the main App component
+- Mounts to DOM element with id 'root'
+
+### 4.2 Main App Component (Client/src/App.jsx)
+**Purpose**: Root component that sets up routing and global providers.
+
+**Structure**:
+- Wraps application in AuthProvider for authentication context
+- Sets up React Router with BrowserRouter
+- Defines all application routes
+- Provides global CSS imports
+
+### 4.3 Context Management (Client/src/context/)
+
+#### 4.3.1 AuthContext (AuthContext.js)
+**Purpose**: Global state management for user authentication.
+
+**State Management**:
+- user: Current user object or null
+- loading: Authentication check status
+- login(): Handles user login
+- logout(): Handles user logout
+- checkAuth(): Verifies current authentication status
+
+**Functionality**:
+- Persists authentication state across page refreshes
+- Provides authentication methods to all components
+- Manages loading states during auth operations
+- Handles token storage and retrieval
+
+### 4.4 Page Components (Client/src/pages/)
+
+#### 4.4.1 Home Page (Home/Home.jsx)
+**Purpose**: Landing page with hero section and service overview.
+
+**Components Used**:
+- Header: Navigation and user menu
+- HeroSection: Main banner with search functionality
+- ServiceCards: Available service categories
+- HowItWorks: Process explanation
+- TrustBadges: Trust indicators
+- Footer: Site footer with links
+
+#### 4.4.2 Authentication Pages
+
+**Login Page (Login/Login.jsx)**:
+- User login form with email and password
+- Form validation and error handling
+- Redirects to dashboard on successful login
+- Links to registration page
+
+**Register Page (Register/Register.jsx)**:
+- User registration form with multiple fields
+- Password confirmation validation
+- Terms and conditions acceptance
+- Automatic login after successful registration
+
+#### 4.4.3 Search Page (Search/Search.jsx)
+**Purpose**: Property search and listing display.
+
+**Key Features**:
+- Fetches services from backend API
+- Implements filtering by location, price, amenities
+- Displays results in grid layout using ListingCard components
+- Handles loading states and empty results
+- Integrates with ServiceModal for detailed views
+
+**Data Flow**:
+1. Fetch services from /api/services endpoint
+2. Transform backend data to frontend format
+3. Apply client-side filters
+4. Render filtered results
+5. Handle user interactions (view details, book, save)
+
+#### 4.4.4 Payment Page (Payment/Payment.jsx)
+**Purpose**: Multi-step payment process for property bookings.
+
+**Step Structure**:
+1. Personal Information: User details collection
+2. Payment Method: Payment option selection
+3. Confirmation: Review and submit
+
+**Payment Flow**:
+1. Validate service ID and user authentication
+2. Create booking via POST /api/bookings
+3. Process payment via POST /api/payments
+4. Handle success/error responses
+5. Navigate to dashboard on completion
+
+**Components**:
+- PaymentStepIndicator: Progress visualization
+- PersonalInfoStep: Personal details form
+- PaymentMethodStep: Payment method selection
+- ConfirmationStep: Final review
+- PaymentSidebar: Booking summary
+- FormNavigation: Step navigation controls
+
+#### 4.4.5 Dashboard Page (Dashboard/Dashboard.jsx)
+**Purpose**: User dashboard with multiple views and functionalities.
+
+**Dashboard Views**:
+- Overview: Summary statistics and recent activity
+- MyListings: User's property listings management
+- PaymentHistory: Transaction history and details
+- Wishlist: Saved properties
+- Profile: User profile management
+
+**State Management**:
+- activeView: Current dashboard section
+- userData: User profile information
+- listings: User's property listings
+- payments: Payment transaction history
+- wishlist: Saved properties list
+
+#### 4.4.6 Service Provision Page (ProvideService/ProvideService.jsx)
+**Purpose**: Multi-step form for property listing creation.
+
+**Form Steps**:
+1. Basic Information: Title, type, description
+2. Location Details: Address and area information
+3. Pricing & Availability: Rent and date ranges
+4. Property Details: Bedrooms, bathrooms, features
+5. Amenities & Features: Available facilities
+6. Photos & Contact: Images and contact information
+7. Review & Submit: Final review before submission
+
+**Form Management**:
+- Comprehensive form validation
+- Step-by-step navigation
+- Data persistence across steps
+- Image upload handling
+- Error handling and user feedback
+
+### 4.5 Reusable Components (Client/src/components/)
+
+#### 4.5.1 Header Component (Header/Header.jsx)
+**Purpose**: Main navigation bar with authentication-aware menu.
+
+**Features**:
+- Responsive navigation menu
+- User authentication status display
+- Dropdown menu for authenticated users
+- Mobile-friendly hamburger menu
+- Logo and brand navigation
+
+#### 4.5.2 ListingCard Component (ListingCard/ListingCard.jsx)
+**Purpose**: Property listing display card with interactive features.
+
+**Features**:
+- Property image display with fallback
+- Property details (title, location, price, availability)
+- Action buttons (View Details, Book, Save)
+- Wishlist integration
+- Owner listing detection
+- Responsive design
+
+**Interaction Flow**:
+- View Details: Opens ServiceModal or navigates to payment
+- Book: Navigates to payment page with property data
+- Save: Adds/removes from wishlist via API
+
+#### 4.5.3 ServiceModal Component (ServiceModal/ServiceModal.jsx)
+**Purpose**: Detailed property information modal dialog.
+
+**Content Sections**:
+- Image gallery with main image and thumbnails
+- Property details (type, location, features)
+- Availability and pricing information
+- Amenities grid with icons
+- Property description
+- Contact information
+- Action buttons
+
+#### 4.5.4 FilterSidebar Component (FilterSidebar/FilterSidebar.jsx)
+**Purpose**: Search filtering interface for property listings.
+
+**Filter Options**:
+- Location filters (district, area)
+- Price range (minimum and maximum)
+- Date range (availability period)
+- Property features (verified hosts, hygiene badge)
+- Real-time filter application
+
+### 4.6 Utility Functions (Client/src/utils/)
+
+#### 4.6.1 Validation Utilities (validation.js)
+**Purpose**: Form validation functions for payment and other forms.
+
+**Validation Functions**:
+- validateStep(): Step-specific validation for payment form
+- Email validation with regex patterns
+- Phone number validation for Bangladesh format
+- Required field validation
+- Payment method specific validation
+
+================================================================================
+
+## 5. DATABASE IMPLEMENTATION
+
+### 5.1 MongoDB Connection
+
+**Location**: server/server.js
+**Connection String**: mongodb://localhost:27017/nestup_bd
+**ODM**: Mongoose for schema definition and data modeling
+
+**Connection Process**:
+1. Load MongoDB URI from environment variables
+2. Use mongoose.connect() with connection options
+3. Handle connection events (connected, error, disconnected)
+4. Implement graceful shutdown on process termination
+
+### 5.2 Database Schema Design
+
+#### 5.2.1 Collections Overview
+- **users**: User accounts and profiles
+- **services**: Property listings and details
+- **bookings**: Booking requests and status
+- **payments**: Payment transactions and history
+
+#### 5.2.2 Relationships
+- User → Services (One-to-Many): User can own multiple properties
+- Service → Bookings (One-to-Many): Property can have multiple bookings
+- User → Bookings (One-to-Many): User can make multiple bookings
+- Booking → Payment (One-to-One): Each booking has one payment
+- User → Payments (One-to-Many): User can have multiple payments
+
+#### 5.2.3 Indexes
+- Users: email (unique), createdAt
+- Services: location.district, location.area, price, createdAt
+- Bookings: user, service, startDate, endDate
+- Payments: user, booking, status, createdAt
+
+### 5.3 Data Validation
+
+**Schema-Level Validation**:
+- Required fields enforcement
+- Data type validation
+- Enum value restrictions
+- String length limits
+- Number range validation
+- Email format validation
+
+**Application-Level Validation**:
+- Business logic validation
+- Cross-field validation
+- Custom validation functions
+- Error message customization
+
+================================================================================
+
+## 6. API ENDPOINTS AND DATA FLOW
+
+### 6.1 Authentication Flow
+
+**Registration Process**:
+1. Frontend: User submits registration form
+2. Frontend: POST /api/auth/register with user data
+3. Backend: Validate input data
+4. Backend: Hash password using bcrypt
+5. Backend: Create user in database
+6. Backend: Generate JWT token
+7. Backend: Set HTTP-only cookie with token
+8. Backend: Return user data (excluding password)
+9. Frontend: Update AuthContext with user data
+10. Frontend: Redirect to dashboard
+
+**Login Process**:
+1. Frontend: User submits login form
+2. Frontend: POST /api/auth/login with credentials
+3. Backend: Find user by email
+4. Backend: Compare password with stored hash
+5. Backend: Generate JWT token if valid
+6. Backend: Set HTTP-only cookie with token
+7. Backend: Return user data
+8. Frontend: Update AuthContext
+9. Frontend: Redirect to intended page
+
+### 6.2 Service Management Flow
+
+**Service Creation**:
+1. Frontend: User fills ProvideService form
+2. Frontend: Upload images via FormData
+3. Frontend: POST /api/services with service data
+4. Backend: Validate user authentication
+5. Backend: Process uploaded images
+6. Backend: Create service in database
+7. Backend: Return created service data
+8. Frontend: Show success message and redirect
+
+**Service Search**:
+1. Frontend: User applies filters on Search page
+2. Frontend: GET /api/services with query parameters
+3. Backend: Build MongoDB filter object
+4. Backend: Execute paginated query with population
+5. Backend: Return services array with pagination info
+6. Frontend: Transform data for display
+7. Frontend: Render ListingCard components
+
+### 6.3 Booking and Payment Flow
+
+**Complete Booking Process**:
+1. Frontend: User clicks "Book" on ListingCard
+2. Frontend: Navigate to Payment page with property data
+3. Frontend: User completes payment form steps
+4. Frontend: POST /api/bookings to create booking
+5. Backend: Validate service exists and availability
+6. Backend: Check for booking conflicts
+7. Backend: Calculate total amount and fees
+8. Backend: Create booking with 'pending' status
+9. Backend: Return booking data with ID
+10. Frontend: POST /api/payments with booking ID
+11. Backend: Validate payment details
+12. Backend: Create payment record
+13. Backend: Update booking payment status
+14. Backend: Return payment confirmation
+15. Frontend: Show success message
+16. Frontend: Navigate to dashboard
+
+### 6.4 Wishlist Management
+
+**Add to Wishlist**:
+1. Frontend: User clicks "Save" on ListingCard
+2. Frontend: POST /api/wishlist/add with serviceId
+3. Backend: Validate authentication and service
+4. Backend: Check if already in wishlist
+5. Backend: Add to user's wishlist array
+6. Backend: Return success response
+7. Frontend: Update UI state
+
+================================================================================
+
+## 7. AUTHENTICATION SYSTEM
+
+### 7.1 JWT Implementation
+
+**Token Generation**:
+- Payload: { userId, email, iat, exp }
+- Secret: Stored in environment variables
+- Expiration: 7 days
+- Storage: HTTP-only cookies for security
+
+**Token Verification**:
+- Middleware: verifyToken() function
+- Extraction: From cookies or Authorization header
+- Validation: JWT signature and expiration
+- User Lookup: Find user by decoded ID
+- Request Attachment: Add user object to req.user
+
+### 7.2 Password Security
+
+**Hashing**:
+- Algorithm: bcrypt with salt rounds (10)
+- Timing: Pre-save middleware in User model
+- Comparison: comparePassword() method
+- Storage: Never store plain text passwords
+
+### 7.3 Route Protection
+
+**Protected Routes**:
+- All routes requiring authentication use verifyToken middleware
+- Additional checkAuth middleware ensures user exists
+- Role-based access control for admin functions
+- Owner-only access for service management
+
+================================================================================
+
+## 8. PAYMENT SYSTEM
+
+### 8.1 Payment Methods
+
+**Supported Methods**:
+- Mobile Banking (bKash, Nagad, Rocket)
+- Bank Transfer
+- Credit/Debit Card
+- Cash Payment
+
+**Method-Specific Data**:
+- Mobile Banking: Phone number, transaction ID
+- Bank Transfer: Bank name, account number
+- Credit Card: Card number, expiry, CVV, holder name
+- Cash: Contact information for arrangement
+
+### 8.2 Payment Processing
+
+**Payment States**:
+- pending: Initial state after creation
+- processing: Payment being processed
+- completed: Payment successful
+- failed: Payment failed with reason
+- refunded: Payment refunded
+- cancelled: Payment cancelled by user
+
+**Processing Flow**:
+1. Create booking first
+2. Validate payment details
+3. Create payment record
+4. Process payment (simulated)
+5. Update payment status
+6. Update booking payment status
+7. Send confirmation
+
+### 8.3 Payment History
+
+**Data Tracking**:
+- All payment transactions stored
+- Status change history
+- Payment method details
+- Associated booking information
+- Refund tracking
+
+**Dashboard Integration**:
+- Payment history view in dashboard
+- Filtering by status and date
+- Detailed payment information
+- Download/export capabilities
+
+================================================================================
+
+## 9. FILE-BY-FILE ANALYSIS
+
+### 9.1 Backend Files
+
+#### server/server.js
+**Purpose**: Main server application entry point
+**Key Functions**:
+- Express app initialization
+- Middleware configuration
+- Database connection
+- Route mounting
+- Server startup
+**Dependencies**: express, mongoose, cors, cookie-parser, dotenv
+**Exports**: None (entry point)
+
+#### server/models/User.js
+**Purpose**: User data model and schema
+**Key Functions**:
+- User schema definition
+- Password hashing middleware
+- Password comparison method
+- Profile data structure
+**Dependencies**: mongoose, bcryptjs
+**Exports**: User model
+
+#### server/models/Service.js
+**Purpose**: Property service data model
+**Key Functions**:
+- Service schema definition
+- Location and pricing structure
+- Amenities and features
+- Review system integration
+**Dependencies**: mongoose
+**Exports**: Service model
+
+#### server/models/Booking.js
+**Purpose**: Booking management data model
+**Key Functions**:
+- Booking schema definition
+- Date validation
+- Status management
+- Availability checking
+**Dependencies**: mongoose
+**Exports**: Booking model
+
+#### server/models/Payment.js
+**Purpose**: Payment processing data model
+**Key Functions**:
+- Payment schema definition
+- Payment method handling
+- Status tracking
+- Refund management
+**Dependencies**: mongoose
+**Exports**: Payment model
+
+#### server/routes/auth.js
+**Purpose**: Authentication route handlers
+**Key Functions**:
+- User registration
+- User login/logout
+- Profile management
+- JWT token handling
+**Dependencies**: express, bcryptjs, jsonwebtoken, User model
+**Exports**: Express router
+
+#### server/routes/api.js
+**Purpose**: Main API route handlers
+**Key Functions**:
+- Service CRUD operations
+- Booking management
+- Payment processing
+- Wishlist operations
+**Dependencies**: express, all models, auth middleware
+**Exports**: Express router
+
+#### server/middleware/auth.js
+**Purpose**: Authentication middleware
+**Key Functions**:
+- JWT token verification
+- User authentication checking
+- Request user attachment
+**Dependencies**: jsonwebtoken, User model
+**Exports**: verifyToken, checkAuth functions
+
+#### server/middleware/upload.js
+**Purpose**: File upload middleware
+**Key Functions**:
+- Multer configuration
+- File storage setup
+- File type filtering
+- Size limitations
+**Dependencies**: multer, path
+**Exports**: upload middleware
+
+### 9.2 Frontend Files
+
+#### Client/src/main.jsx
+**Purpose**: React application entry point
+**Key Functions**:
+- React DOM rendering
+- App component mounting
+**Dependencies**: react, react-dom, App component
+**Exports**: None (entry point)
+
+#### Client/src/App.jsx
+**Purpose**: Root application component
+**Key Functions**:
+- Router setup
+- Global providers
+- Route definitions
+**Dependencies**: react-router-dom, AuthProvider, all page components
+**Exports**: App component
+
+#### Client/src/context/AuthContext.js
+**Purpose**: Authentication context provider
+**Key Functions**:
+- Global auth state management
+- Login/logout functions
+- Authentication checking
+**Dependencies**: react, createContext, useState, useEffect
+**Exports**: AuthProvider, useAuth hook
+
+#### Client/src/pages/Home/Home.jsx
+**Purpose**: Landing page component
+**Key Functions**:
+- Hero section display
+- Service overview
+- Navigation integration
+**Dependencies**: react, Header, HeroSection, ServiceCards, etc.
+**Exports**: Home component
+
+#### Client/src/pages/Login/Login.jsx
+**Purpose**: User login page
+**Key Functions**:
+- Login form handling
+- Authentication API calls
+- Error handling
+- Redirect logic
+**Dependencies**: react, react-router-dom, AuthContext
+**Exports**: Login component
+
+#### Client/src/pages/Register/Register.jsx
+**Purpose**: User registration page
+**Key Functions**:
+- Registration form handling
+- Form validation
+- API integration
+- Success handling
+**Dependencies**: react, react-router-dom, AuthContext
+**Exports**: Register component
+
+#### Client/src/pages/Search/Search.jsx
+**Purpose**: Property search and listing page
+**Key Functions**:
+- Service data fetching
+- Filter application
+- Results display
+- Modal integration
+**Dependencies**: react, AuthContext, FilterSidebar, ListingCard, ServiceModal
+**Exports**: Search component
+
+#### Client/src/pages/Payment/Payment.jsx
+**Purpose**: Multi-step payment processing page
+**Key Functions**:
+- Payment form management
+- Step navigation
+- API integration
+- Booking creation
+**Dependencies**: react, react-router-dom, AuthContext, payment components
+**Exports**: Payment component
+
+#### Client/src/pages/Dashboard/Dashboard.jsx
+**Purpose**: User dashboard with multiple views
+**Key Functions**:
+- View management
+- Data fetching
+- User profile display
+- Navigation handling
+**Dependencies**: react, AuthContext, dashboard view components
+**Exports**: Dashboard component
+
+#### Client/src/pages/ProvideService/ProvideService.jsx
+**Purpose**: Property listing creation page
+**Key Functions**:
+- Multi-step form handling
+- Image upload
+- Form validation
+- Service creation API
+**Dependencies**: react, react-router-dom, AuthContext
+**Exports**: ProvideService component
+
+#### Client/src/components/Header/Header.jsx
+**Purpose**: Main navigation header
+**Key Functions**:
+- Navigation menu
+- User authentication display
+- Mobile responsiveness
+**Dependencies**: react, react-router-dom, AuthContext
+**Exports**: Header component
+
+#### Client/src/components/ListingCard/ListingCard.jsx
+**Purpose**: Property listing display card
+**Key Functions**:
+- Property information display
+- Action button handling
+- Wishlist integration
+- Navigation to payment
+**Dependencies**: react, react-router-dom
+**Exports**: ListingCard component
+
+#### Client/src/components/ServiceModal/ServiceModal.jsx
+**Purpose**: Detailed property information modal
+**Key Functions**:
+- Detailed property display
+- Image gallery
+- Contact information
+- Modal controls
+**Dependencies**: react
+**Exports**: ServiceModal component
+
+#### Client/src/components/FilterSidebar/FilterSidebar.jsx
+**Purpose**: Search filter interface
+**Key Functions**:
+- Filter option display
+- Filter state management
+- Real-time filtering
+**Dependencies**: react
+**Exports**: FilterSidebar component
+
+================================================================================
+
+## 10. FRONTEND-BACKEND CONNECTION FLOW
+
+### 10.1 API Communication Pattern
+
+**Standard Request Flow**:
+1. Frontend component initiates action (user interaction)
+2. Component calls fetch() with appropriate endpoint
+3. Request includes authentication cookies automatically
+4. Backend middleware verifies authentication
+5. Route handler processes request
+6. Database operations performed if needed
+7. Response sent back to frontend
+8. Frontend updates UI based on response
+
+### 10.2 Authentication Integration
+
+**Cookie-Based Authentication**:
+- JWT tokens stored in HTTP-only cookies
+- Automatic inclusion in all requests
+- No manual token management in frontend
+- Secure against XSS attacks
+
+**AuthContext Integration**:
+- Global authentication state
+- Automatic login status checking
+- Protected route handling
+- User data availability across components
+
+### 10.3 Error Handling
+
+**Frontend Error Handling**:
+- Try-catch blocks around API calls
+- User-friendly error messages
+- Loading state management
+- Fallback UI for errors
+
+**Backend Error Handling**:
+- Consistent error response format
+- HTTP status codes
+- Detailed error messages
+- Logging for debugging
+
+### 10.4 Data Transformation
+
+**Backend to Frontend**:
+- MongoDB ObjectId to string conversion
+- Date formatting
+- Price formatting
+- Image URL construction
+
+**Frontend to Backend**:
+- Form data serialization
+- Date object conversion
+- File upload handling
+- Validation before sending
+
+================================================================================
+
+## 11. CORE FUNCTIONALITIES
+
+### 11.1 User Management
+
+**Registration and Authentication**:
+- Secure user registration with validation
+- JWT-based authentication system
+- Password hashing and security
+- Profile management capabilities
+
+**User Roles**:
+- Regular users: Can search, book, and manage bookings
+- Property owners: Can list properties and manage listings
+- Admins: Can manage all aspects of the platform
+
+### 11.2 Property Management
+
+**Property Listing**:
+- Multi-step property creation form
+- Image upload and management
+- Detailed property information
+- Availability calendar
+
+**Property Search**:
+- Advanced filtering options
+- Location-based search
+- Price range filtering
+- Amenity-based filtering
+
+### 11.3 Booking System
+
+**Booking Process**:
+- Date availability checking
+- Conflict prevention
+- Booking confirmation system
+- Status tracking
+
+**Booking Management**:
+- User booking history
+- Booking status updates
+- Cancellation handling
+- Owner booking management
+
+### 11.4 Payment Processing
+
+**Payment Methods**:
+- Multiple payment options
+- Secure payment processing
+- Payment status tracking
+- Refund handling
+
+**Financial Management**:
+- Payment history tracking
+- Transaction records
+- Revenue analytics
+- Fee calculation
+
+### 11.5 Wishlist System
+
+**Wishlist Management**:
+- Save favorite properties
+- Easy access to saved items
+- Wishlist sharing capabilities
+- Notification for saved items
+
+================================================================================
+
+## 12. MONGODB COLLECTIONS AND SCHEMA
+
+### 12.1 Collection Initialization
+
+**Location**: Models are defined in server/models/ directory
+**Initialization**: Mongoose automatically creates collections when first document is inserted
+**Connection**: Established in server/server.js using mongoose.connect()
+
+### 12.2 Collection Details
+
+#### 12.2.1 users Collection
+**Schema File**: server/models/User.js
+**Purpose**: Store user account information and profiles
+**Key Fields**:
+- _id: MongoDB ObjectId (auto-generated)
+- name: User's full name
+- email: Unique email address
+- password: Hashed password
+- role: User role (user/admin)
+- profile: Nested object with personal information
+- createdAt, updatedAt: Timestamps
+
+**Indexes**:
+- email: Unique index for fast lookup
+- createdAt: For sorting and analytics
+
+#### 12.2.2 services Collection
+**Schema File**: server/models/Service.js
+**Purpose**: Store property listing information
+**Key Fields**:
+- _id: MongoDB ObjectId (auto-generated)
+- title: Property title
+- propertyType: Type of property
+- location: Nested object with address details
+- price: Monthly rent amount
+- availability: Date range and status
+- propertyDetails: Bedrooms, bathrooms, etc.
+- amenities: Available facilities
+- owner: Reference to users collection
+- createdAt, updatedAt: Timestamps
+
+**Indexes**:
+- location.district: For location-based queries
+- location.area: For area-specific searches
+- price: For price range filtering
+- owner: For owner's listings
+
+#### 12.2.3 bookings Collection
+**Schema File**: server/models/Booking.js
+**Purpose**: Store booking requests and status
+**Key Fields**:
+- _id: MongoDB ObjectId (auto-generated)
+- service: Reference to services collection
+- user: Reference to users collection
+- startDate, endDate: Booking period
+- totalAmount: Total booking cost
+- status: Booking status
+- paymentStatus: Payment status
+- confirmationCode: Unique booking code
+- createdAt, updatedAt: Timestamps
+
+**Indexes**:
+- user: For user's booking history
+- service: For property booking history
+- startDate, endDate: For availability checking
+
+#### 12.2.4 payments Collection
+**Schema File**: server/models/Payment.js
+**Purpose**: Store payment transaction records
+**Key Fields**:
+- _id: MongoDB ObjectId (auto-generated)
+- booking: Reference to bookings collection
+- user: Reference to users collection
+- service: Reference to services collection
+- amount: Payment amount
+- paymentMethod: Method used for payment
+- status: Payment status
+- paymentDetails: Method-specific details
+- createdAt, updatedAt: Timestamps
+
+**Indexes**:
+- user: For user's payment history
+- booking: For booking-payment relationship
+- status: For status-based queries
+- createdAt: For chronological sorting
+
+### 12.3 Data Relationships
+
+**Reference Relationships**:
+- User → Services (One-to-Many)
+- User → Bookings (One-to-Many)
+- User → Payments (One-to-Many)
+- Service → Bookings (One-to-Many)
+- Booking → Payment (One-to-One)
+
+**Population Usage**:
+- Services populated with owner information
+- Bookings populated with user and service details
+- Payments populated with booking and user information
+
+### 12.4 Database Operations
+
+**Common Operations**:
+- CRUD operations for all collections
+- Complex queries with filtering and sorting
+- Aggregation pipelines for analytics
+- Population for related data
+- Indexing for performance optimization
+
+**Performance Considerations**:
+- Proper indexing on frequently queried fields
+- Pagination for large result sets
+- Efficient query patterns
+- Connection pooling
+- Query optimization
+
+================================================================================
+
+## CONCLUSION
+
+This comprehensive analysis covers the complete architecture and implementation of the NestUp BD platform. The system demonstrates a well-structured full-stack application with proper separation of concerns, secure authentication, robust data modeling, and user-friendly interfaces. The modular design allows for easy maintenance and future enhancements while providing a solid foundation for a property rental platform.
+
+The codebase follows modern web development best practices with React for the frontend, Node.js/Express for the backend, and MongoDB for data persistence. The authentication system ensures security, while the payment system provides multiple options for users. The comprehensive API design enables smooth communication between frontend and backend components.
+
+This documentation serves as a complete reference for understanding, maintaining, and extending the NestUp BD platform.
