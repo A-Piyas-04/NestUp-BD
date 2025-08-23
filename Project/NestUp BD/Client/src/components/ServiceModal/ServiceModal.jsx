@@ -1,8 +1,59 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import ReviewList from '../ReviewList/ReviewList';
 import './ServiceModal.css';
 
-const ServiceModal = ({ service, isOpen, onClose }) => {
+const ServiceModal = ({ service, isOpen, onClose, reviews = null }) => {
+  const [serviceReviews, setServiceReviews] = useState([]);
+  
   if (!isOpen || !service) return null;
+  
+  // Generate or fetch reviews for this service
+  useEffect(() => {
+    if (reviews) {
+      setServiceReviews(reviews);
+    } else {
+      // Sample reviews for demonstration
+      const sampleReviews = [
+        {
+          id: 1,
+          rating: 5,
+          comment: "Amazing place! Very clean and the host was extremely helpful. The location is perfect for students.",
+          reviewer: {
+            name: "John Doe",
+            avatar: null
+          },
+          date: "2024-01-15",
+          images: [],
+          nestName: service.title
+        },
+        {
+          id: 2,
+          rating: 4,
+          comment: "Great value for money. The WiFi is fast and the kitchen is well-equipped. Only minor issue was the noise from the street.",
+          reviewer: {
+            name: "Sarah Johnson",
+            avatar: null
+          },
+          date: "2024-01-10",
+          images: [],
+          nestName: service.title
+        },
+        {
+          id: 3,
+          rating: 5,
+          comment: "Perfect for my 6-month internship. The host was very accommodating and the place felt like home.",
+          reviewer: {
+            name: "Mike Chen",
+            avatar: null
+          },
+          date: "2024-01-05",
+          images: [],
+          nestName: service.title
+        }
+      ];
+      setServiceReviews(sampleReviews);
+    }
+  }, [service, reviews]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -154,6 +205,17 @@ const ServiceModal = ({ service, isOpen, onClose }) => {
                 </div>
               </div>
             )}
+            
+            {/* Reviews Section */}
+            <div className="detail-section reviews-section">
+              <h3>Reviews & Ratings</h3>
+              <ReviewList 
+                reviews={serviceReviews}
+                showFilters={false}
+                showStats={true}
+                maxHeight="400px"
+              />
+            </div>
           </div>
         </div>
 

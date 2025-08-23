@@ -253,6 +253,18 @@
   font-size: 14px;
 }
 
+/* Reviews Section */
+.reviews-section {
+  border-top: 2px solid var(--gray-200, #e5e7eb);
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+}
+
+.reviews-section h3 {
+  margin-bottom: 1rem;
+  color: var(--gray-800, #1f2937);
+}
+
 .modal-footer {
   padding: 20px 30px 30px;
   border-top: 1px solid #eee;
