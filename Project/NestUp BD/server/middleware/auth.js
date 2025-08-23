@@ -1,7 +1,16 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_here';
+// Function to get JWT_SECRET (lazy loading)
+const getJWTSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not set');
+  }
+  return secret;
+};
+
+console.log('Auth middleware loaded. JWT_SECRET will be checked when needed.');
 
 // Verify JWT token
 export const verifyToken = async (req, res, next) => {
@@ -20,7 +29,7 @@ export const verifyToken = async (req, res, next) => {
     }
     
     // Verify token
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, getJWTSecret());
     
     // Find user by ID
     const user = await User.findById(decoded.userId).select('-password');
@@ -52,24 +61,13 @@ export const checkAuth = (req, res, next) => {
   next();
 };
 
-// Check if user is admin
-export const checkAdmin = (req, res, next) => {
-  if (!req.user) {
-    return res.status(401).json({ message: 'Authentication required.' });
-  }
-  
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Admin access required.' });
-  }
-  
-  next();
-};
+
 
 // Generate JWT token
 export const generateToken = (userId) => {
   return jwt.sign(
     { userId },
-    JWT_SECRET,
+    getJWTSecret(),
     { expiresIn: '7d' }
   );
 };
@@ -77,6 +75,5 @@ export const generateToken = (userId) => {
 export default {
   verifyToken,
   checkAuth,
-  checkAdmin,
   generateToken
 };

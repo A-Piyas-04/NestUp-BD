@@ -1,17 +1,19 @@
 // server.js
+import dotenv from 'dotenv';
+
+// Load environment variables FIRST before any other imports
+dotenv.config();
+
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
 
 // Import routes
 import authRoutes from './routes/auth.js';
 import apiRoutes from './routes/api.js';
 import uploadRoutes from './routes/upload.js';
-
-// Load environment variables
-dotenv.config();
+import reviewRoutes from './routes/reviews.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,12 +27,21 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log('Request body:', req.body);
+  next();
+});
+
 // Serve static files from uploads directory
 app.use('/uploads', express.static('uploads'));
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/reviews', reviewRoutes);
+
 app.use('/api', apiRoutes);
 
 // Basic route
