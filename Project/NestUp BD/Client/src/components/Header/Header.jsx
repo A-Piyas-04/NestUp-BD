@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../Shared/Button/Button';
+import NotificationBell from '../Notifications/NotificationBell';
 import './Header.css';
 
 const Header = () => {
@@ -68,6 +69,7 @@ const Header = () => {
               >
                 Dashboard
               </NavLink>
+              <NotificationBell />
               <Button 
                 onClick={handleLogout}
                 variant="logoutBtn"
