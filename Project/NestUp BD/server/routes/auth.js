@@ -4,6 +4,8 @@ import { generateToken, verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
+console.log('Auth routes module loaded successfully');
+
 // Register route
 router.post('/register', async (req, res) => {
   try {
@@ -76,23 +78,33 @@ router.post('/register', async (req, res) => {
 
 // Login route
 router.post('/login', async (req, res) => {
+  console.log('=== LOGIN REQUEST START ===');
+  console.log('Request body:', req.body);
+  console.log('Login request received:', { email: req.body.email, hasPassword: !!req.body.password });
   try {
     const { email, password } = req.body;
     
     // Validation
     if (!email || !password) {
+      console.log('Login validation failed: missing email or password');
       return res.status(400).json({ message: 'Email and password are required' });
     }
     
+    console.log('Looking for user with email:', email.toLowerCase());
     // Find user
     const user = await User.findOne({ email: email.toLowerCase() });
+    console.log('User found:', !!user);
     if (!user) {
+      console.log('User not found for email:', email);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
     
+    console.log('Comparing password...');
     // Check password
     const isPasswordValid = await user.comparePassword(password);
+    console.log('Password valid:', isPasswordValid);
     if (!isPasswordValid) {
+      console.log('Password comparison failed');
       return res.status(401).json({ message: 'Invalid email or password' });
     }
     
