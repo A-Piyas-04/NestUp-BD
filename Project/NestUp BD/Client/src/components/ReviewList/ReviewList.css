@@ -1,0 +1,359 @@
+.review-list-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Empty State */
+.empty-reviews {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: var(--gray-50, #f9fafb);
+  border-radius: var(--radius-lg, 12px);
+  border: 2px dashed var(--gray-300, #d1d5db);
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+.empty-reviews h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gray-700, #374151);
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-reviews p {
+  font-size: 1rem;
+  color: var(--gray-500, #6b7280);
+  margin: 0;
+}
+
+/* Review Statistics */
+.review-stats {
+  background: white;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+}
+
+.stats-summary {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.average-rating {
+  text-align: center;
+}
+
+.rating-number {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--primary-600, #2563eb);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.rating-stars {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.star {
+  font-size: 1.5rem;
+}
+
+.star.filled {
+  color: var(--warning-400, #fbbf24);
+}
+
+.star.empty {
+  color: var(--gray-300, #d1d5db);
+  filter: grayscale(100%);
+}
+
+.total-reviews {
+  font-size: 0.95rem;
+  color: var(--gray-600, #4b5563);
+}
+
+.rating-distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rating-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.rating-label {
+  font-size: 0.875rem;
+  color: var(--gray-700, #374151);
+  min-width: 60px;
+  font-weight: 500;
+}
+
+.rating-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--gray-200, #e5e7eb);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.rating-bar-fill {
+  height: 100%;
+  background: var(--warning-400, #fbbf24);
+  transition: width 0.3s ease;
+}
+
+.rating-count {
+  font-size: 0.875rem;
+  color: var(--gray-500, #6b7280);
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Filters */
+.review-filters {
+  background: white;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: var(--gray-50, #f9fafb);
+  border-bottom: 1px solid var(--gray-200, #e5e7eb);
+}
+
+.filters-header h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-700, #374151);
+  margin: 0;
+}
+
+.toggle-filters-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: var(--gray-500, #6b7280);
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.toggle-filters-btn:hover {
+  color: var(--gray-700, #374151);
+}
+
+.filters-panel {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-700, #374151);
+}
+
+.search-input,
+.filter-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gray-300, #d1d5db);
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.875rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: var(--primary-500, #3b82f6);
+  box-shadow: 0 0 0 3px var(--primary-100, #dbeafe);
+}
+
+.clear-filters-btn {
+  background: var(--gray-100, #f3f4f6);
+  color: var(--gray-700, #374151);
+  border: 1px solid var(--gray-300, #d1d5db);
+  border-radius: var(--radius-md, 8px);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: end;
+}
+
+.clear-filters-btn:hover {
+  background: var(--gray-200, #e5e7eb);
+  border-color: var(--gray-400, #9ca3af);
+}
+
+/* Reviews Header */
+.reviews-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--gray-200, #e5e7eb);
+}
+
+.reviews-header h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-800, #1f2937);
+  margin: 0;
+}
+
+/* Reviews List */
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* No Results */
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  background: var(--gray-50, #f9fafb);
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--gray-200, #e5e7eb);
+}
+
+.no-results p {
+  font-size: 1rem;
+  color: var(--gray-600, #4b5563);
+  margin: 0 0 1rem 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .review-stats {
+    padding: 1.5rem;
+  }
+  
+  .rating-number {
+    font-size: 2.5rem;
+  }
+  
+  .rating-distribution {
+    gap: 0.5rem;
+  }
+  
+  .rating-bar-item {
+    gap: 0.75rem;
+  }
+  
+  .rating-label {
+    min-width: 50px;
+    font-size: 0.8rem;
+  }
+  
+  .rating-count {
+    min-width: 35px;
+    font-size: 0.8rem;
+  }
+  
+  .filters-panel {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  
+  .filters-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .reviews-list {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .review-list-container {
+    padding: 0 0.5rem;
+  }
+  
+  .review-stats {
+    padding: 1rem;
+  }
+  
+  .rating-number {
+    font-size: 2rem;
+  }
+  
+  .star {
+    font-size: 1.25rem;
+  }
+  
+  .empty-reviews {
+    padding: 2rem 1rem;
+  }
+  
+  .empty-icon {
+    font-size: 3rem;
+  }
+  
+  .filters-panel {
+    padding: 0.75rem;
+  }
+  
+  .rating-bar-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .rating-label,
+  .rating-count {
+    min-width: auto;
+  }
+  
+  .rating-bar {
+    width: 100%;
+  }
+}
+
+/* Animation for filter panel */
+.filters-panel {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
