@@ -14,7 +14,7 @@
 
 ## Authentication
 - **JWT-based:** Tokens are generated on login/register and sent to the client.
-- **Mock User Data:** Users are stored in-memory (array) for now; DB integration is planned.
+- **Database Integration:** Users are stored in MongoDB with proper schema validation.
 - **Protected Routes:** Use `verifyToken` middleware to restrict access.
 
 ## Error Handling
@@ -23,4 +23,4 @@
 ## Developer Notes
 - All routes are modularized for clarity.
 - Auth logic is separated from business logic.
-- Add database integration for production use. 
+- MongoDB integration is implemented with Mongoose ODM.

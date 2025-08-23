@@ -47,10 +47,11 @@ NestUp BD is a modern web application designed to connect property seekers with 
 
 ### Backend Setup
 
-1. Navigate to the Server directory:
-   ```
-   cd Server
-   ```
+1. Navigate to the server directory:
+
+```bash
+cd server
+```
 
 2. Install server dependencies:
    ```
@@ -97,7 +98,7 @@ nestup-bd/
 │   │   └── App.jsx     # Main app component
 │   ├── package.json    # Frontend dependencies
 │   └── vite.config.js  # Vite configuration
-├── Server/             # Backend server code
+├── server/             # Backend server code
 │   ├── middleware/     # Express middleware
 │   ├── models/         # Database models
 │   ├── routes/         # API routes
