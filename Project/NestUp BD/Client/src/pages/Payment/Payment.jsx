@@ -3,8 +3,8 @@
 // Steps: Personal Info -> Payment Method -> Confirmation
 // Uses local state for form data and step navigation.
 
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
@@ -25,8 +25,18 @@ import './Payment.css';
 const Payment = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { serviceId: urlServiceId } = useParams();
   const { user } = useAuth();
   
+  // Debug: Log what we received from navigation
+  console.log('Payment component - location.state:', location.state);
+  console.log('Payment component - propertyDetails:', location.state?.propertyDetails);
+  console.log('Payment component - urlServiceId:', urlServiceId);
+  
+  // State for loading service details
+  const [isLoadingService, setIsLoadingService] = useState(false);
+  const [serviceError, setServiceError] = useState(null);
+
   // State for all payment-related data
   const [paymentData, setPaymentData] = useState({
     propertyDetails: location.state?.propertyDetails || {
@@ -35,7 +45,10 @@ const Payment = () => {
       price: '৳7,500',
       duration: '6 months',
       totalAmount: '৳45,000',
-      image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60'
+      image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
+      serviceId: urlServiceId || null,
+      startDate: null,
+      endDate: null
     },
     paymentMethod: 'mobile_banking',
     paymentDetails: {
@@ -64,6 +77,50 @@ const Payment = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   // Stores validation errors for the current step
   const [errors, setErrors] = useState({});
+
+  // Fetch service details if serviceId is provided via URL but propertyDetails are incomplete
+  useEffect(() => {
+    const fetchServiceDetails = async () => {
+      // Only fetch if we have serviceId from URL and no complete propertyDetails from state
+      if (urlServiceId && (!location.state?.propertyDetails || !location.state.propertyDetails.title || location.state.propertyDetails.title === 'Student Studio Apartment')) {
+        setIsLoadingService(true);
+        setServiceError(null);
+        
+        try {
+          const response = await fetch(`/api/services/${urlServiceId}`);
+          if (!response.ok) {
+            throw new Error('Service not found');
+          }
+          
+          const service = await response.json();
+          
+          // Update paymentData with fetched service details
+          setPaymentData(prev => ({
+            ...prev,
+            propertyDetails: {
+              serviceId: service._id,
+              title: service.title,
+              location: `${service.location.area}, ${service.location.district}`,
+              price: `৳${service.pricing.basePrice.toLocaleString()}`,
+              duration: '1 month', // Default duration
+              totalAmount: `৳${service.pricing.totalAmount.toLocaleString()}`,
+              image: service.images?.[0] || service.thumbnail,
+              startDate: service.availability.availableFrom,
+              endDate: service.availability.availableTo,
+              fees: service.pricing.fees
+            }
+          }));
+        } catch (error) {
+          console.error('Error fetching service details:', error);
+          setServiceError('Failed to load service details. Please try again.');
+        } finally {
+          setIsLoadingService(false);
+        }
+      }
+    };
+
+    fetchServiceDetails();
+  }, [urlServiceId, location.state]);
 
   /**
    * Handles input changes for nested form sections.
@@ -144,29 +201,39 @@ const Payment = () => {
     setIsProcessing(true);
     
     try {
+      // Debug: Log payment data before validation
+      console.log('handlePayment - paymentData:', paymentData);
+      console.log('handlePayment - serviceId:', paymentData.propertyDetails.serviceId);
+      
       // Validate serviceId before making the request
       if (!paymentData.propertyDetails.serviceId) {
-        throw new Error('Service ID is missing. Please select a property again.');
+        console.error('Service ID is missing from paymentData.propertyDetails');
+        alert('Service ID is missing. This usually happens when navigating directly to the payment page. Please go back to the property listing and click "Book" again.');
+        navigate('/search');
+        return;
       }
       
       // Step 1: Create booking
+      const token = localStorage.getItem('token');
       const bookingResponse = await fetch('/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         credentials: 'include',
         body: JSON.stringify({
           serviceId: paymentData.propertyDetails.serviceId,
           startDate: paymentData.propertyDetails.startDate,
           endDate: paymentData.propertyDetails.endDate,
-          guestInfo: {
-            numberOfGuests: 1,
-            specialRequests: ''
-          },
-          contactInfo: {
+          guests: 1,
+          specialRequests: '',
+          personalInfo: {
             phone: paymentData.personalInfo.phone,
-            email: paymentData.personalInfo.email
+            email: paymentData.personalInfo.email,
+            fullName: paymentData.personalInfo.fullName,
+            nidNumber: paymentData.personalInfo.nidNumber,
+            address: paymentData.personalInfo.address
           }
         })
       });
@@ -184,6 +251,7 @@ const Payment = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         credentials: 'include',
         body: JSON.stringify({
@@ -265,6 +333,48 @@ const Payment = () => {
         return null;
     }
   };
+
+  // Show loading state while fetching service details
+  if (isLoadingService) {
+    return (
+      <div>
+        <Header />
+        <div className="payment-page">
+          <div className="payment-container">
+            <div className="payment-header">
+              <h1>Loading Service Details...</h1>
+              <p>Please wait while we fetch the property information</p>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Show error state if service fetch failed
+  if (serviceError) {
+    return (
+      <div>
+        <Header />
+        <div className="payment-page">
+          <div className="payment-container">
+            <div className="payment-header">
+              <h1>Error Loading Service</h1>
+              <p>{serviceError}</p>
+              <button 
+                onClick={() => navigate('/search')} 
+                style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+              >
+                Back to Search
+              </button>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div>
