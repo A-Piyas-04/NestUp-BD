@@ -59,6 +59,13 @@
   right: 15px;
 }
 
+.booked-badge {
+  background-color: rgba(239, 68, 68, 0.9);
+  color: white;
+  top: 50px;
+  left: 15px;
+}
+
 .listing-content {
   padding: 1.5rem;
   display: flex;
@@ -122,10 +129,61 @@
   margin-left: 0.5rem;
 }
 
+/* Review Section */
+.listing-reviews {
+  margin: 0.75rem 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--gray-200, #e5e7eb);
+}
+
+.review-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stars {
+  display: flex;
+  gap: 0.1rem;
+}
+
+.star {
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.star.filled {
+  color: var(--warning-400, #fbbf24);
+}
+
+.star.half {
+  color: var(--warning-400, #fbbf24);
+  position: relative;
+}
+
+.star.half::after {
+  content: '☆';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  color: var(--gray-300, #d1d5db);
+  overflow: hidden;
+}
+
+.star.empty {
+  color: var(--gray-300, #d1d5db);
+}
+
+.rating-text {
+  font-size: 0.8rem;
+  color: var(--gray-600, #4b5563);
+  font-weight: 500;
+}
+
 .listing-actions {
   display: flex;
   gap: 0.5rem;
-  margin-top: auto;
+  margin-top: 1rem;
 }
 
 .listing-button {
@@ -188,6 +246,68 @@
   background-color: var(--gray-400);
   transform: none;
   box-shadow: none;
+}
+
+.listing-button.disabled {
+  background-color: #e74c3c;
+  color: white;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.8;
+  position: relative;
+  overflow: hidden;
+}
+
+.listing-button.disabled:hover {
+  background-color: #e74c3c;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.8;
+}
+
+.listing-button.disabled::before {
+  content: '🔒';
+  margin-right: 0.5rem;
+}
+
+.listing-button.disabled::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.8);
+  transform: translateY(-50%) rotate(-15deg);
+}
+
+/* Specific styling for booked services */
+.listing-button.booked {
+  background-color: #e74c3c !important;
+  color: white !important;
+  font-weight: bold;
+  border: 2px solid #c0392b;
+}
+
+.listing-button.booked:hover {
+  background-color: #c0392b !important;
+}
+
+/* Specific styling for own listings */
+.listing-button.own-listing {
+  background-color: #95a5a6 !important;
+  color: white !important;
+  border: 2px solid #7f8c8d;
+}
+
+.listing-button.own-listing::before {
+  content: '👤';
+  margin-right: 0.5rem;
+}
+
+.listing-button.own-listing::after {
+  display: none;
 }
 
 @media (max-width: 768px) {
