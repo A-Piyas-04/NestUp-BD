@@ -23,6 +23,11 @@ const DashboardSidebar = ({ isOpen }) => {
       icon: '🏠'
     },
     {
+      path: '/dashboard/booking-approvals',
+      label: 'Booking Approvals',
+      icon: '✅'
+    },
+    {
       path: '/dashboard/nest-reviews',
       label: 'Nest Reviews',
       icon: '⭐'
@@ -80,7 +85,7 @@ const DashboardSidebar = ({ isOpen }) => {
           </div>
           <div>
             <p className="profile-name">{user?.name || 'User'}</p>
-            <p className="profile-email">{user?.email || 'user@example.com'}</p>
+            <p className="profile-email">{user?.email || ''}</p>
           </div>
         </div>
         <button className="logout-button" onClick={handleLogout}>

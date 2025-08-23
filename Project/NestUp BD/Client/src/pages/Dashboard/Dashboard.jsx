@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import DashboardSidebar from './DashboardSidebar';
-import Overview from './views/Overview';
-import MyNests from './views/MyNests';
-import NestReviews from './views/NestReviews';
-import BookedNests from './views/BookedNests';
-import Wishlist from './views/Wishlist';
-import ProfileInfo from './views/ProfileInfo';
-import PaymentHistory from './views/PaymentHistory';
+import Overview from './views/overview/Overview';
+import MyNests from './views/nests/MyNests';
+import BookingApprovals from './views/bookings/BookingApprovals';
+import NestReviews from './views/reviews/NestReviews';
+import BookedNests from './views/bookings/BookedNests';
+import Wishlist from './views/nests/Wishlist';
+import ProfileInfo from './views/profile/ProfileInfo';
+import PaymentHistory from './views/payments/PaymentHistory';
 
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
@@ -43,6 +44,7 @@ const Dashboard = () => {
             <Routes location={location} key={location.pathname}>
               <Route path="/" element={<motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35 }}><Overview /></motion.div>} />
               <Route path="/my-nests" element={<motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35 }}><MyNests /></motion.div>} />
+              <Route path="/booking-approvals" element={<motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35 }}><BookingApprovals /></motion.div>} />
               <Route path="/nest-reviews" element={<motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35 }}><NestReviews /></motion.div>} />
               <Route path="/booked-nests" element={<motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35 }}><BookedNests /></motion.div>} />
               <Route path="/wishlist" element={<motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35 }}><Wishlist /></motion.div>} />
