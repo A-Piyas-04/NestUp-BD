@@ -1,6 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../../context/AuthContext';
-import '../../Dashboard.css';
+import { 
+  User, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  Calendar, 
+  Briefcase, 
+  Shield, 
+  Bell, 
+  Globe, 
+  Camera,
+  Edit3,
+  Save,
+  X,
+  Check,
+  AlertCircle
+} from 'lucide-react';
 import './ProfileInfo.css';
 
 const ProfileInfo = () => {
@@ -11,8 +27,8 @@ const ProfileInfo = () => {
     phone: '',
     nidNumber: '',
     dateOfBirth: '',
-    gender: 'male',
-    occupation: 'student',
+    gender: '',
+    occupation: '',
     institution: '',
     department: '',
     studentId: '',
@@ -38,9 +54,11 @@ const ProfileInfo = () => {
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [editingSection, setEditingSection] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Load user data when component mounts or user changes
   useEffect(() => {
@@ -51,8 +69,8 @@ const ProfileInfo = () => {
         phone: user.profile?.phone || '',
         nidNumber: user.profile?.nidNumber || '',
         dateOfBirth: user.profile?.dateOfBirth ? user.profile.dateOfBirth.split('T')[0] : '',
-        gender: user.profile?.gender || 'male',
-        occupation: user.profile?.occupation || 'student',
+        gender: user.profile?.gender || '',
+        occupation: user.profile?.occupation || '',
         institution: user.profile?.institution || '',
         department: user.profile?.department || '',
         studentId: user.profile?.studentId || '',
@@ -81,6 +99,7 @@ const ProfileInfo = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    setHasUnsavedChanges(true);
     
     if (name.includes('.')) {
       const [section, field] = name.split('.');
@@ -102,8 +121,7 @@ const ProfileInfo = () => {
   const handleProfilePicture = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // In a real app, you would upload this file to a server
-      // For now, we'll just store it in state as a URL
+      setHasUnsavedChanges(true);
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfileData(prev => ({
@@ -122,7 +140,6 @@ const ProfileInfo = () => {
     setSuccessMessage('');
 
     try {
-      // Prepare data for server
       const updateData = {
         name: profileData.fullName,
         profile: {
@@ -146,8 +163,9 @@ const ProfileInfo = () => {
       if (success) {
         setSuccessMessage('Profile updated successfully!');
         setIsEditing(false);
+        setEditingSection(null);
+        setHasUnsavedChanges(false);
         
-        // Clear success message after 3 seconds
         setTimeout(() => {
           setSuccessMessage('');
         }, 3000);
@@ -162,406 +180,466 @@ const ProfileInfo = () => {
     }
   };
 
-  return (
-    <div className="settings-container">
-      <div className="settings-header">
-        <h2>Profile Information</h2>
-        <p>Update your personal details and preferences</p>
-      </div>
+  const toggleEdit = () => {
+    if (isEditing && hasUnsavedChanges) {
+      if (window.confirm('You have unsaved changes. Are you sure you want to cancel?')) {
+        setIsEditing(false);
+        setEditingSection(null);
+        setHasUnsavedChanges(false);
+        // Reset data to original state
+        if (user) {
+          setProfileData({
+            fullName: user.name || '',
+            email: user.email || '',
+            phone: user.profile?.phone || '',
+            nidNumber: user.profile?.nidNumber || '',
+            dateOfBirth: user.profile?.dateOfBirth ? user.profile.dateOfBirth.split('T')[0] : '',
+            gender: user.profile?.gender || '',
+            occupation: user.profile?.occupation || '',
+            institution: user.profile?.institution || '',
+            department: user.profile?.department || '',
+            studentId: user.profile?.studentId || '',
+            address: {
+              division: user.profile?.address?.division || '',
+              district: user.profile?.address?.district || '',
+              area: user.profile?.address?.area || '',
+              fullAddress: user.profile?.address?.fullAddress || '',
+              postalCode: user.profile?.address?.postalCode || ''
+            },
+            emergencyContact: {
+              name: user.profile?.emergencyContact?.name || '',
+              relation: user.profile?.emergencyContact?.relation || '',
+              phone: user.profile?.emergencyContact?.phone || ''
+            },
+            preferences: {
+              receiveNotifications: user.profile?.preferences?.receiveNotifications ?? true,
+              newsletterSubscription: user.profile?.preferences?.newsletterSubscription ?? false,
+              twoFactorAuth: user.profile?.preferences?.twoFactorAuth ?? false,
+              language: user.profile?.preferences?.language || 'english'
+            },
+            profilePicture: user.profile?.profilePicture || null
+          });
+        }
+      }
+    } else {
+      setIsEditing(!isEditing);
+      setEditingSection(null);
+    }
+  };
 
+  const ProfileHeader = () => (
+    <div className="profile-header-modern">
+      <div className="profile-avatar-section">
+        <div className="profile-avatar-container">
+          {profileData.profilePicture ? (
+            <img 
+              src={profileData.profilePicture} 
+              alt="Profile" 
+              className="profile-avatar" 
+            />
+          ) : (
+            <div className="profile-avatar-placeholder">
+              <User size={48} />
+            </div>
+          )}
+          {isEditing && (
+            <label className="avatar-upload-overlay">
+              <Camera size={20} />
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleProfilePicture}
+                className="avatar-upload-input"
+              />
+            </label>
+          )}
+        </div>
+        <div className="profile-info">
+          <h1 className="profile-name">{profileData.fullName || 'Your Name'}</h1>
+          <p className="profile-role">
+            {profileData.occupation === 'student' 
+              ? `Student at ${profileData.institution || 'Institution'}` 
+              : (profileData.occupation || 'No occupation specified')}
+          </p>
+          <div className="profile-contact">
+            <span className="contact-item">
+              <Mail size={16} />
+              {profileData.email}
+            </span>
+            {profileData.phone && (
+              <span className="contact-item">
+                <Phone size={16} />
+                {profileData.phone}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="profile-actions">
+        {hasUnsavedChanges && (
+          <div className="unsaved-indicator">
+            <AlertCircle size={16} />
+            Unsaved changes
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const FormField = ({ label, name, type = 'text', value, options, icon: Icon, required = false, disabled = false }) => (
+    <div className="form-field">
+      <label className="form-label">
+        {Icon && <Icon size={16} />}
+        {label}
+        {required && <span className="required">*</span>}
+      </label>
+      {type === 'select' ? (
+        <select
+          name={name}
+          value={value}
+          onChange={handleChange}
+          disabled={!isEditing || disabled}
+          className="form-input"
+          required={required}
+        >
+          {options.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      ) : type === 'textarea' ? (
+        <textarea
+          name={name}
+          value={value}
+          onChange={handleChange}
+          disabled={!isEditing || disabled}
+          className="form-input form-textarea"
+          required={required}
+          rows={3}
+        />
+      ) : type === 'checkbox' ? (
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            name={name}
+            checked={value}
+            onChange={handleChange}
+            disabled={!isEditing || disabled}
+            className="checkbox-input"
+          />
+          <span className="checkbox-custom"></span>
+          <span className="checkbox-text">{label}</span>
+        </label>
+      ) : (
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={handleChange}
+          disabled={!isEditing || disabled}
+          className="form-input"
+          required={required}
+        />
+      )}
+    </div>
+  );
+
+  return (
+    <div className="profile-container-modern">
+      {/* Messages */}
       {successMessage && (
-        <div className="success-message">
+        <div className="message message-success">
+          <Check size={20} />
           {successMessage}
         </div>
       )}
 
       {errorMessage && (
-        <div className="error-message">
+        <div className="message message-error">
+          <AlertCircle size={20} />
           {errorMessage}
         </div>
       )}
 
-      <div className="profile-card">
-        <div className="profile-header">
-          <div className="profile-picture-container">
-            {profileData.profilePicture ? (
-              <img 
-                src={profileData.profilePicture} 
-                alt="Profile" 
-                className="profile-picture" 
-              />
-            ) : (
-              <div className="profile-picture-placeholder">
-                {profileData.fullName.charAt(0)}
-              </div>
-            )}
-            {isEditing && (
-              <div className="profile-picture-upload">
-                <label htmlFor="profile-picture" className="upload-label">
-                  Change Picture
-                </label>
-                <input 
-                  type="file" 
-                  id="profile-picture" 
-                  accept="image/*" 
-                  onChange={handleProfilePicture}
-                  className="file-input"
-                />
-              </div>
-            )}
-          </div>
-          <div className="profile-title">
-            <h3>{profileData.fullName}</h3>
-            <p>{profileData.occupation === 'student' ? `Student at ${profileData.institution}` : profileData.occupation}</p>
-          </div>
+      {/* Top Action Buttons */}
+      <div className="profile-top-actions">
+        {isEditing ? (
+          <>
+            <button 
+              className="btn-action btn-save"
+              onClick={handleSubmit}
+              disabled={isLoading || !hasUnsavedChanges}
+            >
+              {isLoading ? (
+                <>
+                  <div className="spinner" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save size={18} />
+                  Save Changes
+                </>
+              )}
+            </button>
+            <button 
+              className="btn-action btn-cancel"
+              onClick={toggleEdit}
+              disabled={isLoading}
+            >
+              <X size={18} />
+              Cancel
+            </button>
+          </>
+        ) : (
           <button 
-            className="edit-button"
-            onClick={() => setIsEditing(!isEditing)}
+            className="btn-action btn-edit"
+            onClick={toggleEdit}
+            disabled={isLoading}
           >
-            {isEditing ? 'Cancel' : 'Edit Profile'}
+            <Edit3 size={18} />
+            Edit Profile
           </button>
+        )}
+      </div>
+
+      {/* Profile Header */}
+      <ProfileHeader />
+
+      {/* Profile Sections */}
+      <div className="profile-sections">
+        {/* Personal Information */}
+        <div className="profile-section">
+          <div className="section-header">
+            <div className="section-title">
+              <User size={20} />
+              <h3>Personal Information</h3>
+            </div>
+          </div>
+          <div className="section-content">
+            <div className="form-grid">
+              <FormField
+                label="Full Name"
+                name="fullName"
+                value={profileData.fullName}
+                icon={User}
+                required
+              />
+              <FormField
+                label="Email Address"
+                name="email"
+                type="email"
+                value={profileData.email}
+                icon={Mail}
+                disabled
+              />
+              <FormField
+                label="Phone Number"
+                name="phone"
+                type="tel"
+                value={profileData.phone}
+                icon={Phone}
+              />
+              <FormField
+                label="NID Number"
+                name="nidNumber"
+                value={profileData.nidNumber}
+              />
+              <FormField
+                label="Date of Birth"
+                name="dateOfBirth"
+                type="date"
+                value={profileData.dateOfBirth}
+                icon={Calendar}
+              />
+              <FormField
+                label="Gender"
+                name="gender"
+                type="select"
+                value={profileData.gender}
+                options={[
+                  { value: '', label: 'Select Gender' },
+                  { value: 'male', label: 'Male' },
+                  { value: 'female', label: 'Female' },
+                  { value: 'other', label: 'Other' }
+                ]}
+              />
+            </div>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="profile-form">
-          <div className="form-section">
-            <h4>Personal Information</h4>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="fullName">Full Name</label>
-                <input 
-                  type="text" 
-                  id="fullName" 
-                  name="fullName" 
-                  value={profileData.fullName} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="email">Email</label>
-                <input 
-                  type="email" 
-                  id="email" 
-                  name="email" 
-                  value={profileData.email} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="phone">Phone Number</label>
-                <input 
-                  type="tel" 
-                  id="phone" 
-                  name="phone" 
-                  value={profileData.phone} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="nidNumber">NID Number</label>
-                <input 
-                  type="text" 
-                  id="nidNumber" 
-                  name="nidNumber" 
-                  value={profileData.nidNumber} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="dateOfBirth">Date of Birth</label>
-                <input 
-                  type="date" 
-                  id="dateOfBirth" 
-                  name="dateOfBirth" 
-                  value={profileData.dateOfBirth} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="gender">Gender</label>
-                <select 
-                  id="gender" 
-                  name="gender" 
-                  value={profileData.gender} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                >
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
+        {/* Professional Information */}
+        <div className="profile-section">
+          <div className="section-header">
+            <div className="section-title">
+              <Briefcase size={20} />
+              <h3>Professional Information</h3>
             </div>
           </div>
-
-          <div className="form-section">
-            <h4>Occupation Details</h4>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="occupation">Occupation</label>
-                <select 
-                  id="occupation" 
-                  name="occupation" 
-                  value={profileData.occupation} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                >
-                  <option value="student">Student</option>
-                  <option value="professional">Professional</option>
-                  <option value="business">Business</option>
-                  <option value="government">Government Employee</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
+          <div className="section-content">
+            <div className="form-grid">
+              <FormField
+                label="Occupation"
+                name="occupation"
+                type="select"
+                value={profileData.occupation}
+                icon={Briefcase}
+                options={[
+                  { value: '', label: 'Select Occupation' },
+                  { value: 'student', label: 'Student' },
+                  { value: 'professional', label: 'Professional' },
+                  { value: 'business', label: 'Business Owner' },
+                  { value: 'freelancer', label: 'Freelancer' },
+                  { value: 'other', label: 'Other' }
+                ]}
+              />
               {profileData.occupation === 'student' && (
-                <div className="form-group">
-                  <label htmlFor="institution">Institution</label>
-                  <input 
-                    type="text" 
-                    id="institution" 
-                    name="institution" 
-                    value={profileData.institution} 
-                    onChange={handleChange}
-                    disabled={!isEditing}
+                <>
+                  <FormField
+                    label="Institution"
+                    name="institution"
+                    value={profileData.institution}
                   />
-                </div>
+                  <FormField
+                    label="Department"
+                    name="department"
+                    value={profileData.department}
+                  />
+                  <FormField
+                    label="Student ID"
+                    name="studentId"
+                    value={profileData.studentId}
+                  />
+                </>
               )}
             </div>
-
-            {profileData.occupation === 'student' && (
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="department">Department</label>
-                  <input 
-                    type="text" 
-                    id="department" 
-                    name="department" 
-                    value={profileData.department} 
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="studentId">Student ID</label>
-                  <input 
-                    type="text" 
-                    id="studentId" 
-                    name="studentId" 
-                    value={profileData.studentId} 
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                  />
-                </div>
-              </div>
-            )}
           </div>
+        </div>
 
-          <div className="form-section">
-            <h4>Address Information</h4>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="address.division">Division</label>
-                <select 
-                  id="address.division" 
-                  name="address.division" 
-                  value={profileData.address.division} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                >
-                  <option value="Dhaka">Dhaka</option>
-                  <option value="Chittagong">Chittagong</option>
-                  <option value="Rajshahi">Rajshahi</option>
-                  <option value="Khulna">Khulna</option>
-                  <option value="Barisal">Barisal</option>
-                  <option value="Sylhet">Sylhet</option>
-                  <option value="Rangpur">Rangpur</option>
-                  <option value="Mymensingh">Mymensingh</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="address.district">District</label>
-                <input 
-                  type="text" 
-                  id="address.district" 
-                  name="address.district" 
-                  value={profileData.address.district} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="address.area">Area</label>
-                <input 
-                  type="text" 
-                  id="address.area" 
-                  name="address.area" 
-                  value={profileData.address.area} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="address.postalCode">Postal Code</label>
-                <input 
-                  type="text" 
-                  id="address.postalCode" 
-                  name="address.postalCode" 
-                  value={profileData.address.postalCode} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group full-width">
-                <label htmlFor="address.fullAddress">Full Address</label>
-                <textarea 
-                  id="address.fullAddress" 
-                  name="address.fullAddress" 
-                  value={profileData.address.fullAddress} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  rows="3"
-                ></textarea>
-              </div>
+        {/* Address Information */}
+        <div className="profile-section">
+          <div className="section-header">
+            <div className="section-title">
+              <MapPin size={20} />
+              <h3>Address Information</h3>
             </div>
           </div>
-
-          <div className="form-section">
-            <h4>Emergency Contact</h4>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="emergencyContact.name">Contact Name</label>
-                <input 
-                  type="text" 
-                  id="emergencyContact.name" 
-                  name="emergencyContact.name" 
-                  value={profileData.emergencyContact.name} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="emergencyContact.relation">Relation</label>
-                <input 
-                  type="text" 
-                  id="emergencyContact.relation" 
-                  name="emergencyContact.relation" 
-                  value={profileData.emergencyContact.relation} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-              </div>
+          <div className="section-content">
+            <div className="form-grid">
+              <FormField
+                label="Division"
+                name="address.division"
+                value={profileData.address.division}
+                icon={MapPin}
+              />
+              <FormField
+                label="District"
+                name="address.district"
+                value={profileData.address.district}
+              />
+              <FormField
+                label="Area"
+                name="address.area"
+                value={profileData.address.area}
+              />
+              <FormField
+                label="Postal Code"
+                name="address.postalCode"
+                value={profileData.address.postalCode}
+              />
             </div>
+            <FormField
+              label="Full Address"
+              name="address.fullAddress"
+              type="textarea"
+              value={profileData.address.fullAddress}
+            />
+          </div>
+        </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="emergencyContact.phone">Contact Phone</label>
-                <input 
-                  type="tel" 
-                  id="emergencyContact.phone" 
-                  name="emergencyContact.phone" 
-                  value={profileData.emergencyContact.phone} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
+        {/* Emergency Contact */}
+        <div className="profile-section">
+          <div className="section-header">
+            <div className="section-title">
+              <Shield size={20} />
+              <h3>Emergency Contact</h3>
+            </div>
+          </div>
+          <div className="section-content">
+            <div className="form-grid">
+              <FormField
+                label="Contact Name"
+                name="emergencyContact.name"
+                value={profileData.emergencyContact.name}
+                icon={User}
+              />
+              <FormField
+                label="Relationship"
+                name="emergencyContact.relation"
+                value={profileData.emergencyContact.relation}
+              />
+              <FormField
+                label="Phone Number"
+                name="emergencyContact.phone"
+                type="tel"
+                value={profileData.emergencyContact.phone}
+                icon={Phone}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Preferences */}
+        <div className="profile-section">
+          <div className="section-header">
+            <div className="section-title">
+              <Bell size={20} />
+              <h3>Preferences</h3>
+            </div>
+          </div>
+          <div className="section-content">
+            <div className="preferences-grid">
+              <div className="preference-item">
+                <FormField
+                  label="Receive Notifications"
+                  name="preferences.receiveNotifications"
+                  type="checkbox"
+                  value={profileData.preferences.receiveNotifications}
+                />
+              </div>
+              <div className="preference-item">
+                <FormField
+                  label="Newsletter Subscription"
+                  name="preferences.newsletterSubscription"
+                  type="checkbox"
+                  value={profileData.preferences.newsletterSubscription}
+                />
+              </div>
+              <div className="preference-item">
+                <FormField
+                  label="Two-Factor Authentication"
+                  name="preferences.twoFactorAuth"
+                  type="checkbox"
+                  value={profileData.preferences.twoFactorAuth}
+                />
+              </div>
+              <div className="preference-item">
+                <FormField
+                  label="Preferred Language"
+                  name="preferences.language"
+                  type="select"
+                  value={profileData.preferences.language}
+                  icon={Globe}
+                  options={[
+                    { value: 'english', label: 'English' },
+                    { value: 'bangla', label: 'Bangla' }
+                  ]}
                 />
               </div>
             </div>
           </div>
-
-          <div className="form-section">
-            <h4>Preferences</h4>
-            <div className="form-row checkbox-row">
-              <div className="form-group checkbox-group">
-                <input 
-                  type="checkbox" 
-                  id="preferences.receiveNotifications" 
-                  name="preferences.receiveNotifications" 
-                  checked={profileData.preferences.receiveNotifications} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-                <label htmlFor="preferences.receiveNotifications">Receive Notifications</label>
-              </div>
-              <div className="form-group checkbox-group">
-                <input 
-                  type="checkbox" 
-                  id="preferences.newsletterSubscription" 
-                  name="preferences.newsletterSubscription" 
-                  checked={profileData.preferences.newsletterSubscription} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-                <label htmlFor="preferences.newsletterSubscription">Subscribe to Newsletter</label>
-              </div>
-            </div>
-            <div className="form-row checkbox-row">
-              <div className="form-group checkbox-group">
-                <input 
-                  type="checkbox" 
-                  id="preferences.twoFactorAuth" 
-                  name="preferences.twoFactorAuth" 
-                  checked={profileData.preferences.twoFactorAuth} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-                <label htmlFor="preferences.twoFactorAuth">Enable Two-Factor Authentication</label>
-              </div>
-            </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="preferences.language">Preferred Language</label>
-                <select 
-                  id="preferences.language" 
-                  name="preferences.language" 
-                  value={profileData.preferences.language} 
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                >
-                  <option value="english">English</option>
-                  <option value="bangla">Bangla</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {isEditing && (
-            <div className="form-actions">
-              <button 
-                type="submit" 
-                className="save-button"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Saving...' : 'Save Changes'}
-              </button>
-              <button 
-                type="button" 
-                className="cancel-button"
-                onClick={() => setIsEditing(false)}
-                disabled={isLoading}
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-        </form>
+        </div>
       </div>
     </div>
   );

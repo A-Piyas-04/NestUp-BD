@@ -14,6 +14,7 @@ import authRoutes from './routes/auth.js';
 import apiRoutes from './routes/api.js';
 import uploadRoutes from './routes/upload.js';
 import nestReviewRoutes from './routes/nestReviews.js';
+import profileRoutes from './routes/profile.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,6 +42,7 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/nest-reviews', nestReviewRoutes);
+app.use('/api/profile', profileRoutes);
 
 app.use('/api', apiRoutes);
 

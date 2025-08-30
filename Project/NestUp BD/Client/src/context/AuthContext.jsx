@@ -26,7 +26,26 @@ export const AuthProvider = ({ children }) => {
       
       if (response.ok) {
         const data = await response.json();
-        setUser(data.user);
+        
+        // Fetch complete profile data
+        try {
+          const profileResponse = await fetch('/api/profile/complete', {
+            credentials: 'include'
+          });
+          
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+            setUser({
+              ...data.user,
+              profile: profileData.profile
+            });
+          } else {
+            setUser(data.user);
+          }
+        } catch (profileError) {
+          console.error('Failed to fetch profile data:', profileError);
+          setUser(data.user);
+        }
       } else {
         // No valid cookie, user is not authenticated
         setUser(null);
@@ -63,23 +82,46 @@ export const AuthProvider = ({ children }) => {
   const updateUser = async (userData, saveToServer = false) => {
     if (saveToServer) {
       try {
-        const response = await fetch('/api/auth/profile', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
-          body: JSON.stringify(userData)
-        });
+        // Update basic user info if provided
+        if (userData.name || userData.email) {
+          const userResponse = await fetch('/api/auth/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              name: userData.name,
+              email: userData.email
+            })
+          });
 
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-          return true;
-        } else {
-          console.error('Failed to update profile on server');
-          return false;
+          if (!userResponse.ok) {
+            console.error('Failed to update user info on server');
+            return false;
+          }
         }
+
+        // Update profile data using new Profile API
+        if (userData.profile) {
+          const profileResponse = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(userData.profile)
+          });
+
+          if (!profileResponse.ok) {
+            console.error('Failed to update profile on server');
+            return false;
+          }
+        }
+
+        // Fetch updated user data
+        await fetchUserData();
+        return true;
       } catch (error) {
         console.error('Error updating profile:', error);
         return false;
