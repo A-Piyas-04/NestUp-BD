@@ -1060,8 +1060,14 @@ router.get('/payments', verifyToken, checkAuth, async (req, res) => {
       status: status !== 'all' ? status : undefined,
       limit: Number(limit)
     })
-      .populate('service', 'title location price images')
-      .populate('booking', 'startDate endDate status confirmationCode')
+      .populate({
+        path: 'booking',
+        select: 'startDate endDate status confirmationCode service',
+        populate: {
+          path: 'service',
+          select: 'title location price images'
+        }
+      })
       .sort(sort)
       .skip(skip)
       .limit(Number(limit));
@@ -1098,8 +1104,14 @@ router.get('/payments', verifyToken, checkAuth, async (req, res) => {
 router.get('/payments/:id', verifyToken, checkAuth, async (req, res) => {
   try {
     const payment = await Payment.findById(req.params.id)
-      .populate('service', 'title location price propertyType images')
-      .populate('booking', 'startDate endDate status guests confirmationCode')
+      .populate({
+        path: 'booking',
+        select: 'startDate endDate status guests confirmationCode service',
+        populate: {
+          path: 'service',
+          select: 'title location price propertyType images'
+        }
+      })
       .populate('user', 'name email');
     
     if (!payment) {

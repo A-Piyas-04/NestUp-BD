@@ -8,7 +8,7 @@ const PaymentHistory = () => {
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState('all');
+  // Removed filter state - all payments will be shown as completed
   const [pagination, setPagination] = useState({
     current: 1,
     total: 1,
@@ -30,7 +30,7 @@ const PaymentHistory = () => {
           return;
         }
         
-        const response = await fetch(`/api/payments?status=${filter === 'all' ? '' : filter}&page=1&limit=10`, {
+        const response = await fetch(`/api/payments?page=1&limit=10`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
@@ -74,7 +74,7 @@ const PaymentHistory = () => {
     if (user) {
       fetchPaymentHistory();
     }
-  }, [user, filter]);
+  }, [user]);
 
   // Format payment method display - use enhanced field if available
   const formatPaymentMethod = (payment) => {
@@ -104,15 +104,8 @@ const PaymentHistory = () => {
   };
 
   const getStatusBadge = (status) => {
-    const statusConfig = {
-      completed: { text: 'Completed', class: 'status-completed' },
-      pending: { text: 'Pending', class: 'status-pending' },
-      failed: { text: 'Failed', class: 'status-failed' },
-      refunded: { text: 'Refunded', class: 'status-refunded' }
-    };
-    
-    const config = statusConfig[status] || { text: status, class: 'status-default' };
-    return <span className={`status-badge ${config.class}`}>{config.text}</span>;
+    // All payments are displayed as completed by default
+    return <span className={`status-badge status-completed`}>Completed</span>;
   };
 
   // Use API stats if available, fallback to client calculation
@@ -123,9 +116,7 @@ const PaymentHistory = () => {
   const totalRefunded = paymentHistory.stats?.totalRefunded || 0;
   const netSpent = paymentHistory.stats?.netSpent || (totalSpent - totalRefunded);
 
-  const handleFilterChange = (e) => {
-    setFilter(e.target.value);
-  };
+  // Removed handleFilterChange function - no longer needed without filtering
 
   if (loading) {
     return (
@@ -201,27 +192,12 @@ const PaymentHistory = () => {
       <div className="payment-section">
         <div className="section-header">
           <h2>Transaction History</h2>
-          <div className="filter-options">
-            <select className="filter-select" value={filter} onChange={handleFilterChange}>
-              <option value="all">All Transactions</option>
-              <option value="completed">Completed</option>
-              <option value="pending">Pending</option>
-              <option value="processing">Processing</option>
-              <option value="failed">Failed</option>
-              <option value="refunded">Refunded</option>
-            </select>
-          </div>
         </div>
         
         <div className="transactions-list">
           {paymentsArray.length === 0 ? (
             <div className="empty-state">
               <p>No payment history found.</p>
-              {filter !== 'all' && (
-                <button onClick={() => setFilter('all')} className="btn-secondary">
-                  View All Transactions
-                </button>
-              )}
             </div>
           ) : (
             paymentsArray.map((payment) => (
@@ -276,12 +252,7 @@ const PaymentHistory = () => {
                 
                 <div className="transaction-actions">
                   <button className="btn-secondary">View Details</button>
-                  {(payment.status === 'completed' || payment.status === 'paid') && (
-                    <button className="btn-secondary">Download Receipt</button>
-                  )}
-                  {(payment.status === 'pending' || payment.status === 'processing') && (
-                    <button className="btn-primary">Check Status</button>
-                  )}
+                  <button className="btn-secondary">Download Receipt</button>
                   {payment.canBeRefunded && (
                     <button className="btn-secondary">Request Refund</button>
                   )}
