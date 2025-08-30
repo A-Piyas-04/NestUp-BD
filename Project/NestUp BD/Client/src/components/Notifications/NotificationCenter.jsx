@@ -234,14 +234,7 @@ const NotificationCenter = ({ isOpen, onClose }) => {
           )}
         </div>
 
-        <div className="notification-footer">
-          <button
-            className="simulate-btn"
-            onClick={() => notificationService.simulateNotifications()}
-          >
-            Simulate Notifications (Demo)
-          </button>
-        </div>
+
       </div>
     </div>
   );

@@ -170,41 +170,7 @@ class NotificationService {
     return false;
   }
 
-  // Simulate receiving notifications (for demo purposes)
-  simulateNotifications() {
-    const sampleNotifications = [
-      {
-        type: 'new_review',
-        data: {
-          reviewerName: 'Ahmed Hassan',
-          rating: 5,
-          propertyTitle: 'Cozy Apartment in Dhanmondi',
-          reviewId: 'review1'
-        }
-      },
-      {
-        type: 'review_reply',
-        data: {
-          hostName: 'Fatima Khan',
-          propertyTitle: 'Modern Studio in Gulshan',
-          replyText: 'Thank you for your feedback!'
-        }
-      },
-      {
-        type: 'review_approved',
-        data: {
-          propertyTitle: 'Family House in Uttara',
-          reviewId: 'review2'
-        }
-      }
-    ];
 
-    sampleNotifications.forEach((notification, index) => {
-      setTimeout(() => {
-        this.createNotification(notification.type, notification.data);
-      }, index * 2000);
-    });
-  }
 }
 
 // Create singleton instance
