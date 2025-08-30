@@ -19,34 +19,20 @@ export const AuthProvider = ({ children }) => {
 
   // Fetch user data from server
   const fetchUserData = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     try {
       const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
         credentials: 'include'
       });
-
+      
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
       } else {
-        // Token is invalid, clear it
-        localStorage.removeItem('token');
-        localStorage.removeItem('userName');
+        // No valid cookie, user is not authenticated
         setUser(null);
       }
     } catch (error) {
       console.error('Failed to fetch user data:', error);
-      localStorage.removeItem('token');
-      localStorage.removeItem('userName');
       setUser(null);
     }
     
@@ -59,15 +45,13 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   /**
-   * Logs in the user and saves token to localStorage, then fetches user data.
-   * @param {string} token
-   * @param {string} name
+   * Logs in the user and fetches user data (cookies are set by server).
+   * @param {string} token - Not used anymore, kept for compatibility
+   * @param {string} name - Not used anymore, kept for compatibility
    */
   const login = async (token, name) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('userName', name);
-    
-    // Fetch complete user data after login
+    // Cookies are set by the server during login
+    // Just fetch user data to update the context
     await fetchUserData();
   };
 
@@ -78,14 +62,10 @@ export const AuthProvider = ({ children }) => {
    */
   const updateUser = async (userData, saveToServer = false) => {
     if (saveToServer) {
-      const token = localStorage.getItem('token');
-      if (!token) return false;
-
       try {
         const response = await fetch('/api/auth/profile', {
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
           credentials: 'include',
@@ -112,11 +92,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Logs out the user and clears localStorage.
+   * Logs out the user and clears cookies.
    */
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userName');
+  const logout = async () => {
+    try {
+      // Call logout endpoint to clear cookies
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    
     setUser(null);
   };
 

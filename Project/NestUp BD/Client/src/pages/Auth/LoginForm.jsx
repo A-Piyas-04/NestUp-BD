@@ -36,8 +36,7 @@ const LoginForm = () => {
 
       const data = await response.json();
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userName', data.user.name);
+        // Cookies are set by the server, just update the auth context
         await login(data.token, data.user.name);
         navigate('/dashboard');
       } else {
