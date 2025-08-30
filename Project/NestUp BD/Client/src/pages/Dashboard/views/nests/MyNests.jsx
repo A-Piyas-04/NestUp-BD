@@ -202,7 +202,7 @@ const MyNests = () => {
               <div key={service._id} className="listing-card">
                 <div className="card-image">
                   <img 
-                    src={service.images?.[0] || '/placeholder-image.jpg'} 
+                    src={service.thumbnail || service.images?.[0] || '/placeholder-image.jpg'} 
                     alt={service.title}
                     onError={(e) => {
                       e.target.src = '/placeholder-image.jpg';

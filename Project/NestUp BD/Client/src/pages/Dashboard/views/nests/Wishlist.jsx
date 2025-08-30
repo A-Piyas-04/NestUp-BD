@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../../context/AuthContext';
 import ListingCard from '../../../../components/ListingCard/ListingCard';
+import ServiceModal from '../../../../components/ServiceModal/ServiceModal';
 import './Wishlist.css';
 
 const Wishlist = () => {
@@ -8,6 +9,8 @@ const Wishlist = () => {
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedService, setSelectedService] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchWishlist();
@@ -67,6 +70,16 @@ const Wishlist = () => {
       console.error('Error removing from wishlist:', error);
       alert('Failed to remove from wishlist');
     }
+  };
+
+  const handleViewServiceDetails = (service) => {
+    setSelectedService(service);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedService(null);
   };
 
   if (loading) {
@@ -132,6 +145,7 @@ const Wishlist = () => {
                   hygieneBadge={service.amenities?.cctv || false}
                   service={service}
                   user={user}
+                  onViewDetails={handleViewServiceDetails}
                 />
                 <div className="wishlist-actions">
                   <button 
@@ -147,6 +161,13 @@ const Wishlist = () => {
           </div>
         </div>
       )}
+      
+      <ServiceModal 
+        service={selectedService}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        reviews={selectedService?.reviews || null}
+      />
     </div>
   );
 };

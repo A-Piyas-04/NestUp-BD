@@ -116,11 +116,35 @@
   object-fit: cover;
 }
 
-/* Status Badge */
-.status-badge {
+/* Card Image - 4:3 aspect ratio */
+.card-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  background-color: var(--gray-100);
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.listing-card:hover .card-image img {
+  transform: scale(1.05);
+}
+
+.card-status {
   position: absolute;
   top: 1rem;
   right: 1rem;
+  z-index: 1;
+}
+
+/* Status Badge */
+.status-badge {
   padding: 0.25rem 0.75rem;
   border-radius: var(--radius-full);
   font-size: 0.75rem;
@@ -128,6 +152,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border: 1px solid transparent;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .status-badge.active {
@@ -146,6 +171,18 @@
   background-color: rgba(245, 158, 11, 0.1);
   color: var(--warning);
   border-color: rgba(245, 158, 11, 0.2);
+}
+
+.status-badge.booked {
+  background-color: rgba(239, 68, 68, 0.9);
+  color: white;
+  border-color: rgba(239, 68, 68, 1);
+}
+
+.status-badge.available {
+  background-color: rgba(16, 185, 129, 0.9);
+  color: white;
+  border-color: rgba(16, 185, 129, 1);
 }
 
 /* Listing Content */
