@@ -13,7 +13,9 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js';
 import apiRoutes from './routes/api.js';
 import uploadRoutes from './routes/upload.js';
-import reviewRoutes from './routes/reviews.js';
+// import reviewRoutes from './routes/reviews.js'; // Deprecated: Service reviews
+// import hostReviewRoutes from './routes/hostReviews.js'; // Deprecated: Host reviews
+import nestReviewRoutes from './routes/nestReviews.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -40,7 +42,9 @@ app.use('/uploads', express.static('uploads'));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
-app.use('/api/reviews', reviewRoutes);
+// app.use('/api/reviews', reviewRoutes); // Deprecated: Service reviews
+// app.use('/api/host-reviews', hostReviewRoutes); // Deprecated: Host reviews
+app.use('/api/nest-reviews', nestReviewRoutes);
 
 app.use('/api', apiRoutes);
 
