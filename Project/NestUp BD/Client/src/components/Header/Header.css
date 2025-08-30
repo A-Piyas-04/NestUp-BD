@@ -43,7 +43,6 @@
   align-items: center !important;
   justify-content: left !important;
   flex: 0 0 auto  !important;
-  margin-left: -8em;
 }
 
 .header-middle {
@@ -51,7 +50,6 @@
   align-items: center;
   justify-content: center;
   flex: 1;
-  margin-left: 2em;
 }
 
 .header-right {
@@ -59,7 +57,6 @@
   align-items: center;
   justify-content: flex-end;
   flex: 0 0 auto;
-  margin-right: -8em;
 }
 
 .logo a {
@@ -332,6 +329,10 @@
 }
 
 @media (max-width: 768px) {
+  .header-container {
+    padding: 0 1rem;
+  }
+  
   .desktop-nav {
     display: none;
   }
@@ -346,5 +347,22 @@
   
   .mobile-nav {
     display: block;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-container {
+    padding: 0 0.75rem;
+  }
+  
+  .logo a {
+    font-size: 1.25rem;
+  }
+  
+  .user-actions a,
+  .user-actions button {
+    margin-left: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
   }
 }

@@ -117,13 +117,7 @@ const UserProfile = ({ isOpen, onClose, userId }) => {
                       ? `Student at ${userProfile.profile?.institution || 'Institution'}`
                       : userProfile.profile?.occupation || 'Not specified'}
                   </p>
-                  <div className="verification-status">
-                    {userProfile.isVerified ? (
-                      <span className="verified">✓ Verified Host</span>
-                    ) : (
-                      <span className="unverified">Unverified</span>
-                    )}
-                  </div>
+
                 </div>
               </div>
 

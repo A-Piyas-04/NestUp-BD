@@ -16,8 +16,7 @@ const Search = () => {
     area: '',
     minPrice: '',
     maxPrice: '',
-    verifiedHosts: false,
-    hygieneBadge: false,
+
     availableFrom: '',
     availableTo: ''
   });
@@ -40,8 +39,7 @@ const Search = () => {
       if (filters.area) queryParams.append('area', filters.area);
       if (filters.minPrice) queryParams.append('minPrice', filters.minPrice);
       if (filters.maxPrice) queryParams.append('maxPrice', filters.maxPrice);
-      if (filters.verifiedHosts) queryParams.append('verifiedHosts', 'true');
-      if (filters.hygieneBadge) queryParams.append('hygieneBadge', 'true');
+
       if (filters.availableFrom) queryParams.append('availableFrom', filters.availableFrom);
       if (filters.availableTo) queryParams.append('availableTo', filters.availableTo);
       
@@ -58,8 +56,7 @@ const Search = () => {
           area: service.location.area,
           price: `৳${service.price.toLocaleString()}`,
           image: service.thumbnail || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-          verifiedHost: service.isVerified || false,
-          hygieneBadge: service.amenities?.wifi || false, // Using wifi as hygiene indicator for now
+          
           priceNumeric: service.price,
           availableFrom: service.availability.from,
           availableTo: service.availability.to,
@@ -146,8 +143,7 @@ const Search = () => {
                     image={listing.image}
                     availableFrom={listing.availableFrom}
                     availableTo={listing.availableTo}
-                    verifiedHost={listing.verifiedHost}
-                    hygieneBadge={listing.hygieneBadge}
+                    
                     isBooked={listing.isBooked}
                     service={listing.originalService}
                     user={user}
@@ -166,8 +162,7 @@ const Search = () => {
                   area: '',
                   minPrice: '',
                   maxPrice: '',
-                  verifiedHosts: false,
-                  hygieneBadge: false,
+
                   availableFrom: '',
                   availableTo: ''
                 })}>

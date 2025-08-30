@@ -10,8 +10,7 @@ const ListingCard = ({
   image, 
   availableFrom, 
   availableTo, 
-  verifiedHost = false, 
-  hygieneBadge = false,
+  
   isBooked = false,
   service = null,
   user = null,
@@ -245,8 +244,7 @@ const ListingCard = ({
             <span>📷 No Image</span>
           </div>
         )}
-        {verifiedHost && <span className="listing-badge verified-badge">✓ Verified</span>}
-        {hygieneBadge && <span className="listing-badge hygiene-badge">✨ Hygiene Certified</span>}
+
         {serviceIsBooked && <span className="listing-badge booked-badge">🔒 Booked</span>}
         
         {/* Save Button - Top Left */}

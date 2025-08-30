@@ -163,10 +163,7 @@ const serviceSchema = new mongoose.Schema({
     required: [true, 'Service owner is required']
   },
 
-  isVerified: {
-    type: Boolean,
-    default: false
-  },
+
   
   // Rating System
   rating: {

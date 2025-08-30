@@ -36,8 +36,7 @@ router.get('/services', async (req, res) => {
       area, 
       minPrice, 
       maxPrice, 
-      verifiedHosts, 
-      hygieneBadge, 
+ 
       availableFrom, 
       availableTo, 
       page = 1, 
@@ -68,26 +67,17 @@ router.get('/services', async (req, res) => {
       if (maxPrice) filter.price.$lte = Number(maxPrice);
     }
     
-    // Verified hosts filter
-    if (verifiedHosts === 'true') {
-      filter['owner.isVerified'] = true;
-    }
-    
-    // Hygiene badge filter
-    if (hygieneBadge === 'true') {
-      filter['features.hygieneBadge'] = true;
-    }
-    
+
     // Date range filter - service start date >= Move-in Date AND service end date <= Move-out Date
     if (availableFrom || availableTo) {
       const dateFilter = {};
       if (availableFrom) {
         // Service start date must be greater than or equal to Move-in Date
-        dateFilter['availability.availableFrom'] = { $gte: new Date(availableFrom) };
+        dateFilter['availability.from'] = { $gte: new Date(availableFrom) };
       }
       if (availableTo) {
         // Service end date must be less than or equal to Move-out Date
-        dateFilter['availability.availableTo'] = { $lte: new Date(availableTo) };
+        dateFilter['availability.to'] = { $lte: new Date(availableTo) };
       }
       Object.assign(filter, dateFilter);
     }
@@ -1652,7 +1642,7 @@ router.get('/users/:userId/profile', async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      isVerified: user.isVerified,
+
       createdAt: user.createdAt,
       profile: {
         phone: user.profile?.phone,

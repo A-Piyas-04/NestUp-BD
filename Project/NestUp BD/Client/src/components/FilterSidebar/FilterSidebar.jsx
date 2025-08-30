@@ -7,8 +7,7 @@ const FilterSidebar = ({ onFilterChange }) => {
     area: '',
     minPrice: '',
     maxPrice: '',
-    verifiedHosts: false,
-    hygieneBadge: false,
+
     availableFrom: '',
     availableTo: ''
   });
@@ -31,8 +30,7 @@ const FilterSidebar = ({ onFilterChange }) => {
       area: '',
       minPrice: '',
       maxPrice: '',
-      verifiedHosts: false,
-      hygieneBadge: false,
+  
       availableFrom: '',
       availableTo: ''
     };
@@ -138,37 +136,7 @@ const FilterSidebar = ({ onFilterChange }) => {
         </label>
       </div>
 
-      <div className="filter-section">
-        <h4>
-          <span className="section-icon">✨</span> 
-          Features
-        </h4>
-        <label className="checkbox-label">
-          <input 
-            type="checkbox" 
-            name="verifiedHosts" 
-            checked={filters.verifiedHosts} 
-            onChange={handleChange} 
-          />
-          <span>
-            <span className="feature-icon">✓</span>
-            Verified Hosts Only
-          </span>
-        </label>
 
-        <label className="checkbox-label">
-          <input 
-            type="checkbox" 
-            name="hygieneBadge" 
-            checked={filters.hygieneBadge} 
-            onChange={handleChange} 
-          />
-          <span>
-            <span className="feature-icon">🧹</span>
-            Hygiene Certified
-          </span>
-        </label>
-      </div>
 
 
     </div>

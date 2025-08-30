@@ -132,7 +132,7 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
       comment: comment.trim(),
       images,
       categories: parsedCategories,
-      isVerified: true // Since it's based on a completed booking
+
     });
 
     await nestReview.save();

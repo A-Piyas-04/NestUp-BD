@@ -34,10 +34,7 @@ const ServiceModal = ({ service, isOpen, onClose }) => {
         
         <div className="modal-header">
           <h2>{service.title}</h2>
-          <div className="modal-badges">
-            {service.verifiedHost && <span className="badge verified">✓ Verified Host</span>}
-            {service.hygieneBadge && <span className="badge hygiene">✨ Hygiene Certified</span>}
-          </div>
+
         </div>
 
         <div className="modal-body">

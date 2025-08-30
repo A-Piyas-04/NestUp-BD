@@ -141,8 +141,7 @@ const Wishlist = () => {
                   image={service.thumbnail}
                   availableFrom={service.availability.from}
                   availableTo={service.availability.to}
-                  verifiedHost={service.owner?.isVerified || false}
-                  hygieneBadge={service.amenities?.cctv || false}
+
                   service={service}
                   user={user}
                   onViewDetails={handleViewServiceDetails}

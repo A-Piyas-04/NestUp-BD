@@ -163,11 +163,7 @@ const nestReviewSchema = new mongoose.Schema({
     previousComment: String
   }],
   
-  // Verification status
-  isVerified: {
-    type: Boolean,
-    default: false
-  }
+
   
 }, {
   timestamps: true, // Adds createdAt and updatedAt

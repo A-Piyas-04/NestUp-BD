@@ -1,6 +1,6 @@
 .hero-section {
   position: relative;
-  padding: 5rem 0;
+  padding: 3rem 1.5rem;
   overflow: hidden;
   background: linear-gradient(135deg, var(--primary-light) 0%, #f0f7ff 100%);
 }

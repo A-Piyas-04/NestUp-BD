@@ -175,29 +175,7 @@
   margin: 0 0 12px 0;
 }
 
-.verification-status {
-  display: inline-block;
-}
 
-.verified {
-  background-color: #dcfce7;
-  color: #166534;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 500;
-  border: 1px solid #bbf7d0;
-}
-
-.unverified {
-  background-color: #fef3c7;
-  color: #92400e;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 500;
-  border: 1px solid #fde68a;
-}
 
 .profile-sections {
   display: flex;

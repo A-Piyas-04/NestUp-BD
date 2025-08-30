@@ -60,26 +60,14 @@
   z-index: 1;
 }
 
-.verified-badge {
-  background-color: rgba(16, 185, 129, 0.9);
-  color: white;
-  top: 15px;
-  left: 70px;
-}
-
-.hygiene-badge {
-  background-color: rgba(37, 99, 235, 0.9);
-  color: white;
-  top: 15px;
-  right: 15px;
-}
-
 .booked-badge {
   background-color: rgba(239, 68, 68, 0.9);
   color: white;
   top: 50px;
   left: 15px;
 }
+
+
 
 .save-button {
   position: absolute;
