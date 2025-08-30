@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext.jsx';
 import './ListingCard.css';
 
 const ListingCard = ({ 
@@ -110,7 +111,8 @@ const ListingCard = ({
 
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [reviewData, setReviewData] = useState({ averageRating: 0, totalReviews: 0 });
+  const [hostRating, setHostRating] = useState({ averageRating: 0, totalReviews: 0 });
+
 
   // Render star rating
   const renderStars = (rating) => {
@@ -140,13 +142,8 @@ const ListingCard = ({
       if (!user || !service || !service._id) return;
       
       try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
         const response = await fetch(`/api/wishlist/check/${service._id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          credentials: 'include'
         });
         
         if (response.ok) {
@@ -158,38 +155,30 @@ const ListingCard = ({
       }
     };
 
-    const fetchReviewData = async () => {
-      if (!service || !service._id || !showReviews) return;
+    const fetchHostRating = async () => {
+      if (!service || !service.owner || !showReviews) return;
       
       try {
-        // Use provided reviews data if available, otherwise fetch from API
-        if (reviews) {
-          const totalReviews = reviews.length;
-          const averageRating = totalReviews > 0 
-            ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
-            : 0;
-          setReviewData({ averageRating, totalReviews });
-        } else {
-          // Fetch from API (placeholder for future backend integration)
-          const response = await fetch(`/api/reviews/summary/${service._id}`);
-          if (response.ok) {
-            const data = await response.json();
-            setReviewData({
-              averageRating: data.averageRating || 0,
-              totalReviews: data.totalReviews || 0
-            });
-          }
+        // Fetch host rating from user profile
+        const hostId = service.owner._id || service.owner;
+        const response = await fetch(`/api/users/${hostId}/rating`);
+        if (response.ok) {
+          const data = await response.json();
+          setHostRating({
+            averageRating: data.hostRating?.average || 0,
+            totalReviews: data.hostRating?.count || 0
+          });
         }
       } catch (error) {
-        console.error('Error fetching review data:', error);
+        console.error('Error fetching host rating:', error);
         // Set default values on error
-        setReviewData({ averageRating: 0, totalReviews: 0 });
+        setHostRating({ averageRating: 0, totalReviews: 0 });
       }
     };
 
     checkWishlistStatus();
-    fetchReviewData();
-  }, [user, service, showReviews, reviews]);
+    fetchHostRating();
+  }, [user, service, showReviews]);
 
   const handleSave = async () => {
     if (!user) {
@@ -205,12 +194,6 @@ const ListingCard = ({
     setIsLoading(true);
     
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please login to save properties');
-        return;
-      }
-
       const url = isSaved 
         ? `/api/wishlist/remove/${service._id}`
         : '/api/wishlist/add';
@@ -221,9 +204,9 @@ const ListingCard = ({
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body
       });
 
@@ -265,6 +248,19 @@ const ListingCard = ({
         {verifiedHost && <span className="listing-badge verified-badge">✓ Verified</span>}
         {hygieneBadge && <span className="listing-badge hygiene-badge">✨ Hygiene Certified</span>}
         {serviceIsBooked && <span className="listing-badge booked-badge">🔒 Booked</span>}
+        
+        {/* Save Button - Top Left */}
+        <button 
+          className={`save-button ${isSaved ? 'saved' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleSave();
+          }}
+          disabled={isLoading}
+          title={isSaved ? 'Remove from wishlist' : 'Add to wishlist'}
+        >
+          {isLoading ? '⏳' : (isSaved ? '❤️' : '🤍')}
+        </button>
       </div>
       
       <div className="listing-content">
@@ -284,14 +280,14 @@ const ListingCard = ({
           </span>
         </div>
         
-        {showReviews && reviewData.totalReviews > 0 && (
-          <div className="listing-reviews">
-            <div className="review-rating">
+        {showReviews && hostRating.totalReviews > 0 && (
+          <div className="listing-host-rating">
+            <div className="host-rating">
               <div className="stars">
-                {renderStars(reviewData.averageRating)}
+                {renderStars(hostRating.averageRating)}
               </div>
               <span className="rating-text">
-                {reviewData.averageRating.toFixed(1)} ({reviewData.totalReviews} review{reviewData.totalReviews !== 1 ? 's' : ''})
+                Host: {hostRating.averageRating.toFixed(1)} ({hostRating.totalReviews} review{hostRating.totalReviews !== 1 ? 's' : ''})
               </span>
             </div>
           </div>
@@ -312,15 +308,24 @@ const ListingCard = ({
           >
             {serviceIsBooked ? 'Booked' : isOwnListing ? 'Your Listing' : 'Book'}
           </button>
-          <button 
-            className={`listing-button ${isSaved ? 'primary' : 'secondary'}`} 
-            onClick={handleSave}
-            disabled={isLoading}
-          >
-            {isLoading ? '...' : (isSaved ? 'Saved' : 'Save')}
-          </button>
+          
+          {!isOwnListing && (
+            <button 
+              className="listing-button secondary" 
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/host-profile/${service?.owner?._id || service?.owner}`);
+              }}
+              style={{ marginTop: '8px', fontSize: '0.9em' }}
+            >
+              View Host Profile
+            </button>
+          )}
+
         </div>
       </div>
+      
+
     </div>
   );
 };
