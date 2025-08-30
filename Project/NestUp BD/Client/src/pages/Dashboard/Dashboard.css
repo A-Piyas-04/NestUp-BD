@@ -929,12 +929,12 @@
   gap: 0.5rem;
 }
 
-.status-badge.status-completed {
+.status-badge.status-approved {
   background-color: rgba(16, 185, 129, 0.1);
   color: var(--success);
 }
 
-.status-badge.status-cancelled {
+.status-badge.status-rejected {
   background-color: rgba(239, 68, 68, 0.1);
   color: var(--danger);
 }

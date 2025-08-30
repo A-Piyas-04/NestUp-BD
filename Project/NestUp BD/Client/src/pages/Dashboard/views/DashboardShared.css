@@ -169,7 +169,7 @@
 }
 
 .dashboard-status-badge.status-active,
-.dashboard-status-badge.status-completed {
+.dashboard-status-badge.status-approved {
   background-color: rgba(16, 185, 129, 0.1);
   color: var(--success);
   border-color: rgba(16, 185, 129, 0.2);
@@ -182,18 +182,14 @@
 }
 
 .dashboard-status-badge.status-inactive,
-.dashboard-status-badge.status-cancelled,
+.dashboard-status-badge.status-rejected,
 .dashboard-status-badge.status-failed {
   background-color: rgba(239, 68, 68, 0.1);
   color: var(--danger);
   border-color: rgba(239, 68, 68, 0.2);
 }
 
-.dashboard-status-badge.status-confirmed {
-  background-color: rgba(37, 99, 235, 0.1);
-  color: var(--primary);
-  border-color: rgba(37, 99, 235, 0.2);
-}
+
 
 /* Buttons */
 .dashboard-btn {

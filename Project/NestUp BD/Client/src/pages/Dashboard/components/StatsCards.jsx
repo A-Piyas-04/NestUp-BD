@@ -31,8 +31,8 @@ const StatsCards = () => {
       color: 'purple'
     },
     {
-      id: 'completed-bookings',
-      title: 'Completed Bookings',
+      id: 'approved-bookings',
+      title: 'Approved Bookings',
       value: '0',
       change: '',
       positive: true,
@@ -67,11 +67,11 @@ const StatsCards = () => {
           
           const activeNests = servicesData.services?.length || 0;
           const bookedNests = bookingsData.bookings?.length || 0;
-          const completedBookings = bookingsData.bookings?.filter(b => b.status === 'completed').length || 0;
+          const approvedBookings = bookingsData.bookings?.filter(b => b.status === 'approved').length || 0;
           
           // Calculate total payments
           const totalPayments = paymentsData.payments?.reduce((sum, payment) => {
-            return payment.status === 'completed' ? sum + payment.amount : sum;
+            return payment.status === 'paid' || payment.status === 'completed' ? sum + payment.amount : sum;
           }, 0) || 0;
           
           setStats([
@@ -103,9 +103,9 @@ const StatsCards = () => {
               color: 'purple'
             },
             {
-              id: 'completed-bookings',
-              title: 'Completed Bookings',
-              value: completedBookings.toString(),
+              id: 'approved-bookings',
+              title: 'Approved Bookings',
+              value: approvedBookings.toString(),
               change: '',
               positive: true,
               icon: '✅',

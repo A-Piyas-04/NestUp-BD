@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../../../context/AuthContext';
-import ReviewForm from '../../../../components/ReviewForm/ReviewForm';
+import NestReviewForm from '../../../../components/NestReviewForm/NestReviewForm';
 
 const BookedNests = () => {
   const { user } = useAuth();
@@ -103,8 +103,13 @@ const BookedNests = () => {
   };
 
   const getDuration = (booking) => {
-    // Use duration from API if available, fallback to calculation
-    if (booking.duration) {
+    // Use durationDays from API if available
+    if (booking.durationDays && typeof booking.durationDays === 'number') {
+      return `${booking.durationDays} day${booking.durationDays !== 1 ? 's' : ''}`;
+    }
+    
+    // Use duration from API if available and it's a number
+    if (booking.duration && typeof booking.duration === 'number') {
       return `${booking.duration} day${booking.duration !== 1 ? 's' : ''}`;
     }
     
@@ -120,10 +125,11 @@ const BookedNests = () => {
   const getStatusBadge = (status) => {
     const statusConfig = {
       active: { text: 'Active', class: 'status-active' },
-      upcoming: { text: 'Upcoming', class: 'status-pending' },
+      pending: { text: 'Pending Approval', class: 'status-pending' },
+      approved: { text: 'Approved', class: 'status-approved' },
+      rejected: { text: 'Rejected', class: 'status-rejected' },
       completed: { text: 'Completed', class: 'status-completed' },
-      cancelled: { text: 'Cancelled', class: 'status-cancelled' },
-      pending: { text: 'Pending', class: 'status-pending' }
+      upcoming: { text: 'Upcoming', class: 'status-upcoming' }
     };
     
     const config = statusConfig[status] || { text: status, class: 'status-default' };
@@ -133,37 +139,40 @@ const BookedNests = () => {
   const handleReviewSubmit = async (reviewData) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/reviews', {
+      const response = await fetch('/api/nest-reviews', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          ...reviewData,
-          serviceId: reviewingBooking.service._id,
-          bookingId: reviewingBooking._id,
-          nestName: reviewingBooking.service.title
-        })
+        body: reviewData // FormData from NestReviewForm
       });
 
       if (response.ok) {
-        alert('Review submitted successfully!');
+        const result = await response.json();
+        alert('Nest review submitted successfully!');
         setShowReviewForm(false);
         setReviewingBooking(null);
         // Update the booking to mark as reviewed
         setBookedNests(prev => prev.map(booking => 
           booking._id === reviewingBooking._id 
-            ? { ...booking, hasReviewed: true }
+            ? { 
+                ...booking, 
+                nestReviewSubmitted: true,
+                nestReviewId: result.data._id,
+                summary: {
+                  ...booking.summary,
+                  canReview: false
+                }
+              }
             : booking
         ));
       } else {
         const errorData = await response.json();
-        alert(errorData.message || 'Failed to submit review');
+        alert(errorData.message || 'Failed to submit nest review');
       }
     } catch (error) {
-      console.error('Error submitting review:', error);
-      alert('Failed to submit review. Please try again.');
+      console.error('Error submitting nest review:', error);
+      alert('Failed to submit nest review. Please try again.');
     }
   };
 
@@ -204,7 +213,7 @@ const BookedNests = () => {
     const status = getBookingStatus(booking);
     return status === 'active' || status === 'upcoming';
   }).length;
-  const completedBookings = bookedNests.stats?.completed || bookingsArray.filter(b => getBookingStatus(b) === 'completed').length;
+  const approvedBookings = bookedNests.stats?.approved || bookingsArray.filter(b => getBookingStatus(b) === 'approved').length;
 
   if (loading) {
     return (
@@ -281,9 +290,9 @@ const BookedNests = () => {
         </div>
         
         <div className="summary-card">
-          <h3>Completed Bookings</h3>
-          <div className="avg-rating">{completedBookings}</div>
-          <p>Successfully finished</p>
+          <h3>Approved Bookings</h3>
+          <div className="avg-rating">{approvedBookings}</div>
+          <p>Host approved</p>
         </div>
       </div>
       
@@ -326,8 +335,8 @@ const BookedNests = () => {
                       <span className="detail-value">{formatDate(booking.startDate)} to {formatDate(booking.endDate)}</span>
                     </div>
                     <div className="detail-row">
-                      <span className="detail-label">Payment Status:</span>
-                      <span className="detail-value">{booking.payment?.status || booking.paymentStatus || 'Completed'}</span>
+                      <span className="detail-label">Approval Status:</span>
+                      <span className="detail-value">{getBookingStatus(booking)}</span>
                     </div>
                     <div className="detail-row">
                       <span className="detail-label">Booked On:</span>
@@ -348,16 +357,16 @@ const BookedNests = () => {
                     >
                       Contact Support
                     </button>
-                    {booking.summary?.canReview && (
+                    {(booking.summary?.canReview || (booking.status === 'approved' && !booking.nestReviewSubmitted)) && (
                       <button 
                         className="btn-review"
                         onClick={() => openReviewForm(booking)}
                       >
-                        Write Review
+                        Review Nest
                       </button>
                     )}
-                    {booking.reviewId && (
-                      <span className="review-status">✓ Reviewed</span>
+                    {booking.nestReviewSubmitted && (
+                      <span className="review-status">✓ Nest Reviewed</span>
                     )}
                   </div>
                 </div>
@@ -421,8 +430,8 @@ const BookedNests = () => {
                       <span className="info-value">{formatAmount(selectedBooking.totalAmount)}</span>
                     </div>
                     <div className="info-item">
-                      <span className="info-label">Payment Status:</span>
-                      <span className="info-value">{selectedBooking.payment?.status || selectedBooking.paymentStatus || 'Completed'}</span>
+                      <span className="info-label">Approval Status:</span>
+                      <span className="info-value">{selectedBooking.payment?.status || selectedBooking.paymentStatus || 'Paid'}</span>
                     </div>
                     <div className="info-item">
                       <span className="info-label">Booked On:</span>
@@ -516,26 +525,13 @@ const BookedNests = () => {
 
       {/* Review Form Modal */}
       {showReviewForm && reviewingBooking && (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && closeReviewForm()}>
-          <div className="review-modal">
-            <div className="review-modal-header">
-              <h3>Write a Review</h3>
-              <button className="close-btn" onClick={closeReviewForm}>×</button>
-            </div>
-            <div className="review-modal-content">
-              <div className="property-info">
-                <h4>{reviewingBooking.service?.title}</h4>
-                <p>📍 {reviewingBooking.service?.location?.area}, {reviewingBooking.service?.location?.district}</p>
-                <p>Stay period: {formatDate(reviewingBooking.startDate)} - {formatDate(reviewingBooking.endDate)}</p>
-              </div>
-              <ReviewForm
-                onSubmit={handleReviewSubmit}
-                onCancel={closeReviewForm}
-                nestName={reviewingBooking.service?.title}
-              />
-            </div>
-          </div>
-        </div>
+        <NestReviewForm
+          isOpen={showReviewForm}
+          onClose={closeReviewForm}
+          onSubmit={handleReviewSubmit}
+          booking={reviewingBooking}
+          service={reviewingBooking.service}
+        />
       )}
     </div>
   );

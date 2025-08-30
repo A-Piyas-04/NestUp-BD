@@ -220,12 +220,12 @@
   color: var(--yellow-800, #92400e);
 }
 
-.status-completed {
-  background: var(--blue-100, #dbeafe);
-  color: var(--blue-800, #1e40af);
+.status-approved {
+  background: var(--green-100, #dcfce7);
+  color: var(--green-800, #166534);
 }
 
-.status-cancelled {
+.status-rejected {
   background: var(--red-100, #fee2e2);
   color: var(--red-800, #991b1b);
 }
@@ -265,16 +265,27 @@
   flex-wrap: wrap;
 }
 
-.btn-primary {
-  background-color: var(--primary-600, #2563eb);
-  color: white;
-  border: 1px solid var(--primary-600, #2563eb);
-  padding: 0.5rem 1rem;
+.btn-primary,
+.btn-secondary,
+.btn-review {
+  padding: 0.75rem 1.25rem;
   border-radius: var(--radius-md, 8px);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  border: 1px solid;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  text-align: center;
+}
+
+.btn-primary {
+  background-color: var(--primary-600, #2563eb);
+  color: white;
+  border-color: var(--primary-600, #2563eb);
 }
 
 .btn-primary:hover {
@@ -285,13 +296,7 @@
 .btn-secondary {
   background-color: white;
   color: var(--gray-700, #374151);
-  border: 1px solid var(--gray-300, #d1d5db);
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-md, 8px);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  border-color: var(--gray-300, #d1d5db);
 }
 
 .btn-secondary:hover {
@@ -300,20 +305,14 @@
 }
 
 .btn-review {
-  background-color: var(--warning-500, #f59e0b);
+  background-color: var(--success-600, #059669);
   color: white;
-  border: 1px solid var(--warning-500, #f59e0b);
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-md, 8px);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  border-color: var(--success-600, #059669);
 }
 
 .btn-review:hover {
-  background-color: var(--warning-600, #d97706);
-  border-color: var(--warning-600, #d97706);
+  background-color: var(--success-700, #047857);
+  border-color: var(--success-700, #047857);
 }
 
 .review-status {
@@ -445,10 +444,13 @@
   background: white;
   border-radius: var(--radius-lg, 12px);
   box-shadow: var(--shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1));
-  max-width: 600px;
-  width: 100%;
+  width: 90vw;
+  max-width: 800px;
+  height: 90vh;
   max-height: 90vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .review-modal-header {
@@ -457,6 +459,9 @@
   align-items: center;
   padding: 1.5rem;
   border-bottom: 1px solid var(--gray-200, #e5e7eb);
+  flex-shrink: 0;
+  background: white;
+  border-radius: var(--radius-lg, 12px) var(--radius-lg, 12px) 0 0;
 }
 
 .review-modal-header h3 {
@@ -483,6 +488,9 @@
 
 .review-modal-content {
   padding: 1.5rem;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .property-info {
@@ -535,13 +543,21 @@
     padding: 0.5rem;
   }
   
-  .details-modal,
+  .details-modal {
+    max-height: 95vh;
+  }
+  
   .review-modal {
+    width: 95vw;
+    height: 95vh;
     max-height: 95vh;
   }
   
   .details-modal-header,
-  .details-modal-content,
+  .details-modal-content {
+    padding: 1rem;
+  }
+  
   .review-modal-header,
   .review-modal-content {
     padding: 1rem;
@@ -580,7 +596,24 @@
   .btn-primary,
   .btn-secondary,
   .btn-review {
-    padding: 0.5rem 0.75rem;
+    padding: 0.625rem 1rem;
     font-size: 0.8rem;
+    min-width: 100px;
+  }
+  
+  .review-modal {
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .review-modal-header {
+    border-radius: 0;
+    padding: 1rem;
+  }
+  
+  .review-modal-content {
+    padding: 1rem;
   }
 }
