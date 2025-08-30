@@ -99,7 +99,8 @@ const BookingApprovals = () => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({ approvalReason: 'Approved by host' })
       });
 
       if (!response.ok) {

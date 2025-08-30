@@ -161,12 +161,12 @@
   color: var(--danger);
 }
 
-.status-badge.completed {
+.status-badge.approved {
   background: rgba(16, 185, 129, 0.1);
   color: var(--success);
 }
 
-.status-badge.cancelled {
+.status-badge.rejected {
   background: rgba(239, 68, 68, 0.1);
   color: var(--danger);
 }
