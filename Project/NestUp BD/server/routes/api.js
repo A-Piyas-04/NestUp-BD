@@ -35,7 +35,7 @@ router.get('/services', async (req, res) => {
     // Build filter object
     const filter = { 
       'availability.isAvailable': true,
-      'isBooked': false  // Exclude booked services from search results
+      isBooked: false // Exclude booked services from search results
     };
     
     if (propertyType) {
@@ -512,7 +512,7 @@ router.get('/bookings', verifyToken, checkAuth, async (req, res) => {
         canBeCancelled: booking.canBeCancelled(),
         isActive: booking.isActive(),
         isCompleted: booking.isCompleted(),
-        canReview: booking.isCompleted() && !booking.reviewSubmitted
+        canReview: booking.isCompleted() && !booking.hostReviewSubmitted
       };
       
       // Add formatted confirmation code
@@ -594,7 +594,7 @@ router.get('/bookings/:id', verifyToken, checkAuth, async (req, res) => {
       canBeCancelled: booking.canBeCancelled(),
       isActive: booking.isActive(),
       isCompleted: booking.isCompleted(),
-      canReview: booking.isCompleted() && !booking.reviewSubmitted
+      canReview: booking.isCompleted() && !booking.hostReviewSubmitted
     };
     
     // Add formatted confirmation code
@@ -685,17 +685,9 @@ router.post('/bookings', verifyToken, checkAuth, async (req, res) => {
     // Calculate pricing
     const days = Math.ceil((bookingEndDate - bookingStartDate) / (1000 * 60 * 60 * 24));
     const basePrice = service.price;
-    const baseAmount = basePrice * days;
+    const totalAmount = basePrice;
     
-    // Use only base amount without additional fees
-    const serviceFee = 0;
-    const cleaningFee = 0;
-    const securityDeposit = 0;
-    const taxAmount = 0;
-    
-    const totalAmount = baseAmount;
-    
-    // Create booking with updated schema
+    // Create booking with updated schema (no fees)
     const bookingData = {
       service: serviceId,
       user: req.user._id,
@@ -703,12 +695,6 @@ router.post('/bookings', verifyToken, checkAuth, async (req, res) => {
       endDate: bookingEndDate,
       basePrice: basePrice,
       totalAmount: totalAmount,
-      fees: {
-        serviceFee: serviceFee,
-        cleaningFee: cleaningFee,
-        securityDeposit: securityDeposit,
-        taxAmount: taxAmount
-      },
       guestInfo: {
         numberOfGuests: guests || 1,
         specialRequests: specialRequests || ''
@@ -744,9 +730,8 @@ router.post('/bookings', verifyToken, checkAuth, async (req, res) => {
       message: 'Booking created successfully',
       booking: populatedBooking,
       pricing: {
-        baseAmount: baseAmount,
+        basePrice: basePrice,
         days: days,
-        fees: bookingData.fees,
         totalAmount: totalAmount
       }
     });
@@ -767,8 +752,8 @@ router.patch('/bookings/:id/status', verifyToken, checkAuth, async (req, res) =>
   try {
     const { status, reason } = req.body;
     
-    if (!status || !['confirmed', 'cancelled', 'completed', 'active'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status. Allowed: confirmed, cancelled, completed, active' });
+    if (!status || !['active', 'pending', 'approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status. Allowed: active, pending, approved, rejected' });
     }
     
     const booking = await Booking.findById(req.params.id)
@@ -788,12 +773,10 @@ router.patch('/bookings/:id/status', verifyToken, checkAuth, async (req, res) =>
     
     // Validate status transitions
     const validTransitions = {
-      'pending': ['confirmed', 'cancelled'],
-      'confirmed': ['active', 'completed', 'cancelled'],
-      'active': ['completed', 'cancelled'],
-      'completed': [], // Cannot change from completed
-      'cancelled': [], // Cannot change from cancelled
-      'rejected': [] // Cannot change from rejected
+      'pending': ['approved', 'rejected'],
+      'approved': ['active'],
+      'active': [],
+      'rejected': []
     };
     
     if (!validTransitions[booking.status]?.includes(status)) {
@@ -803,48 +786,23 @@ router.patch('/bookings/:id/status', verifyToken, checkAuth, async (req, res) =>
     }
     
     // Handle status-specific logic
-    if (status === 'confirmed') {
-      // Check if payment is required and completed
-      if (booking.payment && booking.payment.status !== 'paid') {
-        return res.status(400).json({ 
-          message: 'Cannot confirm booking without completed payment' 
-        });
-      }
+    if (status === 'approved') {
+      booking.status = 'approved';
+      booking.isApproved = true;
+      booking.approvedAt = new Date();
+      if (reason) booking.approvalReason = reason;
       
-      booking.status = 'confirmed';
-      booking.paymentStatus = 'paid';
-      
-      // Mark service as booked
+      // Mark service as booked when approved
       await Service.findByIdAndUpdate(booking.service._id, {
         isBooked: true,
         currentBooking: booking._id
       });
       
-    } else if (status === 'completed') {
-      // Use the model method for completion
-      await booking.markAsCompleted();
-      
-      // Unmark service as booked when booking is completed
-      await Service.findByIdAndUpdate(booking.service._id, {
-        isBooked: false,
-        currentBooking: null
-      });
-      
-    } else if (status === 'cancelled') {
-      // Use the model method for cancellation
-      await booking.cancel(reason);
-      
-      // Unmark service as booked
-      await Service.findByIdAndUpdate(booking.service._id, {
-        isBooked: false,
-        currentBooking: null
-      });
-      
-      // Handle payment refund if applicable
-      if (booking.payment && booking.payment.status === 'paid') {
-        // Mark payment for refund processing
-        booking.paymentStatus = 'refunded';
-      }
+    } else if (status === 'rejected') {
+      booking.status = 'rejected';
+      booking.isApproved = false;
+      booking.rejectedAt = new Date();
+      if (reason) booking.approvalReason = reason;
       
     } else if (status === 'active') {
       booking.status = 'active';
@@ -933,6 +891,11 @@ router.put('/bookings/:id/approve', verifyToken, checkAuth, async (req, res) => 
   try {
     const { approvalReason } = req.body;
     
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid booking ID format' });
+    }
+    
     const booking = await Booking.findById(req.params.id)
       .populate('service', 'owner title location')
       .populate('user', 'name email');
@@ -956,9 +919,8 @@ router.put('/bookings/:id/approve', verifyToken, checkAuth, async (req, res) => 
     // Approve the booking
     await booking.approve(approvalReason);
     
-    // Set booking status to confirmed upon approval
-    booking.status = 'confirmed';
-    booking.confirmedAt = new Date();
+    // Set booking status to approved upon approval
+    booking.status = 'approved';
     await booking.save();
     
     // Mark service as booked upon approval
@@ -993,6 +955,11 @@ router.put('/bookings/:id/reject', verifyToken, checkAuth, async (req, res) => {
     
     if (!rejectionReason) {
       return res.status(400).json({ message: 'Rejection reason is required' });
+    }
+    
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid booking ID format' });
     }
     
     const booking = await Booking.findById(req.params.id)
@@ -1204,12 +1171,7 @@ router.post('/payments', verifyToken, checkAuth, async (req, res) => {
     // Create amount breakdown with only base amount
     const amountBreakdown = {
       baseAmount: booking.totalAmount || 0,
-      serviceFee: 0,
-      cleaningFee: 0,
-      securityDeposit: 0,
-      taxAmount: 0,
-      discount: 0,
-      totalAmount: booking.totalAmount
+      discountAmount: 0
     };
     
     // Create payment
@@ -1490,7 +1452,7 @@ router.get('/payments/stats/summary', verifyToken, checkAuth, async (req, res) =
     
     // Calculate average payment amount
     const avgPaymentResult = await Payment.aggregate([
-      { $match: { user: mongoose.Types.ObjectId(req.user._id) } },
+      { $match: { user: new mongoose.Types.ObjectId(req.user._id) } },
       { $group: { _id: null, avgAmount: { $avg: '$amount' } } }
     ]);
     
@@ -1557,7 +1519,7 @@ router.get('/bookings/stats/summary', verifyToken, checkAuth, async (req, res) =
         }
       },
       { $unwind: '$bookingInfo' },
-      { $match: { 'bookingInfo.user': mongoose.Types.ObjectId(req.user._id) } },
+      { $match: { 'bookingInfo.user': new mongoose.Types.ObjectId(req.user._id) } },
       {
         $group: {
           _id: '$status',
@@ -1615,6 +1577,59 @@ router.get('/bookings/stats/summary', verifyToken, checkAuth, async (req, res) =
   } catch (error) {
     console.error('Get booking stats error:', error);
     res.status(500).json({ message: 'Failed to fetch booking statistics' });
+  }
+});
+
+// ==================== USER PROFILE ROUTES ====================
+
+// Get user profile by ID (public route for viewing host profiles)
+router.get('/users/:userId/profile', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Validate userId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
+    
+    // Find user and exclude sensitive information
+    const user = await User.findById(userId).select('-password -__v');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Return user profile data (excluding sensitive fields like password)
+    const userProfile = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isVerified: user.isVerified,
+      createdAt: user.createdAt,
+      profile: {
+        phone: user.profile?.phone,
+        gender: user.profile?.gender,
+        occupation: user.profile?.occupation,
+        institution: user.profile?.institution,
+        department: user.profile?.department,
+        studentId: user.profile?.studentId,
+        dateOfBirth: user.profile?.dateOfBirth,
+        address: {
+          division: user.profile?.address?.division,
+          district: user.profile?.address?.district,
+          area: user.profile?.address?.area,
+          postalCode: user.profile?.address?.postalCode
+          // Exclude fullAddress for privacy
+        },
+        profilePicture: user.profile?.profilePicture
+        // Exclude emergencyContact and preferences for privacy
+      }
+    };
+    
+    res.json(userProfile);
+  } catch (error) {
+    console.error('Get user profile error:', error);
+    res.status(500).json({ message: 'Failed to fetch user profile' });
   }
 });
 

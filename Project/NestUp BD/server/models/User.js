@@ -124,6 +124,53 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Service'
   }],
+  
+  // Host rating information
+  hostRating: {
+    average: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5
+    },
+    count: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    categories: {
+      communication: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
+      },
+      responsiveness: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
+      },
+      helpfulness: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
+      },
+      reliability: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
+      },
+      professionalism: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
+      }
+    }
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -157,6 +204,47 @@ userSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
+
+// Static method to update host rating based on host reviews
+userSchema.statics.updateHostRating = async function(hostId) {
+  try {
+    const HostReview = mongoose.model('HostReview');
+    
+    const stats = await HostReview.aggregate([
+      { $match: { host: new mongoose.Types.ObjectId(hostId), status: 'approved' } },
+      {
+        $group: {
+          _id: null,
+          averageRating: { $avg: '$rating' },
+          totalReviews: { $sum: 1 },
+          avgCommunication: { $avg: '$categories.communication' },
+          avgResponsiveness: { $avg: '$categories.responsiveness' },
+          avgHelpfulness: { $avg: '$categories.helpfulness' },
+          avgReliability: { $avg: '$categories.reliability' },
+          avgProfessionalism: { $avg: '$categories.professionalism' }
+        }
+      }
+    ]);
+    
+    const hostRating = {
+      average: stats.length > 0 ? Math.round(stats[0].averageRating * 10) / 10 : 0,
+      count: stats.length > 0 ? stats[0].totalReviews : 0,
+      categories: {
+        communication: stats.length > 0 && stats[0].avgCommunication ? Math.round(stats[0].avgCommunication * 10) / 10 : 0,
+        responsiveness: stats.length > 0 && stats[0].avgResponsiveness ? Math.round(stats[0].avgResponsiveness * 10) / 10 : 0,
+        helpfulness: stats.length > 0 && stats[0].avgHelpfulness ? Math.round(stats[0].avgHelpfulness * 10) / 10 : 0,
+        reliability: stats.length > 0 && stats[0].avgReliability ? Math.round(stats[0].avgReliability * 10) / 10 : 0,
+        professionalism: stats.length > 0 && stats[0].avgProfessionalism ? Math.round(stats[0].avgProfessionalism * 10) / 10 : 0
+      }
+    };
+    
+    await this.findByIdAndUpdate(hostId, { hostRating }, { new: true });
+    
+  } catch (error) {
+    console.error('Error updating host rating:', error);
+    throw error;
+  }
+};
 
 const User = mongoose.model('User', userSchema);
 

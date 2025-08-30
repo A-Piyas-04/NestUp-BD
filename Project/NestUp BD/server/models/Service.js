@@ -162,27 +162,7 @@ const serviceSchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'Service owner is required']
   },
-  rating: {
-    average: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 5
-    },
-    count: {
-      type: Number,
-      default: 0,
-      min: 0
-    },
-    // Category-specific ratings
-    categories: {
-      cleanliness: { type: Number, default: 0, min: 0, max: 5 },
-      communication: { type: Number, default: 0, min: 0, max: 5 },
-      location: { type: Number, default: 0, min: 0, max: 5 },
-      value: { type: Number, default: 0, min: 0, max: 5 },
-      amenities: { type: Number, default: 0, min: 0, max: 5 }
-    }
-  },
+
   isVerified: {
     type: Boolean,
     default: false
@@ -203,84 +183,9 @@ serviceSchema.pre('save', function(next) {
   next();
 });
 
-// Static method to update service rating based on reviews from Review model
-serviceSchema.statics.updateServiceRating = async function(serviceId) {
-  try {
-    const Review = mongoose.model('Review');
-    
-    // Get all approved reviews for this service
-    const reviews = await Review.find({ 
-      service: serviceId, 
-      status: 'approved' 
-    });
-    
-    if (reviews.length === 0) {
-      // No reviews, reset ratings
-      await this.findByIdAndUpdate(serviceId, {
-        'rating.average': 0,
-        'rating.count': 0,
-        'rating.categories.cleanliness': 0,
-        'rating.categories.communication': 0,
-        'rating.categories.location': 0,
-        'rating.categories.value': 0,
-        'rating.categories.amenities': 0
-      });
-      return;
-    }
-    
-    // Calculate overall average rating
-    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
-    const averageRating = Math.round((totalRating / reviews.length) * 10) / 10;
-    
-    // Calculate category averages
-    const categoryTotals = {
-      cleanliness: { sum: 0, count: 0 },
-      communication: { sum: 0, count: 0 },
-      location: { sum: 0, count: 0 },
-      value: { sum: 0, count: 0 },
-      amenities: { sum: 0, count: 0 }
-    };
-    
-    reviews.forEach(review => {
-      if (review.categories) {
-        Object.keys(categoryTotals).forEach(category => {
-          if (review.categories[category] != null) {
-            categoryTotals[category].sum += review.categories[category];
-            categoryTotals[category].count += 1;
-          }
-        });
-      }
-    });
-    
-    const categoryAverages = {};
-    Object.keys(categoryTotals).forEach(category => {
-      const { sum, count } = categoryTotals[category];
-      categoryAverages[`rating.categories.${category}`] = count > 0 
-        ? Math.round((sum / count) * 10) / 10 
-        : 0;
-    });
-    
-    // Update service with new ratings
-    await this.findByIdAndUpdate(serviceId, {
-      'rating.average': averageRating,
-      'rating.count': reviews.length,
-      ...categoryAverages
-    });
-    
-  } catch (error) {
-    console.error('Error updating service rating:', error);
-    throw error;
-  }
-};
 
-// Virtual to get reviews from Review model
-serviceSchema.virtual('reviewsData', {
-  ref: 'Review',
-  localField: '_id',
-  foreignField: 'service',
-  match: { status: 'approved' },
-  options: { sort: { createdAt: -1 } }
-});
+
+
 
 const Service = mongoose.model('Service', serviceSchema);
 
