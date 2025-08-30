@@ -17,18 +17,33 @@
   box-shadow: var(--shadow-lg);
 }
 
-.listing-image-container {
-  position: relative;
-  width: 100%;
-  height: 220px;
+.listing-card .listing-image-container {
+  aspect-ratio: 4/3;
   overflow: hidden;
+  position: relative;
+  padding-bottom: 75%;
 }
 
-.listing-image {
+@supports (aspect-ratio: 4/3) {
+  .listing-card .listing-image-container {
+    padding-bottom: 0;
+  }
+}
+
+.listing-card .listing-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
   transition: transform 0.5s ease;
+}
+
+@supports (aspect-ratio: 4/3) {
+  .listing-card .listing-image {
+    position: static;
+  }
 }
 
 .listing-card:hover .listing-image {
@@ -49,7 +64,7 @@
   background-color: rgba(16, 185, 129, 0.9);
   color: white;
   top: 15px;
-  left: 15px;
+  left: 70px;
 }
 
 .hygiene-badge {
@@ -64,6 +79,45 @@
   color: white;
   top: 50px;
   left: 15px;
+}
+
+.save-button {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+}
+
+.save-button:hover {
+  transform: scale(1.1);
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.save-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.save-button.saved {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.save-button.saved:hover {
+  background-color: rgba(255, 255, 255, 1);
 }
 
 .listing-content {
@@ -311,8 +365,15 @@
 }
 
 @media (max-width: 768px) {
-  .listing-image-container {
-    height: 200px;
+  .listing-card .listing-image-container {
+    aspect-ratio: 4/3;
+    padding-bottom: 75%;
+  }
+  
+  @supports (aspect-ratio: 4/3) {
+    .listing-card .listing-image-container {
+      padding-bottom: 0;
+    }
   }
   
   .listing-content {
