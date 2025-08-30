@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../../context/AuthContext';
+import LoginPrompt from '../../../../components/LoginPrompt';
 import './PaymentHistory.css';
 
 const PaymentHistory = () => {
@@ -20,22 +21,32 @@ const PaymentHistory = () => {
     const fetchPaymentHistory = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
+        setError(null);
         
-        if (!token) {
-          throw new Error('Please login to view your payment history');
+        // Check if user is authenticated
+        if (!user) {
+          setError('Please log in to view your payment history');
+          setLoading(false);
+          return;
         }
         
         const response = await fetch(`/api/payments?status=${filter === 'all' ? '' : filter}&page=1&limit=10`, {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
         });
-
+        
         if (!response.ok) {
-          throw new Error('Failed to fetch payment history');
+          if (response.status === 401) {
+            setError('Please log in to view your payment history');
+          } else {
+            const errorText = await response.text();
+            setError(`Failed to fetch payment history: ${errorText}`);
+          }
+          setLoading(false);
+          return;
         }
 
         const data = await response.json();
@@ -129,6 +140,11 @@ const PaymentHistory = () => {
   }
 
   if (error) {
+    // Show login prompt for authentication errors
+    if (error.includes('log in')) {
+      return <LoginPrompt message={error} />;
+    }
+    
     return (
       <div className="page-container">
         <div className="page-header">

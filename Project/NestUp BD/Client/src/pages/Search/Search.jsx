@@ -28,23 +28,7 @@ const Search = () => {
   const [selectedService, setSelectedService] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Sample review data for demonstration
-  const generateSampleReviews = (serviceId) => {
-    const sampleReviews = [
-      { id: 1, rating: 5, comment: "Excellent place, very clean and comfortable!", reviewer: "John D.", date: "2024-01-15" },
-      { id: 2, rating: 4, comment: "Great location and friendly host.", reviewer: "Sarah M.", date: "2024-01-10" },
-      { id: 3, rating: 5, comment: "Perfect for my stay, highly recommended!", reviewer: "Mike R.", date: "2024-01-05" },
-      { id: 4, rating: 3, comment: "Good value for money, minor issues with WiFi.", reviewer: "Lisa K.", date: "2023-12-28" },
-      { id: 5, rating: 4, comment: "Nice and cozy place.", reviewer: "David L.", date: "2023-12-20" }
-    ];
-    
-    // Return random subset of reviews for each listing
-    const numReviews = Math.floor(Math.random() * 4) + 1; // 1-4 reviews
-    return sampleReviews.slice(0, numReviews).map(review => ({
-      ...review,
-      serviceId
-    }));
-  };
+
 
   const fetchServices = async (filters = {}) => {
     setIsLoading(true);
@@ -82,7 +66,7 @@ const Search = () => {
           isBooked: service.isBooked, // Include the isBooked property
           // Keep the original service data for modal
           originalService: service,
-          reviews: generateSampleReviews(service._id) // Add sample reviews
+          reviews: [] // Reviews will be loaded from API when needed
         }));
         
         // Apply client-side filters for date range and other filters not handled by backend

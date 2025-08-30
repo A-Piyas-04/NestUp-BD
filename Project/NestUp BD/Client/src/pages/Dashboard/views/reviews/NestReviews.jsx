@@ -5,7 +5,7 @@ import './NestReviews.css';
 
 const NestReviews = () => {
   const { user } = useAuth();
-  const [reviews, setReviews] = useState([]);
+  const [hostReviews, setHostReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [stats, setStats] = useState({
@@ -18,89 +18,48 @@ const NestReviews = () => {
   const [replyText, setReplyText] = useState('');
   const [showReplyModal, setShowReplyModal] = useState(false);
 
-  // Fetch host's property reviews
+  // Fetch reviews received as a host
   useEffect(() => {
-    fetchNestReviews();
+    fetchReceivedHostReviews();
   }, []);
 
-  const fetchNestReviews = async () => {
+  const fetchReceivedHostReviews = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/reviews/host/${user.id}`);
-      // const data = await response.json();
-      
-      // Sample data for demonstration
-      const sampleReviews = [
-        {
-          id: 1,
-          nestName: 'Cozy Studio in Dhanmondi',
-          nestId: 'nest_1',
-          reviewerName: 'Ahmed Khan',
-          reviewerAvatar: null,
-          rating: 5,
-          comment: 'Excellent accommodation! The place was clean, well-maintained, and the host was very helpful. Highly recommended for students.',
-          date: '2024-01-15',
-          createdAt: '2024-01-15T10:30:00Z',
-          hostReply: null,
-          canReply: true,
-          images: []
-        },
-        {
-          id: 2,
-          nestName: 'Student-Friendly Room in Gulshan',
-          nestId: 'nest_2',
-          reviewerName: 'Fatima Rahman',
-          reviewerAvatar: null,
-          rating: 4,
-          comment: 'Good location and reasonable price. The room was comfortable and the facilities were as described.',
-          date: '2024-01-10',
-          createdAt: '2024-01-10T14:20:00Z',
-          hostReply: {
-            message: 'Thank you for your wonderful review! We\'re delighted you enjoyed your stay.',
-            date: '2024-01-11T09:15:00Z',
-            hostName: user?.name || 'Host'
-          },
-          canReply: false,
-          images: []
-        },
-        {
-          id: 3,
-          nestName: 'Cozy Studio in Dhanmondi',
-          nestId: 'nest_1',
-          reviewerName: 'Mohammad Ali',
-          reviewerAvatar: null,
-          rating: 3,
-          comment: 'The place was okay, but could use some improvements in cleanliness. Location is convenient though.',
-          date: '2024-01-05',
-          createdAt: '2024-01-05T16:45:00Z',
-          hostReply: null,
-          canReply: true,
-          images: []
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/host-reviews/received', {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      ];
-
-      setReviews(sampleReviews);
-      
-      // Calculate stats
-      const totalReviews = sampleReviews.length;
-      const averageRating = totalReviews > 0 
-        ? sampleReviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
-        : 0;
-      const repliedReviews = sampleReviews.filter(review => review.hostReply).length;
-      const responseRate = totalReviews > 0 ? (repliedReviews / totalReviews) * 100 : 0;
-      const pendingReplies = sampleReviews.filter(review => !review.hostReply).length;
-      
-      setStats({
-        totalReviews,
-        averageRating: Math.round(averageRating * 10) / 10,
-        responseRate: Math.round(responseRate),
-        pendingReplies
       });
       
+      if (response.ok) {
+        const data = await response.json();
+        setHostReviews(data.reviews || []);
+        
+        // Calculate stats
+        const reviews = data.reviews || [];
+        const totalReviews = reviews.length;
+        const averageRating = totalReviews > 0 
+          ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
+          : 0;
+        const repliedReviews = reviews.filter(review => review.hostReply).length;
+        const responseRate = totalReviews > 0 ? (repliedReviews / totalReviews) * 100 : 0;
+        const pendingReplies = reviews.filter(review => !review.hostReply).length;
+        
+        setStats({
+          totalReviews,
+          averageRating: Math.round(averageRating * 10) / 10,
+          responseRate: Math.round(responseRate),
+          pendingReplies
+        });
+      } else {
+        setError('Failed to fetch host reviews');
+      }
+      
     } catch (err) {
-      console.error('Error fetching reviews:', err);
-      setError('Failed to load reviews. Please try again later.');
+      console.error('Error fetching received host reviews:', err);
+      setError('Error loading host reviews');
     } finally {
       setLoading(false);
     }
@@ -120,14 +79,14 @@ const NestReviews = () => {
 
     try {
       // TODO: Replace with actual API call
-      // await fetch(`/api/reviews/${replyingTo.id}/reply`, {
+      // await fetch(`/api/host-reviews/${replyingTo.id}/reply`, {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
       //   body: JSON.stringify({ message: replyText.trim() })
       // });
 
       // Update local state
-      const updatedReviews = reviews.map(review => 
+      const updatedReviews = hostReviews.map(review => 
         review.id === replyingTo.id 
           ? {
               ...review,
@@ -141,7 +100,7 @@ const NestReviews = () => {
           : review
       );
       
-      setReviews(updatedReviews);
+      setHostReviews(updatedReviews);
       
       // Update stats
       const repliedReviews = updatedReviews.filter(review => review.hostReply).length;
@@ -184,7 +143,7 @@ const NestReviews = () => {
         <div className="error">
           <h3>Error</h3>
           <p>{error}</p>
-          <button onClick={fetchNestReviews} className="btn-primary">
+          <button onClick={fetchReceivedHostReviews} className="btn-primary">
             Try Again
           </button>
         </div>
@@ -195,8 +154,8 @@ const NestReviews = () => {
   return (
     <div className="nest-reviews-container">
       <div className="page-header">
-        <h1>Nest Reviews</h1>
-        <p>See what guests are saying about your accommodations</p>
+        <h1>Host Reviews</h1>
+        <p>Reviews from guests about your hosting experience</p>
       </div>
       
       <div className="reviews-summary">
@@ -238,15 +197,15 @@ const NestReviews = () => {
       </div>
       
       <div className="reviews-section">
-        {reviews.length === 0 ? (
+        {hostReviews.length === 0 ? (
           <div className="empty-reviews">
             <div className="empty-icon">📝</div>
-            <h3>No Reviews Yet</h3>
-            <p>Your guests haven't left any reviews yet. Encourage them to share their experience!</p>
+            <h3>No Host Reviews Yet</h3>
+            <p>You haven't received any host reviews yet. Keep providing great hosting experiences to get your first review!</p>
           </div>
         ) : (
           <ReviewList
-            reviews={reviews}
+            reviews={hostReviews}
             showNestNames={true}
             showActions={false}
             onReplyToReview={handleReplyToReview}

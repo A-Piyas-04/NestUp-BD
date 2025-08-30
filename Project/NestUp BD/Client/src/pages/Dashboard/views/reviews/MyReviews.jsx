@@ -6,7 +6,7 @@ import './MyReviews.css';
 
 const MyReviews = () => {
   const { user } = useAuth();
-  const [reviews, setReviews] = useState([]);
+  const [nestReviews, setNestReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingReview, setEditingReview] = useState(null);
@@ -17,86 +17,45 @@ const MyReviews = () => {
     pendingReplies: 0
   });
 
-  // Fetch user's reviews
+  // Fetch user's nest reviews
   useEffect(() => {
-    fetchMyReviews();
+    fetchMyNestReviews();
   }, []);
 
-  const fetchMyReviews = async () => {
+  const fetchMyNestReviews = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/reviews/user/${user.id}`);
-      // const data = await response.json();
-      
-      // Sample data for demonstration
-      const sampleReviews = [
-        {
-          id: 1,
-          nestName: 'Cozy Studio in Dhanmondi',
-          nestId: 'nest_1',
-          rating: 5,
-          comment: 'Excellent accommodation! The place was clean, well-maintained, and the host was very helpful. Highly recommended for students.',
-          date: '2024-01-15',
-          createdAt: '2024-01-15T10:30:00Z',
-          updatedAt: '2024-01-15T10:30:00Z',
-          hostReply: null,
-          canEdit: true,
-          canDelete: true,
-          images: []
-        },
-        {
-          id: 2,
-          nestName: 'Student-Friendly Room in Gulshan',
-          nestId: 'nest_2',
-          rating: 4,
-          comment: 'Good location and reasonable price. The room was comfortable and the facilities were as described.',
-          date: '2024-01-10',
-          createdAt: '2024-01-10T14:20:00Z',
-          updatedAt: '2024-01-10T14:20:00Z',
-          hostReply: {
-            message: 'Thank you for your review! We\'re glad you enjoyed your stay.',
-            date: '2024-01-11T09:15:00Z',
-            hostName: 'Ahmed Khan'
-          },
-          canEdit: true,
-          canDelete: true,
-          images: []
-        },
-        {
-          id: 3,
-          nestName: 'Modern Apartment in Uttara',
-          nestId: 'nest_3',
-          rating: 3,
-          comment: 'The place was okay, but could use some improvements in cleanliness. Location is convenient though.',
-          date: '2024-01-05',
-          createdAt: '2024-01-05T16:45:00Z',
-          updatedAt: '2024-01-05T16:45:00Z',
-          hostReply: null,
-          canEdit: true,
-          canDelete: true,
-          images: []
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/nest-reviews/user/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      ];
-
-      setReviews(sampleReviews);
-      
-      // Calculate stats
-      const totalReviews = sampleReviews.length;
-      const averageRating = totalReviews > 0 
-        ? sampleReviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
-        : 0;
-      const pendingReplies = sampleReviews.filter(review => !review.hostReply).length;
-      
-      setStats({
-        totalReviews,
-        averageRating: Math.round(averageRating * 10) / 10,
-        pendingReplies
       });
       
+      if (response.ok) {
+        const data = await response.json();
+        const reviews = data.data?.reviews || [];
+        setNestReviews(reviews);
+        
+        // Calculate stats
+        const totalReviews = reviews.length;
+        const averageRating = totalReviews > 0 
+          ? reviews.reduce((sum, review) => sum + review.overallRating, 0) / totalReviews 
+          : 0;
+        const pendingReplies = reviews.filter(review => !review.hostReply).length;
+        
+        setStats({
+          totalReviews,
+          averageRating: Math.round(averageRating * 10) / 10,
+          pendingReplies
+        });
+      } else {
+        setError('Failed to load your nest reviews. Please try again later.');
+      }
+      
     } catch (err) {
-      console.error('Error fetching reviews:', err);
-      setError('Failed to load your reviews. Please try again later.');
+      console.error('Error fetching nest reviews:', err);
+      setError('Failed to load your nest reviews. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -113,13 +72,13 @@ const MyReviews = () => {
         // TODO: Replace with actual API call
         // await fetch(`/api/reviews/${review.id}`, { method: 'DELETE' });
         
-        setReviews(prev => prev.filter(r => r.id !== review.id));
+        setNestReviews(prev => prev.filter(r => r.id !== review.id));
         
         // Update stats
-        const updatedReviews = reviews.filter(r => r.id !== review.id);
+        const updatedReviews = nestReviews.filter(r => r.id !== review.id);
         const totalReviews = updatedReviews.length;
         const averageRating = totalReviews > 0 
-          ? updatedReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews 
+          ? updatedReviews.reduce((sum, r) => sum + r.overallRating, 0) / totalReviews 
           : 0;
         const pendingReplies = updatedReviews.filter(r => !r.hostReply).length;
         
@@ -153,17 +112,17 @@ const MyReviews = () => {
         updatedAt: new Date().toISOString()
       };
       
-      setReviews(prev => prev.map(review => 
+      setNestReviews(prev => prev.map(review => 
         review.id === editingReview.id ? updatedReview : review
       ));
       
       // Update stats
-      const updatedReviews = reviews.map(review => 
+      const updatedReviews = nestReviews.map(review => 
         review.id === editingReview.id ? updatedReview : review
       );
       const totalReviews = updatedReviews.length;
       const averageRating = totalReviews > 0 
-        ? updatedReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews 
+        ? updatedReviews.reduce((sum, r) => sum + r.overallRating, 0) / totalReviews 
         : 0;
       
       setStats(prev => ({
@@ -199,7 +158,7 @@ const MyReviews = () => {
         <div className="error">
           <h3>Error</h3>
           <p>{error}</p>
-          <button onClick={fetchMyReviews} className="btn-primary">
+          <button onClick={fetchMyNestReviews} className="btn-primary">
             Try Again
           </button>
         </div>
@@ -210,8 +169,8 @@ const MyReviews = () => {
   return (
     <div className="my-reviews-container">
       <div className="page-header">
-        <h1>My Reviews</h1>
-        <p>Manage and track all the reviews you've written</p>
+        <h1>My Nest Reviews</h1>
+        <p>Manage and track all the nest reviews you've written</p>
       </div>
 
       {/* Stats Summary */}
@@ -246,25 +205,25 @@ const MyReviews = () => {
 
       {/* Reviews List */}
       <div className="reviews-section">
-        {reviews.length === 0 ? (
+        {nestReviews.length === 0 ? (
           <div className="empty-reviews">
             <div className="empty-icon">📝</div>
-            <h3>No Reviews Yet</h3>
-            <p>You haven't written any reviews yet. Book a stay and share your experience!</p>
+            <h3>No Nest Reviews Yet</h3>
+            <p>You haven't written any nest reviews yet. Stay at a nest and share your experience!</p>
             <button className="btn-primary" onClick={() => window.location.href = '/search'}>
               Find Places to Stay
             </button>
           </div>
         ) : (
           <ReviewList
-            reviews={reviews}
+            reviews={nestReviews}
             showNestNames={true}
             showActions={true}
             onEditReview={handleEditReview}
             onDeleteReview={handleDeleteReview}
             showFilters={true}
             showStats={false}
-            emptyMessage="No reviews match your filters"
+            emptyMessage="No nest reviews match your filters"
             emptySubMessage="Try adjusting your search criteria"
           />
         )}
