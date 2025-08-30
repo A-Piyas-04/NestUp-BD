@@ -30,7 +30,19 @@ router.get('/protected', verifyToken, checkAuth, (req, res) => {
 // Get all services
 router.get('/services', async (req, res) => {
   try {
-    const { propertyType, district, area, minPrice, maxPrice, page = 1, limit = 10 } = req.query;
+    const { 
+      propertyType, 
+      district, 
+      area, 
+      minPrice, 
+      maxPrice, 
+      verifiedHosts, 
+      hygieneBadge, 
+      availableFrom, 
+      availableTo, 
+      page = 1, 
+      limit = 10 
+    } = req.query;
     
     // Build filter object
     const filter = { 
@@ -54,6 +66,30 @@ router.get('/services', async (req, res) => {
       filter.price = {};
       if (minPrice) filter.price.$gte = Number(minPrice);
       if (maxPrice) filter.price.$lte = Number(maxPrice);
+    }
+    
+    // Verified hosts filter
+    if (verifiedHosts === 'true') {
+      filter['owner.isVerified'] = true;
+    }
+    
+    // Hygiene badge filter
+    if (hygieneBadge === 'true') {
+      filter['features.hygieneBadge'] = true;
+    }
+    
+    // Date range filter - service start date >= Move-in Date AND service end date <= Move-out Date
+    if (availableFrom || availableTo) {
+      const dateFilter = {};
+      if (availableFrom) {
+        // Service start date must be greater than or equal to Move-in Date
+        dateFilter['availability.availableFrom'] = { $gte: new Date(availableFrom) };
+      }
+      if (availableTo) {
+        // Service end date must be less than or equal to Move-out Date
+        dateFilter['availability.availableTo'] = { $lte: new Date(availableTo) };
+      }
+      Object.assign(filter, dateFilter);
     }
     
     // Calculate pagination

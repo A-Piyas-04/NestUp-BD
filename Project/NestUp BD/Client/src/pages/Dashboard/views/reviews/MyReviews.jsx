@@ -40,7 +40,7 @@ const MyReviews = () => {
         // Calculate stats
         const totalReviews = reviews.length;
         const averageRating = totalReviews > 0 
-          ? reviews.reduce((sum, review) => sum + review.overallRating, 0) / totalReviews 
+          ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
           : 0;
         const pendingReplies = reviews.filter(review => !review.hostReply).length;
         
@@ -69,8 +69,7 @@ const MyReviews = () => {
   const handleDeleteReview = async (review) => {
     if (window.confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
       try {
-        // TODO: Replace with actual API call
-        // await fetch(`/api/reviews/${review.id}`, { method: 'DELETE' });
+        // Note: Delete functionality not implemented yet
         
         setNestReviews(prev => prev.filter(r => r.id !== review.id));
         
@@ -97,12 +96,7 @@ const MyReviews = () => {
 
   const handleUpdateReview = async (updatedData) => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/reviews/${editingReview.id}`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(updatedData)
-      // });
+      // Note: Edit functionality not implemented yet
       // const updatedReview = await response.json();
       
       // Update local state

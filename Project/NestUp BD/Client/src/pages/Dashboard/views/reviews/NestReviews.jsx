@@ -27,7 +27,7 @@ const NestReviews = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/host-reviews/received', {
+      const response = await fetch(`/api/nest-reviews/host/${user.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -35,17 +35,17 @@ const NestReviews = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setHostReviews(data.reviews || []);
+        setHostReviews(data.data?.reviews || []);
         
         // Calculate stats
-        const reviews = data.reviews || [];
+        const reviews = data.data?.reviews || [];
         const totalReviews = reviews.length;
         const averageRating = totalReviews > 0 
           ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
           : 0;
-        const repliedReviews = reviews.filter(review => review.hostReply).length;
+        const repliedReviews = reviews.filter(review => review.hostReply && review.hostReply.comment).length;
         const responseRate = totalReviews > 0 ? (repliedReviews / totalReviews) * 100 : 0;
-        const pendingReplies = reviews.filter(review => !review.hostReply).length;
+        const pendingReplies = reviews.filter(review => !review.hostReply || !review.hostReply.comment).length;
         
         setStats({
           totalReviews,
@@ -54,12 +54,12 @@ const NestReviews = () => {
           pendingReplies
         });
       } else {
-        setError('Failed to fetch host reviews');
+        setError('Failed to fetch nest reviews');
       }
       
     } catch (err) {
-      console.error('Error fetching received host reviews:', err);
-      setError('Error loading host reviews');
+      console.error('Error fetching received nest reviews:', err);
+      setError('Error loading nest reviews');
     } finally {
       setLoading(false);
     }
@@ -78,24 +78,29 @@ const NestReviews = () => {
     }
 
     try {
-      // TODO: Replace with actual API call
-      // await fetch(`/api/host-reviews/${replyingTo.id}/reply`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ message: replyText.trim() })
-      // });
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/nest-reviews/${replyingTo._id}/reply`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ comment: replyText.trim() })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit reply');
+      }
 
       // Update local state
       const updatedReviews = hostReviews.map(review => 
-        review.id === replyingTo.id 
+        review._id === replyingTo._id 
           ? {
               ...review,
               hostReply: {
-                message: replyText.trim(),
-                date: new Date().toISOString(),
-                hostName: user?.name || 'Host'
-              },
-              canReply: false
+                comment: replyText.trim(),
+                repliedAt: new Date().toISOString()
+              }
             }
           : review
       );
@@ -103,9 +108,9 @@ const NestReviews = () => {
       setHostReviews(updatedReviews);
       
       // Update stats
-      const repliedReviews = updatedReviews.filter(review => review.hostReply).length;
+      const repliedReviews = updatedReviews.filter(review => review.hostReply && review.hostReply.comment).length;
       const responseRate = updatedReviews.length > 0 ? (repliedReviews / updatedReviews.length) * 100 : 0;
-      const pendingReplies = updatedReviews.filter(review => !review.hostReply).length;
+      const pendingReplies = updatedReviews.filter(review => !review.hostReply || !review.hostReply.comment).length;
       
       setStats(prev => ({
         ...prev,
@@ -154,8 +159,8 @@ const NestReviews = () => {
   return (
     <div className="nest-reviews-container">
       <div className="page-header">
-        <h1>Host Reviews</h1>
-        <p>Reviews from guests about your hosting experience</p>
+        <h1>Nest Reviews</h1>
+        <p>Reviews from guests about your properties</p>
       </div>
       
       <div className="reviews-summary">
@@ -200,8 +205,8 @@ const NestReviews = () => {
         {hostReviews.length === 0 ? (
           <div className="empty-reviews">
             <div className="empty-icon">📝</div>
-            <h3>No Host Reviews Yet</h3>
-            <p>You haven't received any host reviews yet. Keep providing great hosting experiences to get your first review!</p>
+            <h3>No Nest Reviews Yet</h3>
+            <p>You haven't received any nest reviews yet. Keep providing great hosting experiences to get your first review!</p>
           </div>
         ) : (
           <ReviewList

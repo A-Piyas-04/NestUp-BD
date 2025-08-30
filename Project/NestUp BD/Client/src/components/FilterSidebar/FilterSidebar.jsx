@@ -15,14 +15,14 @@ const FilterSidebar = ({ onFilterChange }) => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFilters(prev => ({
-      ...prev,
+    const newFilters = {
+      ...filters,
       [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  const handleApply = () => {
-    onFilterChange(filters);
+    };
+    setFilters(newFilters);
+    
+    // Trigger filtering immediately on change
+    onFilterChange(newFilters);
   };
 
   const handleReset = () => {
@@ -170,9 +170,7 @@ const FilterSidebar = ({ onFilterChange }) => {
         </label>
       </div>
 
-      <button className="apply-button" onClick={handleApply}>
-        Apply Filters
-      </button>
+
     </div>
   );
 };

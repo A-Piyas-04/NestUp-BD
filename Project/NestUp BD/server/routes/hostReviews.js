@@ -72,10 +72,10 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
       });
     }
 
-    if (booking.status !== 'completed') {
+    if (booking.status !== 'approved') {
       return res.status(400).json({
         success: false,
-        message: 'You can only review completed bookings'
+        message: 'You can only review approved bookings'
       });
     }
 
@@ -157,6 +157,60 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || 'Server error while creating host review'
+    });
+  }
+});
+
+// @route   GET /api/host-reviews/received
+// @desc    Get reviews received by the current user as a host
+// @access  Private
+router.get('/received', verifyToken, async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      minRating,
+      maxRating
+    } = req.query;
+
+    const options = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sortBy,
+      sortOrder,
+      status: 'approved'
+    };
+
+    if (minRating) options.minRating = parseInt(minRating);
+    if (maxRating) options.maxRating = parseInt(maxRating);
+
+    const reviews = await HostReview.getReviewsWithPagination(req.user.id, options);
+    const totalReviews = await HostReview.countDocuments({
+      host: req.user.id,
+      status: 'approved'
+    });
+
+    const totalPages = Math.ceil(totalReviews / options.limit);
+
+    res.json({
+      success: true,
+      reviews,
+      pagination: {
+        currentPage: options.page,
+        totalPages,
+        totalReviews,
+        hasNextPage: options.page < totalPages,
+        hasPrevPage: options.page > 1
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching received host reviews:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching received host reviews'
     });
   }
 });

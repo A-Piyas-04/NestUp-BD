@@ -40,6 +40,10 @@ const Search = () => {
       if (filters.area) queryParams.append('area', filters.area);
       if (filters.minPrice) queryParams.append('minPrice', filters.minPrice);
       if (filters.maxPrice) queryParams.append('maxPrice', filters.maxPrice);
+      if (filters.verifiedHosts) queryParams.append('verifiedHosts', 'true');
+      if (filters.hygieneBadge) queryParams.append('hygieneBadge', 'true');
+      if (filters.availableFrom) queryParams.append('availableFrom', filters.availableFrom);
+      if (filters.availableTo) queryParams.append('availableTo', filters.availableTo);
       
       const response = await fetch(`/api/services?${queryParams.toString()}`);
       
@@ -69,40 +73,8 @@ const Search = () => {
           reviews: [] // Reviews will be loaded from API when needed
         }));
         
-        // Apply client-side filters for date range and other filters not handled by backend
-        let filtered = transformedServices;
-        
-        // Date range filter
-        if (filters.availableFrom || filters.availableTo) {
-          filtered = filtered.filter(listing => {
-            const filterFromDate = filters.availableFrom ? new Date(filters.availableFrom) : null;
-            const filterToDate = filters.availableTo ? new Date(filters.availableTo) : null;
-            const listingFromDate = new Date(listing.availableFrom);
-            const listingToDate = new Date(listing.availableTo);
-            
-            // Check for overlap
-            if (filterFromDate && filterFromDate > listingToDate) {
-              return false;
-            }
-            if (filterToDate && filterToDate < listingFromDate) {
-              return false;
-            }
-            return true;
-          });
-        }
-        
-        // Verified hosts filter
-        if (filters.verifiedHosts) {
-          filtered = filtered.filter(listing => listing.verifiedHost);
-        }
-        
-        // Hygiene badge filter
-        if (filters.hygieneBadge) {
-          filtered = filtered.filter(listing => listing.hygieneBadge);
-        }
-        
-        setFilteredListings(filtered);
-        setTotalListings(filtered.length);
+        setFilteredListings(transformedServices);
+        setTotalListings(transformedServices.length);
       } else {
         console.error('Failed to fetch services');
         setFilteredListings([]);

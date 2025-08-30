@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './HeroSection.css';
 import temporaryHousingImage from '../../assets/images/temporary-housing-apts.jpg';
 
@@ -6,11 +7,25 @@ const HeroSection = () => {
   const [searchLocation, setSearchLocation] = useState('');
   const [searchService, setSearchService] = useState('');
   const [searchDate, setSearchDate] = useState('');
+  const navigate = useNavigate();
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // In a real app, this would navigate to search results
-    console.log('Search params:', { searchLocation, searchService, searchDate });
+    const dateToUse = searchDate || new Date().toISOString().split('T')[0];
+    const queryParams = new URLSearchParams({
+      location: searchLocation,
+      service: searchService,
+      dateFrom: dateToUse
+    });
+    navigate(`/search?${queryParams.toString()}`);
+  };
+
+  const handleDiscoverProperties = () => {
+    navigate('/search');
+  };
+
+  const handleListProperty = () => {
+    navigate('/provide-service');
   };
 
   return (
@@ -21,8 +36,8 @@ const HeroSection = () => {
           <p className="subheadline">Seamless relocation solutions with verified housing, transport, and essential services—all on one trusted platform.</p>
 
           <div className="cta-buttons">
-            <button className="cta-button primary">Discover Properties</button>
-            <button className="cta-button secondary">List Your Property</button>
+            <button className="cta-button primary" onClick={handleDiscoverProperties}>Discover Properties</button>
+            <button className="cta-button secondary" onClick={handleListProperty}>List Your Property</button>
           </div>
 
           <form className="search-bar" onSubmit={handleSearch}>
@@ -43,12 +58,16 @@ const HeroSection = () => {
                 <select
                   id="service"
                   value={searchService}
-                  onChange={(e) => setSearchService(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value !== 'transport' && e.target.value !== 'food') {
+                      setSearchService(e.target.value);
+                    }
+                  }}
                 >
                   <option value="">Select service</option>
                   <option value="housing">Housing</option>
-                  <option value="transport">Transport</option>
-                  <option value="food">Food Services</option>
+                  <option value="transport" disabled style={{color: '#9ca3af'}}>Transport (Coming Soon)</option>
+                  <option value="food" disabled style={{color: '#9ca3af'}}>Food Services (Coming Soon)</option>
                 </select>
               </div>
 
@@ -59,6 +78,7 @@ const HeroSection = () => {
                   id="date"
                   value={searchDate}
                   onChange={(e) => setSearchDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
                 />
               </div>
             </div>

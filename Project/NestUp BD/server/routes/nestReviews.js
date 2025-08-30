@@ -72,10 +72,10 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
       });
     }
 
-    if (booking.status !== 'completed') {
+    if (booking.status !== 'approved') {
       return res.status(400).json({
         success: false,
-        message: 'You can only review completed bookings'
+        message: 'You can only review approved bookings'
       });
     }
 
@@ -299,6 +299,79 @@ router.get('/user/:userId', verifyToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error while fetching user nest reviews'
+    });
+  }
+});
+
+// @route   GET /api/nest-reviews/host/:hostId/public
+// @desc    Get reviews for services owned by a specific host (public access)
+// @access  Public
+router.get('/host/:hostId/public', async (req, res) => {
+  try {
+    const { hostId } = req.params;
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      minRating,
+      maxRating
+    } = req.query;
+
+    const options = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sortBy,
+      sortOrder,
+      status: 'approved'
+    };
+
+    if (minRating) options.minRating = parseInt(minRating);
+    if (maxRating) options.maxRating = parseInt(maxRating);
+
+    const skip = (options.page - 1) * options.limit;
+
+    // First get all services owned by the host
+    const hostServices = await Service.find({ owner: hostId }).select('_id');
+    const serviceIds = hostServices.map(service => service._id);
+
+    // Build query
+    const query = { service: { $in: serviceIds }, status: options.status };
+    if (options.minRating) query.rating = { ...query.rating, $gte: options.minRating };
+    if (options.maxRating) query.rating = { ...query.rating, $lte: options.maxRating };
+
+    const sort = { [options.sortBy]: options.sortOrder === 'desc' ? -1 : 1 };
+
+    const reviews = await NestReview.find(query)
+      .populate('reviewer', 'name avatar')
+      .populate('service', 'title location images')
+      .populate('booking', 'bookingId startDate endDate')
+      .sort(sort)
+      .skip(skip)
+      .limit(options.limit);
+
+    const totalReviews = await NestReview.countDocuments(query);
+    const totalPages = Math.ceil(totalReviews / options.limit);
+
+    res.json({
+      success: true,
+      data: {
+        reviews,
+        pagination: {
+          currentPage: options.page,
+          totalPages,
+          totalReviews,
+          hasNextPage: options.page < totalPages,
+          hasPrevPage: options.page > 1
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching host nest reviews (public):', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching host nest reviews'
     });
   }
 });

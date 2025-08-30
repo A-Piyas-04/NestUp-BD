@@ -211,8 +211,8 @@ nestReviewSchema.pre('save', async function(next) {
         return next(new Error('User can only review their own bookings'));
       }
       
-      if (booking.status !== 'completed') {
-        return next(new Error('Can only review completed bookings'));
+      if (booking.status !== 'approved') {
+        return next(new Error('Can only review approved bookings'));
       }
       
       // Ensure service matches the booking

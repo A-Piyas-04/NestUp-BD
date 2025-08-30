@@ -104,15 +104,18 @@
 }
 
 .search-inputs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  display: flex;
   gap: 1rem;
+  flex: 1;
   margin-bottom: 1.5rem;
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 180px;
 }
 
 .input-group label {
@@ -245,6 +248,10 @@
   }
   
   .search-inputs {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+  
+  .input-group {
+    min-width: auto;
   }
 }

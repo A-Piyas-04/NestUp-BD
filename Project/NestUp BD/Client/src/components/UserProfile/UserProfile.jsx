@@ -37,11 +37,7 @@ const UserProfile = ({ isOpen, onClose, userId }) => {
     setReviewsLoading(true);
     
     try {
-      const response = await fetch(`/api/nest-reviews/host/${userId}?limit=5`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await fetch(`/api/nest-reviews/host/${userId}/public?limit=5`);
       
       if (response.ok) {
         const data = await response.json();

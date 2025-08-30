@@ -167,6 +167,29 @@ const serviceSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  
+  // Rating System
+  rating: {
+    average: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5
+    },
+    count: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    breakdown: {
+      5: { type: Number, default: 0 },
+      4: { type: Number, default: 0 },
+      3: { type: Number, default: 0 },
+      2: { type: Number, default: 0 },
+      1: { type: Number, default: 0 }
+    }
+  },
+  
   createdAt: {
     type: Date,
     default: Date.now
@@ -183,9 +206,62 @@ serviceSchema.pre('save', function(next) {
   next();
 });
 
-
-
-
+// Static method to update service rating based on reviews
+serviceSchema.statics.updateServiceRating = async function(serviceId) {
+  try {
+    const NestReview = mongoose.model('NestReview');
+    
+    // Get all approved reviews for this service
+    const reviews = await NestReview.find({ 
+      service: serviceId, 
+      status: 'approved' 
+    });
+    
+    if (reviews.length === 0) {
+      // No reviews, reset rating
+      await this.findByIdAndUpdate(serviceId, {
+        'rating.average': 0,
+        'rating.count': 0,
+        'rating.breakdown.5': 0,
+        'rating.breakdown.4': 0,
+        'rating.breakdown.3': 0,
+        'rating.breakdown.2': 0,
+        'rating.breakdown.1': 0
+      });
+      return;
+    }
+    
+    // Calculate average rating
+    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+    const averageRating = totalRating / reviews.length;
+    
+    // Calculate rating breakdown
+    const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviews.forEach(review => {
+      const rating = Math.floor(review.rating); // Round down to nearest integer
+      if (breakdown[rating] !== undefined) {
+        breakdown[rating]++;
+      }
+    });
+    
+    // Update service with new rating data
+    await this.findByIdAndUpdate(serviceId, {
+      'rating.average': Math.round(averageRating * 10) / 10, // Round to 1 decimal place
+      'rating.count': reviews.length,
+      'rating.breakdown.5': breakdown[5],
+      'rating.breakdown.4': breakdown[4],
+      'rating.breakdown.3': breakdown[3],
+      'rating.breakdown.2': breakdown[2],
+      'rating.breakdown.1': breakdown[1]
+    });
+    
+    console.log(`Updated rating for service ${serviceId}: ${averageRating.toFixed(1)} (${reviews.length} reviews)`);
+    
+  } catch (error) {
+    console.error('Error updating service rating:', error);
+    throw error;
+  }
+};
 
 const Service = mongoose.model('Service', serviceSchema);
 
