@@ -1,28 +1,28 @@
 import mongoose from 'mongoose';
 
-const reviewSchema = new mongoose.Schema({
-  // Reference to the user who wrote the review
-  user: {
+const nestReviewSchema = new mongoose.Schema({
+  // Reference to the user who wrote the review (guest)
+  reviewer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
   
-  // Reference to the service being reviewed
+  // Reference to the service/nest being reviewed
   service: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Service',
     required: true
   },
   
-  // Reference to the booking (if review is for a completed booking)
+  // Reference to the completed booking
   booking: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Booking',
     required: true
   },
   
-  // Rating from 1 to 5
+  // Overall rating from 1 to 5
   rating: {
     type: Number,
     required: true,
@@ -61,37 +61,37 @@ const reviewSchema = new mongoose.Schema({
     }
   }],
   
-  // Review categories/aspects
+  // Nest-specific review categories
   categories: {
     cleanliness: {
       type: Number,
       min: 1,
       max: 5,
-      required: false
-    },
-    communication: {
-      type: Number,
-      min: 1,
-      max: 5,
-      required: false
+      default: null
     },
     location: {
       type: Number,
       min: 1,
       max: 5,
-      required: false
-    },
-    value: {
-      type: Number,
-      min: 1,
-      max: 5,
-      required: false
+      default: null
     },
     amenities: {
       type: Number,
       min: 1,
       max: 5,
-      required: false
+      default: null
+    },
+    value: {
+      type: Number,
+      min: 1,
+      max: 5,
+      default: null
+    },
+    accuracy: {
+      type: Number,
+      min: 1,
+      max: 5,
+      default: null
     }
   },
   
@@ -99,26 +99,10 @@ const reviewSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected', 'flagged'],
-    default: 'approved' // Auto-approve for now, can be changed to 'pending' for moderation
+    default: 'approved' // Auto-approve since it's from verified bookings
   },
   
-  // Host reply to the review
-  hostReply: {
-    comment: {
-      type: String,
-      trim: true,
-      maxlength: [500, 'Host reply cannot exceed 500 characters']
-    },
-    repliedAt: {
-      type: Date
-    },
-    repliedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
-    }
-  },
-  
-  // Helpful votes from other users
+  // Helpful votes
   helpfulVotes: {
     count: {
       type: Number,
@@ -130,7 +114,19 @@ const reviewSchema = new mongoose.Schema({
     }]
   },
   
-  // Flag system for inappropriate reviews
+  // Host reply to the review
+  hostReply: {
+    comment: {
+      type: String,
+      trim: true,
+      maxlength: [500, 'Host reply cannot exceed 500 characters']
+    },
+    repliedAt: {
+      type: Date
+    }
+  },
+  
+  // Flags for inappropriate content
   flags: [{
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -152,7 +148,7 @@ const reviewSchema = new mongoose.Schema({
     }
   }],
   
-  // Metadata
+  // Edit tracking
   isEdited: {
     type: Boolean,
     default: false
@@ -170,7 +166,7 @@ const reviewSchema = new mongoose.Schema({
   // Verification status
   isVerified: {
     type: Boolean,
-    default: false // Can be set to true if user actually stayed at the property
+    default: false
   }
   
 }, {
@@ -180,17 +176,17 @@ const reviewSchema = new mongoose.Schema({
 });
 
 // Indexes for better query performance
-reviewSchema.index({ service: 1, createdAt: -1 });
-reviewSchema.index({ user: 1, createdAt: -1 });
-reviewSchema.index({ booking: 1 });
-reviewSchema.index({ rating: 1 });
-reviewSchema.index({ status: 1 });
+nestReviewSchema.index({ service: 1, createdAt: -1 });
+nestReviewSchema.index({ reviewer: 1, createdAt: -1 });
+nestReviewSchema.index({ booking: 1 });
+nestReviewSchema.index({ rating: 1 });
+nestReviewSchema.index({ status: 1 });
 
 // Compound index for preventing duplicate reviews per booking
-reviewSchema.index({ user: 1, booking: 1 }, { unique: true });
+nestReviewSchema.index({ reviewer: 1, booking: 1 }, { unique: true });
 
 // Virtual for calculating overall category rating
-reviewSchema.virtual('categoryAverage').get(function() {
+nestReviewSchema.virtual('categoryAverage').get(function() {
   const categories = this.categories;
   if (!categories) return null;
   
@@ -201,17 +197,17 @@ reviewSchema.virtual('categoryAverage').get(function() {
 });
 
 // Pre-save middleware to validate booking completion
-reviewSchema.pre('save', async function(next) {
+nestReviewSchema.pre('save', async function(next) {
   if (this.isNew) {
     try {
       const Booking = mongoose.model('Booking');
-      const booking = await Booking.findById(this.booking);
+      const booking = await Booking.findById(this.booking).populate('service');
       
       if (!booking) {
         return next(new Error('Booking not found'));
       }
       
-      if (booking.user.toString() !== this.user.toString()) {
+      if (booking.user.toString() !== this.reviewer.toString()) {
         return next(new Error('User can only review their own bookings'));
       }
       
@@ -219,9 +215,9 @@ reviewSchema.pre('save', async function(next) {
         return next(new Error('Can only review completed bookings'));
       }
       
-      // Ensure service matches booking
-      if (booking.service.toString() !== this.service.toString()) {
-        return next(new Error('Service must match the booking service'));
+      // Ensure service matches the booking
+      if (booking.service._id.toString() !== this.service.toString()) {
+        return next(new Error('Service must match the booked service'));
       }
       
     } catch (error) {
@@ -231,55 +227,85 @@ reviewSchema.pre('save', async function(next) {
   next();
 });
 
-// Note: Service rating middleware removed as we've transitioned to host-based reviews
+// Post-save middleware to update service rating
+nestReviewSchema.post('save', async function() {
+  try {
+    const Service = mongoose.model('Service');
+    await Service.updateServiceRating(this.service);
+  } catch (error) {
+    console.error('Error updating service rating:', error);
+  }
+});
 
-// Static method to get reviews with pagination
-reviewSchema.statics.getReviewsWithPagination = function(serviceId, options = {}) {
+// Post-remove middleware to update service rating when review is deleted
+nestReviewSchema.post('remove', async function() {
+  try {
+    const Service = mongoose.model('Service');
+    await Service.updateServiceRating(this.service);
+  } catch (error) {
+    console.error('Error updating service rating after review deletion:', error);
+  }
+});
+
+// Static method to get service reviews with pagination
+nestReviewSchema.statics.getServiceReviewsWithPagination = function(serviceId, options = {}) {
   const {
     page = 1,
     limit = 10,
     sortBy = 'createdAt',
     sortOrder = 'desc',
     status = 'approved',
-    minRating = null,
-    maxRating = null
+    minRating,
+    maxRating
   } = options;
-  
+
   const query = { service: serviceId, status };
   
-  if (minRating !== null) query.rating = { ...query.rating, $gte: minRating };
-  if (maxRating !== null) query.rating = { ...query.rating, $lte: maxRating };
-  
+  if (minRating) query.rating = { ...query.rating, $gte: minRating };
+  if (maxRating) query.rating = { ...query.rating, $lte: maxRating };
+
   const skip = (page - 1) * limit;
   const sort = { [sortBy]: sortOrder === 'desc' ? -1 : 1 };
-  
+
   return this.find(query)
-    .populate('user', 'name avatar')
-    .populate('hostReply.repliedBy', 'name')
+    .populate('reviewer', 'name avatar')
+    .populate('booking', 'bookingId startDate endDate')
     .sort(sort)
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .lean();
 };
 
-// Static method to get review statistics
-reviewSchema.statics.getReviewStats = function(serviceId) {
+// Static method to get review statistics for a service
+nestReviewSchema.statics.getReviewStats = function(serviceId) {
   return this.aggregate([
-    { $match: { service: new mongoose.Types.ObjectId(serviceId), status: 'approved' } },
+    { $match: { service: mongoose.Types.ObjectId(serviceId), status: 'approved' } },
     {
       $group: {
         _id: null,
         totalReviews: { $sum: 1 },
         averageRating: { $avg: '$rating' },
         ratingDistribution: {
-          $push: '$rating'
+          $push: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$rating', 1] }, then: '1' },
+                { case: { $eq: ['$rating', 2] }, then: '2' },
+                { case: { $eq: ['$rating', 3] }, then: '3' },
+                { case: { $eq: ['$rating', 4] }, then: '4' },
+                { case: { $eq: ['$rating', 5] }, then: '5' }
+              ],
+              default: 'other'
+            }
+          }
         },
         averageCategories: {
           $avg: {
-            cleanliness: '$categories.cleanliness',
-            communication: '$categories.communication',
-            location: '$categories.location',
-            value: '$categories.value',
-            amenities: '$categories.amenities'
+            cleanliness: { $ifNull: ['$categories.cleanliness', 0] },
+            location: { $ifNull: ['$categories.location', 0] },
+            amenities: { $ifNull: ['$categories.amenities', 0] },
+            value: { $ifNull: ['$categories.value', 0] },
+            accuracy: { $ifNull: ['$categories.accuracy', 0] }
           }
         }
       }
@@ -290,11 +316,23 @@ reviewSchema.statics.getReviewStats = function(serviceId) {
         totalReviews: 1,
         averageRating: { $round: ['$averageRating', 1] },
         ratingDistribution: {
-          1: { $size: { $filter: { input: '$ratingDistribution', cond: { $eq: ['$$this', 1] } } } },
-          2: { $size: { $filter: { input: '$ratingDistribution', cond: { $eq: ['$$this', 2] } } } },
-          3: { $size: { $filter: { input: '$ratingDistribution', cond: { $eq: ['$$this', 3] } } } },
-          4: { $size: { $filter: { input: '$ratingDistribution', cond: { $eq: ['$$this', 4] } } } },
-          5: { $size: { $filter: { input: '$ratingDistribution', cond: { $eq: ['$$this', 5] } } } }
+          $arrayToObject: {
+            $map: {
+              input: [1, 2, 3, 4, 5],
+              as: 'rating',
+              in: {
+                k: { $toString: '$$rating' },
+                v: {
+                  $size: {
+                    $filter: {
+                      input: '$ratingDistribution',
+                      cond: { $eq: ['$$this', { $toString: '$$rating' }] }
+                    }
+                  }
+                }
+              }
+            }
+          }
         },
         averageCategories: 1
       }
@@ -302,4 +340,6 @@ reviewSchema.statics.getReviewStats = function(serviceId) {
   ]);
 };
 
-export default mongoose.model('Review', reviewSchema);
+const NestReview = mongoose.model('NestReview', nestReviewSchema);
+
+export default NestReview;

@@ -58,35 +58,11 @@ const bookingSchema = new mongoose.Schema({
     min: [0, 'Total amount cannot be negative']
   },
   
-  // Additional fees
-  fees: {
-    serviceFee: {
-      type: Number,
-      default: 0,
-      min: [0, 'Service fee cannot be negative']
-    },
-    cleaningFee: {
-      type: Number,
-      default: 0,
-      min: [0, 'Cleaning fee cannot be negative']
-    },
-    securityDeposit: {
-      type: Number,
-      default: 0,
-      min: [0, 'Security deposit cannot be negative']
-    },
-    taxAmount: {
-      type: Number,
-      default: 0,
-      min: [0, 'Tax amount cannot be negative']
-    }
-  },
-  
-  // Booking Status - Consistent with frontend
+  // Booking Status - Updated enum
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'active', 'completed', 'cancelled', 'rejected'],
-    default: 'pending'
+    enum: ['active', 'pending', 'approved', 'rejected'],
+    default: 'active'
   },
   
   // Approval Status - For host approval workflow
@@ -196,6 +172,18 @@ const bookingSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Review',
     default: null
+  },
+  
+  // Nest Review Information
+  nestReviewSubmitted: {
+    type: Boolean,
+    default: false
+  },
+  
+  nestReviewId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'NestReview',
+    default: null
   }
 }, {
   timestamps: true,
@@ -250,6 +238,11 @@ bookingSchema.virtual('currentStatus').get(function() {
     return 'pending';
   }
   
+  // For approved bookings, always return 'approved' regardless of dates
+  if (this.status === 'approved') {
+    return 'approved';
+  }
+  
   if (this.endDate < now) {
     return 'completed';
   }
@@ -274,14 +267,10 @@ bookingSchema.pre('save', function(next) {
   next();
 });
 
-// Pre-save middleware to calculate total amount
+// Pre-save middleware to set total amount equal to base price
 bookingSchema.pre('save', function(next) {
-  if (this.isModified('basePrice') || this.isModified('fees')) {
-    this.totalAmount = this.basePrice + 
-                      (this.fees.serviceFee || 0) + 
-                      (this.fees.cleaningFee || 0) + 
-                      (this.fees.securityDeposit || 0) +
-                      (this.fees.taxAmount || 0);
+  if (this.isModified('basePrice')) {
+    this.totalAmount = this.basePrice;
   }
   next();
 });
@@ -407,7 +396,7 @@ bookingSchema.statics.findByStatus = function(status) {
 bookingSchema.statics.findActive = function() {
   const now = new Date();
   return this.find({
-    status: 'confirmed',
+    status: 'approved',
     startDate: { $lte: now },
     endDate: { $gte: now }
   })
@@ -420,7 +409,7 @@ bookingSchema.statics.findActive = function() {
 bookingSchema.statics.findToComplete = function() {
   const now = new Date();
   return this.find({
-    status: 'confirmed',
+    status: 'approved',
     endDate: { $lt: now }
   });
 };
@@ -429,7 +418,7 @@ bookingSchema.statics.findToComplete = function() {
 bookingSchema.statics.checkAvailability = async function(serviceId, startDate, endDate, excludeBookingId = null) {
   const query = {
     service: serviceId,
-    status: { $in: ['confirmed', 'active'] },
+    status: { $in: ['approved', 'active'] },
     $or: [
       {
         startDate: { $lte: endDate },
@@ -454,7 +443,7 @@ bookingSchema.statics.isServiceAvailable = async function(serviceId, startDate, 
 // Static method to get booking statistics
 bookingSchema.statics.getBookingStats = function(userId) {
   return this.aggregate([
-    { $match: userId ? { user: mongoose.Types.ObjectId(userId) } : {} },
+    { $match: userId ? { user: new mongoose.Types.ObjectId(userId) } : {} },
     {
       $group: {
         _id: '$status',

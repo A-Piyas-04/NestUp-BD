@@ -23,32 +23,12 @@ const paymentSchema = new mongoose.Schema({
     min: [0, 'Payment amount cannot be negative']
   },
   
-  // Amount breakdown
+  // Amount breakdown - simplified
   amountBreakdown: {
     baseAmount: {
       type: Number,
       required: true,
       min: [0, 'Base amount cannot be negative']
-    },
-    serviceFee: {
-      type: Number,
-      default: 0,
-      min: [0, 'Service fee cannot be negative']
-    },
-    cleaningFee: {
-      type: Number,
-      default: 0,
-      min: [0, 'Cleaning fee cannot be negative']
-    },
-    securityDeposit: {
-      type: Number,
-      default: 0,
-      min: [0, 'Security deposit cannot be negative']
-    },
-    taxAmount: {
-      type: Number,
-      default: 0,
-      min: [0, 'Tax amount cannot be negative']
     },
     discountAmount: {
       type: Number,
@@ -392,12 +372,7 @@ paymentSchema.pre('save', function(next) {
 paymentSchema.pre('save', function(next) {
   if (this.isModified('amountBreakdown')) {
     const breakdown = this.amountBreakdown;
-    this.amount = (breakdown.baseAmount || 0) +
-                  (breakdown.serviceFee || 0) +
-                  (breakdown.cleaningFee || 0) +
-                  (breakdown.securityDeposit || 0) +
-                  (breakdown.taxAmount || 0) -
-                  (breakdown.discountAmount || 0);
+    this.amount = (breakdown.baseAmount || 0) - (breakdown.discountAmount || 0);
   }
   next();
 });

@@ -1,28 +1,28 @@
 import mongoose from 'mongoose';
 
-const reviewSchema = new mongoose.Schema({
-  // Reference to the user who wrote the review
-  user: {
+const hostReviewSchema = new mongoose.Schema({
+  // Reference to the user who wrote the review (guest)
+  reviewer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
   
-  // Reference to the service being reviewed
-  service: {
+  // Reference to the host user being reviewed
+  host: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Service',
+    ref: 'User',
     required: true
   },
   
-  // Reference to the booking (if review is for a completed booking)
+  // Reference to the completed booking
   booking: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Booking',
     required: true
   },
   
-  // Rating from 1 to 5
+  // Overall rating from 1 to 5
   rating: {
     type: Number,
     required: true,
@@ -61,33 +61,33 @@ const reviewSchema = new mongoose.Schema({
     }
   }],
   
-  // Review categories/aspects
+  // Host-specific review categories
   categories: {
-    cleanliness: {
-      type: Number,
-      min: 1,
-      max: 5,
-      required: false
-    },
     communication: {
       type: Number,
       min: 1,
       max: 5,
       required: false
     },
-    location: {
+    responsiveness: {
       type: Number,
       min: 1,
       max: 5,
       required: false
     },
-    value: {
+    helpfulness: {
       type: Number,
       min: 1,
       max: 5,
       required: false
     },
-    amenities: {
+    reliability: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: false
+    },
+    professionalism: {
       type: Number,
       min: 1,
       max: 5,
@@ -99,7 +99,7 @@ const reviewSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected', 'flagged'],
-    default: 'approved' // Auto-approve for now, can be changed to 'pending' for moderation
+    default: 'approved' // Auto-approve for now
   },
   
   // Host reply to the review
@@ -111,10 +111,6 @@ const reviewSchema = new mongoose.Schema({
     },
     repliedAt: {
       type: Date
-    },
-    repliedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
     }
   },
   
@@ -170,7 +166,7 @@ const reviewSchema = new mongoose.Schema({
   // Verification status
   isVerified: {
     type: Boolean,
-    default: false // Can be set to true if user actually stayed at the property
+    default: false
   }
   
 }, {
@@ -180,17 +176,17 @@ const reviewSchema = new mongoose.Schema({
 });
 
 // Indexes for better query performance
-reviewSchema.index({ service: 1, createdAt: -1 });
-reviewSchema.index({ user: 1, createdAt: -1 });
-reviewSchema.index({ booking: 1 });
-reviewSchema.index({ rating: 1 });
-reviewSchema.index({ status: 1 });
+hostReviewSchema.index({ host: 1, createdAt: -1 });
+hostReviewSchema.index({ reviewer: 1, createdAt: -1 });
+hostReviewSchema.index({ booking: 1 });
+hostReviewSchema.index({ rating: 1 });
+hostReviewSchema.index({ status: 1 });
 
 // Compound index for preventing duplicate reviews per booking
-reviewSchema.index({ user: 1, booking: 1 }, { unique: true });
+hostReviewSchema.index({ reviewer: 1, booking: 1 }, { unique: true });
 
 // Virtual for calculating overall category rating
-reviewSchema.virtual('categoryAverage').get(function() {
+hostReviewSchema.virtual('categoryAverage').get(function() {
   const categories = this.categories;
   if (!categories) return null;
   
@@ -201,17 +197,17 @@ reviewSchema.virtual('categoryAverage').get(function() {
 });
 
 // Pre-save middleware to validate booking completion
-reviewSchema.pre('save', async function(next) {
+hostReviewSchema.pre('save', async function(next) {
   if (this.isNew) {
     try {
       const Booking = mongoose.model('Booking');
-      const booking = await Booking.findById(this.booking);
+      const booking = await Booking.findById(this.booking).populate('service');
       
       if (!booking) {
         return next(new Error('Booking not found'));
       }
       
-      if (booking.user.toString() !== this.user.toString()) {
+      if (booking.user.toString() !== this.reviewer.toString()) {
         return next(new Error('User can only review their own bookings'));
       }
       
@@ -219,9 +215,9 @@ reviewSchema.pre('save', async function(next) {
         return next(new Error('Can only review completed bookings'));
       }
       
-      // Ensure service matches booking
-      if (booking.service.toString() !== this.service.toString()) {
-        return next(new Error('Service must match the booking service'));
+      // Ensure host matches the service owner
+      if (booking.service.owner.toString() !== this.host.toString()) {
+        return next(new Error('Host must be the owner of the booked service'));
       }
       
     } catch (error) {
@@ -231,10 +227,28 @@ reviewSchema.pre('save', async function(next) {
   next();
 });
 
-// Note: Service rating middleware removed as we've transitioned to host-based reviews
+// Post-save middleware to update host rating in User model
+hostReviewSchema.post('save', async function() {
+  try {
+    const User = mongoose.model('User');
+    await User.updateHostRating(this.host);
+  } catch (error) {
+    console.error('Error updating host rating:', error);
+  }
+});
 
-// Static method to get reviews with pagination
-reviewSchema.statics.getReviewsWithPagination = function(serviceId, options = {}) {
+// Post-remove middleware to update host rating when review is deleted
+hostReviewSchema.post('remove', async function() {
+  try {
+    const User = mongoose.model('User');
+    await User.updateHostRating(this.host);
+  } catch (error) {
+    console.error('Error updating host rating after review deletion:', error);
+  }
+});
+
+// Static method to get host reviews with pagination
+hostReviewSchema.statics.getHostReviewsWithPagination = function(hostId, options = {}) {
   const {
     page = 1,
     limit = 10,
@@ -245,7 +259,7 @@ reviewSchema.statics.getReviewsWithPagination = function(serviceId, options = {}
     maxRating = null
   } = options;
   
-  const query = { service: serviceId, status };
+  const query = { host: hostId, status };
   
   if (minRating !== null) query.rating = { ...query.rating, $gte: minRating };
   if (maxRating !== null) query.rating = { ...query.rating, $lte: maxRating };
@@ -254,17 +268,17 @@ reviewSchema.statics.getReviewsWithPagination = function(serviceId, options = {}
   const sort = { [sortBy]: sortOrder === 'desc' ? -1 : 1 };
   
   return this.find(query)
-    .populate('user', 'name avatar')
-    .populate('hostReply.repliedBy', 'name')
+    .populate('reviewer', 'name profile.profilePicture')
+    .populate('booking', 'service startDate endDate')
     .sort(sort)
     .skip(skip)
     .limit(limit);
 };
 
-// Static method to get review statistics
-reviewSchema.statics.getReviewStats = function(serviceId) {
+// Static method to get host review statistics
+hostReviewSchema.statics.getHostReviewStats = function(hostId) {
   return this.aggregate([
-    { $match: { service: new mongoose.Types.ObjectId(serviceId), status: 'approved' } },
+    { $match: { host: new mongoose.Types.ObjectId(hostId), status: 'approved' } },
     {
       $group: {
         _id: null,
@@ -275,11 +289,11 @@ reviewSchema.statics.getReviewStats = function(serviceId) {
         },
         averageCategories: {
           $avg: {
-            cleanliness: '$categories.cleanliness',
             communication: '$categories.communication',
-            location: '$categories.location',
-            value: '$categories.value',
-            amenities: '$categories.amenities'
+            responsiveness: '$categories.responsiveness',
+            helpfulness: '$categories.helpfulness',
+            reliability: '$categories.reliability',
+            professionalism: '$categories.professionalism'
           }
         }
       }
@@ -302,4 +316,4 @@ reviewSchema.statics.getReviewStats = function(serviceId) {
   ]);
 };
 
-export default mongoose.model('Review', reviewSchema);
+export default mongoose.model('HostReview', hostReviewSchema);
