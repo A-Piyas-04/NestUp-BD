@@ -264,7 +264,7 @@ hostReviewSchema.statics.getHostReviewsWithPagination = function(hostId, options
   const sort = { [sortBy]: sortOrder === 'desc' ? -1 : 1 };
   
   return this.find(query)
-    .populate('reviewer', 'name profile.profilePicture')
+    .populate('reviewer', 'name profilePicture')
     .populate('booking', 'service startDate endDate')
     .sort(sort)
     .skip(skip)

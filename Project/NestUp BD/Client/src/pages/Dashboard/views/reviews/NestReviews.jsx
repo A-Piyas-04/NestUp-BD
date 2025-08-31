@@ -14,9 +14,7 @@ const NestReviews = () => {
     responseRate: 0,
     pendingReplies: 0
   });
-  const [replyingTo, setReplyingTo] = useState(null);
-  const [replyText, setReplyText] = useState('');
-  const [showReplyModal, setShowReplyModal] = useState(false);
+
 
   // Fetch reviews received as a host
   useEffect(() => {
@@ -43,15 +41,10 @@ const NestReviews = () => {
         const averageRating = totalReviews > 0 
           ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
           : 0;
-        const repliedReviews = reviews.filter(review => review.hostReply && review.hostReply.comment).length;
-        const responseRate = totalReviews > 0 ? (repliedReviews / totalReviews) * 100 : 0;
-        const pendingReplies = reviews.filter(review => !review.hostReply || !review.hostReply.comment).length;
         
         setStats({
           totalReviews,
-          averageRating: Math.round(averageRating * 10) / 10,
-          responseRate: Math.round(responseRate),
-          pendingReplies
+          averageRating: Math.round(averageRating * 10) / 10
         });
       } else {
         setError('Failed to fetch nest reviews');
@@ -65,74 +58,7 @@ const NestReviews = () => {
     }
   };
 
-  const handleReplyToReview = (review) => {
-    setReplyingTo(review);
-    setReplyText('');
-    setShowReplyModal(true);
-  };
 
-  const handleSubmitReply = async () => {
-    if (!replyText.trim()) {
-      alert('Please enter a reply message.');
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/nest-reviews/${replyingTo._id}/reply`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ comment: replyText.trim() })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit reply');
-      }
-
-      // Update local state
-      const updatedReviews = hostReviews.map(review => 
-        review._id === replyingTo._id 
-          ? {
-              ...review,
-              hostReply: {
-                comment: replyText.trim(),
-                repliedAt: new Date().toISOString()
-              }
-            }
-          : review
-      );
-      
-      setHostReviews(updatedReviews);
-      
-      // Update stats
-      const repliedReviews = updatedReviews.filter(review => review.hostReply && review.hostReply.comment).length;
-      const responseRate = updatedReviews.length > 0 ? (repliedReviews / updatedReviews.length) * 100 : 0;
-      const pendingReplies = updatedReviews.filter(review => !review.hostReply || !review.hostReply.comment).length;
-      
-      setStats(prev => ({
-        ...prev,
-        responseRate: Math.round(responseRate),
-        pendingReplies
-      }));
-      
-      setShowReplyModal(false);
-      setReplyingTo(null);
-      setReplyText('');
-      
-    } catch (err) {
-      console.error('Error submitting reply:', err);
-      alert('Failed to submit reply. Please try again.');
-    }
-  };
-
-  const closeReplyModal = () => {
-    setShowReplyModal(false);
-    setReplyingTo(null);
-    setReplyText('');
-  };
 
   if (loading) {
     return (
@@ -181,24 +107,6 @@ const NestReviews = () => {
             <p>Across all your nests</p>
           </div>
         </div>
-        
-        <div className="summary-card">
-          <div className="summary-icon">💬</div>
-          <div className="summary-content">
-            <h3>Response Rate</h3>
-            <div className="summary-value">{stats.responseRate}%</div>
-            <p>You respond to reviews</p>
-          </div>
-        </div>
-        
-        <div className="summary-card">
-          <div className="summary-icon">⏳</div>
-          <div className="summary-content">
-            <h3>Pending Replies</h3>
-            <div className="summary-value">{stats.pendingReplies}</div>
-            <p>Awaiting your response</p>
-          </div>
-        </div>
       </div>
       
       <div className="reviews-section">
@@ -213,7 +121,7 @@ const NestReviews = () => {
             reviews={hostReviews}
             showNestNames={true}
             showActions={false}
-            onReplyToReview={handleReplyToReview}
+
             showFilters={true}
             showStats={false}
             emptyMessage="No reviews found"
@@ -222,46 +130,7 @@ const NestReviews = () => {
         )}
       </div>
 
-      {/* Reply Modal */}
-      {showReplyModal && replyingTo && (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && closeReplyModal()}>
-          <div className="reply-modal">
-            <div className="modal-header">
-              <h3>Reply to Review</h3>
-              <button className="close-btn" onClick={closeReplyModal}>×</button>
-            </div>
-            <div className="modal-content">
-              <div className="review-context">
-                <h4>{replyingTo.nestName}</h4>
-                <p><strong>{replyingTo.reviewerName}</strong> - {replyingTo.rating}/5 stars</p>
-                <p className="review-text">"{replyingTo.comment}"</p>
-              </div>
-              <div className="reply-form">
-                <label htmlFor="reply-text">Your Reply:</label>
-                <textarea
-                  id="reply-text"
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  placeholder="Thank your guest and address any concerns..."
-                  rows={4}
-                  maxLength={500}
-                />
-                <div className="character-count">
-                  {replyText.length}/500 characters
-                </div>
-              </div>
-              <div className="modal-actions">
-                <button className="btn-secondary" onClick={closeReplyModal}>
-                  Cancel
-                </button>
-                <button className="btn-primary" onClick={handleSubmitReply}>
-                  Send Reply
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 };

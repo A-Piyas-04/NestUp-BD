@@ -23,11 +23,109 @@ const userSchema = new mongoose.Schema({
   },
 
 
-  // Reference to user's profile (one-to-one relationship)
-  profile: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Profile'
+  // Profile Picture
+  profilePicture: {
+    type: String, // URL to profile picture
+    trim: true
   },
+
+  // Contact Information
+  phone: {
+    type: String,
+    trim: true
+  },
+  nidNumber: {
+    type: String,
+    trim: true
+  },
+
+  // Personal Information
+  dateOfBirth: {
+    type: Date
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other']
+  },
+  occupation: {
+    type: String,
+    enum: ['student', 'professional', 'business', 'government', 'other'],
+    default: null
+  },
+  institution: {
+    type: String,
+    trim: true
+  },
+  department: {
+    type: String,
+    trim: true
+  },
+  studentId: {
+    type: String,
+    trim: true
+  },
+
+  // Address Information
+  address: {
+    division: {
+      type: String,
+      trim: true
+    },
+    district: {
+      type: String,
+      trim: true
+    },
+    area: {
+      type: String,
+      trim: true
+    },
+    fullAddress: {
+      type: String,
+      trim: true
+    },
+    postalCode: {
+      type: String,
+      trim: true
+    }
+  },
+
+  // Emergency Contact
+  emergencyContact: {
+    name: {
+      type: String,
+      trim: true
+    },
+    relation: {
+      type: String,
+      trim: true
+    },
+    phone: {
+      type: String,
+      trim: true
+    }
+  },
+
+  // User Preferences
+  preferences: {
+    receiveNotifications: {
+      type: Boolean,
+      default: true
+    },
+    newsletterSubscription: {
+      type: Boolean,
+      default: false
+    },
+    twoFactorAuth: {
+      type: Boolean,
+      default: false
+    },
+    language: {
+      type: String,
+      enum: ['english', 'bangla'],
+      default: 'english'
+    }
+  },
+
   // Wishlist for saved properties
   wishlist: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -90,6 +188,12 @@ const userSchema = new mongoose.Schema({
   }
 });
 
+// Update the updatedAt field before saving
+userSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
 // Hash password before saving
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
@@ -107,12 +211,6 @@ userSchema.pre('save', async function(next) {
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
-
-// Update the updatedAt field before saving
-userSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
-});
 
 // Static method to update host rating based on host reviews
 userSchema.statics.updateHostRating = async function(hostId) {

@@ -65,7 +65,7 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
       });
     }
 
-    if (booking.user.toString() !== req.user.id) {
+    if (booking.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: 'You can only review your own bookings'
@@ -89,7 +89,7 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
 
     // Check if review already exists for this booking
     const existingReview = await NestReview.findOne({
-      reviewer: req.user.id,
+      reviewer: req.user._id,
       booking: bookingId
     });
 
@@ -125,7 +125,7 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
 
     // Create new nest review
     const nestReview = new NestReview({
-      reviewer: req.user.id,
+      reviewer: req.user._id,
       service: serviceId,
       booking: bookingId,
       rating: parseInt(rating),
@@ -260,7 +260,7 @@ router.get('/user/:userId', verifyToken, async (req, res) => {
     const { userId } = req.params;
     
     // Users can only access their own reviews
-    if (userId !== req.user.id) {
+    if (userId !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: 'Access denied'
@@ -384,7 +384,7 @@ router.get('/host/:hostId', verifyToken, async (req, res) => {
     const { hostId } = req.params;
     
     // Users can only access reviews for their own services
-    if (hostId !== req.user.id) {
+    if (hostId !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: 'Access denied'
@@ -449,7 +449,7 @@ router.put('/:reviewId', verifyToken, upload.array('images', 5), async (req, res
     }
 
     // Check if user owns the review
-    if (review.reviewer.toString() !== req.user.id) {
+    if (review.reviewer.toString() !== req.user._id) {
       return res.status(403).json({
         success: false,
         message: 'You can only edit your own reviews'
@@ -526,7 +526,7 @@ router.delete('/:reviewId', verifyToken, async (req, res) => {
     }
 
     // Check if user owns the review
-    if (review.reviewer.toString() !== req.user.id) {
+    if (review.reviewer.toString() !== req.user._id) {
       return res.status(403).json({
         success: false,
         message: 'You can only delete your own reviews'
@@ -578,7 +578,7 @@ router.post('/:reviewId/reply', verifyToken, async (req, res) => {
     }
 
     // Check if user is the owner of the service being reviewed
-    if (review.service.owner.toString() !== req.user.id) {
+    if (review.service.owner.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: 'You can only reply to reviews of your own services'
@@ -613,7 +613,7 @@ router.post('/:reviewId/reply', verifyToken, async (req, res) => {
 router.post('/:reviewId/helpful', verifyToken, async (req, res) => {
   try {
     const { reviewId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     const review = await NestReview.findById(reviewId);
     if (!review) {

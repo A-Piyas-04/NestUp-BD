@@ -42,11 +42,7 @@ const DashboardSidebar = ({ isOpen }) => {
       label: 'Wishlist',
       icon: '❤️'
     },
-    {
-      path: '/dashboard/profile-info',
-      label: 'Profile Info',
-      icon: '👤'
-    },
+
     {
       path: '/dashboard/payment-history',
       label: 'Payment History',

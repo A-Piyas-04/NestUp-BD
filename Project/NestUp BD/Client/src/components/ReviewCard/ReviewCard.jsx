@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import notificationService from '../Notifications/NotificationService';
 import './ReviewCard.css';
 
 const ReviewCard = ({ 
@@ -8,12 +7,9 @@ const ReviewCard = ({
   showActions = false, 
   onEdit = null, 
   onDelete = null,
-  onReply = null,
   compact = false 
 }) => {
   const [showFullComment, setShowFullComment] = useState(false);
-  const [isReplying, setIsReplying] = useState(false);
-  const [replyText, setReplyText] = useState('');
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -47,46 +43,28 @@ const ReviewCard = ({
     return showFullComment ? comment : `${comment.substring(0, maxLength)}...`;
   };
 
-  const handleReplySubmit = () => {
-    if (onReply && replyText.trim()) {
-      onReply(review);
-      
-      // Create notification for the reviewer
-      notificationService.createNotification({
-        type: 'review_reply',
-        data: {
-          hostName: 'Host', // This should come from actual host data
-          propertyTitle: review.nestName || 'Property',
-          replyText: replyText
-        },
-        priority: 'medium'
-      });
-      
-      setReplyText('');
-      setIsReplying(false);
-    }
-  };
 
-  const canReply = onReply && !review.hostReply;
-  const showReplyButton = canReply || (showActions && onReply);
 
   return (
     <div className={`review-card ${compact ? 'compact' : ''} ${getStatusClass(review.rating)}`}>
       <div className="review-header">
         <div className="reviewer-info">
           <div className="reviewer-avatar">
-            {review.reviewerAvatar ? (
-              <img src={review.reviewerAvatar} alt={review.reviewerName} />
+            {(review.reviewerAvatar || review.reviewer?.avatar) ? (
+              <img src={review.reviewerAvatar || review.reviewer?.avatar} alt={review.reviewerName || review.reviewer?.name} />
             ) : (
               <div className="avatar-placeholder">
-                {review.reviewerName?.charAt(0)?.toUpperCase() || '?'}
+                {(review.reviewerName || review.reviewer?.name)?.charAt(0)?.toUpperCase() || '?'}
               </div>
             )}
           </div>
           <div className="reviewer-details">
-            <h4 className="reviewer-name">{review.reviewerName || 'Anonymous'}</h4>
+            <h4 className="reviewer-name">{review.reviewerName || review.reviewer?.name || 'Anonymous'}</h4>
             {showNestName && (
               <p className="nest-name">{review.nestName}</p>
+            )}
+            {review.service && review.service.title && (
+              <p className="service-title">{review.service.title}</p>
             )}
             <div className="review-meta">
               <div className="rating">
@@ -117,15 +95,7 @@ const ReviewCard = ({
               </button>
             </>
           )}
-          {showReplyButton && (
-            <button 
-              className="action-btn reply-btn" 
-              onClick={() => setIsReplying(!isReplying)}
-              title="Reply to Review"
-            >
-              💬 Reply
-            </button>
-          )}
+
         </div>
       </div>
 
@@ -166,32 +136,7 @@ const ReviewCard = ({
         </div>
       )}
 
-      {isReplying && (
-        <div className="reply-form">
-          <textarea
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-            placeholder="Write your reply..."
-            className="reply-textarea"
-            rows={3}
-          />
-          <div className="reply-actions">
-            <button 
-              className="btn btn-secondary" 
-              onClick={() => setIsReplying(false)}
-            >
-              Cancel
-            </button>
-            <button 
-              className="btn btn-primary" 
-              onClick={handleReplySubmit}
-              disabled={!replyText.trim()}
-            >
-              Reply
-            </button>
-          </div>
-        </div>
-      )}
+
 
       {review.helpful && (
         <div className="review-footer">

@@ -1642,26 +1642,23 @@ router.get('/users/:userId/profile', async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-
       createdAt: user.createdAt,
-      profile: {
-        phone: user.profile?.phone,
-        gender: user.profile?.gender,
-        occupation: user.profile?.occupation,
-        institution: user.profile?.institution,
-        department: user.profile?.department,
-        studentId: user.profile?.studentId,
-        dateOfBirth: user.profile?.dateOfBirth,
-        address: {
-          division: user.profile?.address?.division,
-          district: user.profile?.address?.district,
-          area: user.profile?.address?.area,
-          postalCode: user.profile?.address?.postalCode
-          // Exclude fullAddress for privacy
-        },
-        profilePicture: user.profile?.profilePicture
-        // Exclude emergencyContact and preferences for privacy
+      phone: user.phone,
+      gender: user.gender,
+      occupation: user.occupation,
+      institution: user.institution,
+      department: user.department,
+      studentId: user.studentId,
+      dateOfBirth: user.dateOfBirth,
+      profilePicture: user.profilePicture,
+      address: {
+        division: user.address?.division,
+        district: user.address?.district,
+        area: user.address?.area,
+        postalCode: user.address?.postalCode
+        // Exclude fullAddress for privacy
       }
+      // Exclude emergencyContact and preferences for privacy
     };
     
     res.json(userProfile);

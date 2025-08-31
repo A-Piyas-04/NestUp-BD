@@ -88,6 +88,17 @@
   font-weight: 500;
 }
 
+.service-title {
+  font-size: 0.875rem;
+  color: var(--primary-600, #2563eb);
+  margin: 0 0 0.5rem 0;
+  font-weight: 500;
+  background: var(--primary-50, #eff6ff);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm, 6px);
+  display: inline-block;
+}
+
 .review-meta {
   display: flex;
   align-items: center;

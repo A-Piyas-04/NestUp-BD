@@ -8,7 +8,6 @@ const ReviewList = ({
   showActions = false,
   onEditReview = null,
   onDeleteReview = null,
-  onReplyToReview = null,
   showFilters = true,
   showStats = true,
   emptyMessage = "No reviews yet",
@@ -250,7 +249,6 @@ const ReviewList = ({
               showActions={showActions}
               onEdit={onEditReview}
               onDelete={onDeleteReview}
-              onReply={onReplyToReview}
             />
           ))
         )}

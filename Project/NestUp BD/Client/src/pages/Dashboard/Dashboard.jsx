@@ -8,7 +8,7 @@ import BookingApprovals from './views/bookings/BookingApprovals';
 import NestReviews from './views/reviews/NestReviews';
 import BookedNests from './views/bookings/BookedNests';
 import Wishlist from './views/nests/Wishlist';
-import ProfileInfo from './views/profile/ProfileInfo';
+
 import PaymentHistory from './views/payments/PaymentHistory';
 
 import Header from '../../components/Header/Header';
@@ -48,7 +48,7 @@ const Dashboard = () => {
               <Route path="/nest-reviews" element={<motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35 }}><NestReviews /></motion.div>} />
               <Route path="/booked-nests" element={<motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35 }}><BookedNests /></motion.div>} />
               <Route path="/wishlist" element={<motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35 }}><Wishlist /></motion.div>} />
-              <Route path="/profile-info" element={<motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35 }}><ProfileInfo /></motion.div>} />
+
               <Route path="/payment-history" element={<motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35 }}><PaymentHistory /></motion.div>} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>

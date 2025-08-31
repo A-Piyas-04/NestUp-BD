@@ -65,7 +65,7 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
       });
     }
 
-    if (booking.user.toString() !== req.user.id) {
+    if (booking.user.toString() !== req.user._id) {
       return res.status(403).json({
         success: false,
         message: 'You can only review your own bookings'
@@ -89,7 +89,7 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
 
     // Check if review already exists for this booking
     const existingReview = await HostReview.findOne({
-      reviewer: req.user.id,
+      reviewer: req.user._id,
       booking: bookingId
     });
 
@@ -125,7 +125,7 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
 
     // Create new host review
     const hostReview = new HostReview({
-      reviewer: req.user.id,
+      reviewer: req.user._id,
       host: hostId,
       booking: bookingId,
       rating: parseInt(rating),
@@ -186,9 +186,9 @@ router.get('/received', verifyToken, async (req, res) => {
     if (minRating) options.minRating = parseInt(minRating);
     if (maxRating) options.maxRating = parseInt(maxRating);
 
-    const reviews = await HostReview.getReviewsWithPagination(req.user.id, options);
+    const reviews = await HostReview.getReviewsWithPagination(req.user._id, options);
     const totalReviews = await HostReview.countDocuments({
-      host: req.user.id,
+      host: req.user._id,
       status: 'approved'
     });
 
@@ -314,7 +314,7 @@ router.get('/user/:userId', verifyToken, async (req, res) => {
     const { userId } = req.params;
     
     // Users can only access their own reviews
-    if (userId !== req.user.id) {
+    if (userId !== req.user._id) {
       return res.status(403).json({
         success: false,
         message: 'Access denied'
@@ -374,7 +374,7 @@ router.put('/:reviewId', verifyToken, upload.array('images', 5), async (req, res
     }
 
     // Check if user owns the review
-    if (review.reviewer.toString() !== req.user.id) {
+    if (review.reviewer.toString() !== req.user._id) {
       return res.status(403).json({
         success: false,
         message: 'You can only edit your own reviews'
@@ -451,7 +451,7 @@ router.delete('/:reviewId', verifyToken, async (req, res) => {
     }
 
     // Check if user owns the review
-    if (review.reviewer.toString() !== req.user.id) {
+    if (review.reviewer.toString() !== req.user._id) {
       return res.status(403).json({
         success: false,
         message: 'You can only delete your own reviews'
@@ -498,7 +498,7 @@ router.post('/:reviewId/reply', verifyToken, async (req, res) => {
     }
 
     // Check if user is the reviewed host
-    if (review.host.toString() !== req.user.id) {
+    if (review.host.toString() !== req.user._id) {
       return res.status(403).json({
         success: false,
         message: 'Only the reviewed host can reply to this review'
@@ -508,7 +508,7 @@ router.post('/:reviewId/reply', verifyToken, async (req, res) => {
     review.hostReply = {
       comment: comment.trim(),
       repliedAt: new Date(),
-      repliedBy: req.user.id
+      repliedBy: req.user._id
     };
 
     await review.save();
@@ -535,7 +535,7 @@ router.post('/:reviewId/reply', verifyToken, async (req, res) => {
 router.post('/:reviewId/helpful', verifyToken, async (req, res) => {
   try {
     const { reviewId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     const review = await HostReview.findById(reviewId);
     if (!review) {
@@ -587,7 +587,7 @@ router.post('/:reviewId/flag', verifyToken, async (req, res) => {
   try {
     const { reviewId } = req.params;
     const { reason, description } = req.body;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     if (!reason) {
       return res.status(400).json({

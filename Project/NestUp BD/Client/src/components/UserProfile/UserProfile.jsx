@@ -98,9 +98,9 @@ const UserProfile = ({ isOpen, onClose, userId }) => {
             <div className="profile-details">
               <div className="profile-header-section">
                 <div className="profile-picture-container">
-                  {userProfile.profile?.profilePicture ? (
+                  {userProfile.profilePicture ? (
                     <img
-                      src={userProfile.profile.profilePicture}
+                      src={userProfile.profilePicture}
                       alt="Profile"
                       className="profile-picture"
                     />
@@ -113,9 +113,9 @@ const UserProfile = ({ isOpen, onClose, userId }) => {
                 <div className="profile-info">
                   <h3>{userProfile.name}</h3>
                   <p className="occupation">
-                    {userProfile.profile?.occupation === 'student'
-                      ? `Student at ${userProfile.profile?.institution || 'Institution'}`
-                      : userProfile.profile?.occupation || 'Not specified'}
+                    {userProfile.occupation === 'student'
+                      ? `Student at ${userProfile.institution || 'Institution'}`
+                      : userProfile.occupation || 'Not specified'}
                   </p>
 
                 </div>
@@ -129,29 +129,29 @@ const UserProfile = ({ isOpen, onClose, userId }) => {
                       <span className="label">Email:</span>
                       <span className="value">{userProfile.email}</span>
                     </div>
-                    {userProfile.profile?.phone && (
+                    {userProfile.phone && (
                       <div className="info-item">
                         <span className="label">Phone:</span>
-                        <span className="value">{userProfile.profile.phone}</span>
+                        <span className="value">{userProfile.phone}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {userProfile.profile?.address && (
+                {userProfile.address && (
                   <div className="profile-section">
                     <h4>Location</h4>
                     <div className="info-grid">
-                      {userProfile.profile.address.district && (
+                      {userProfile.address.district && (
                         <div className="info-item">
                           <span className="label">District:</span>
-                          <span className="value">{userProfile.profile.address.district}</span>
+                          <span className="value">{userProfile.address.district}</span>
                         </div>
                       )}
-                      {userProfile.profile.address.area && (
+                      {userProfile.address.area && (
                         <div className="info-item">
                           <span className="label">Area:</span>
-                          <span className="value">{userProfile.profile.address.area}</span>
+                          <span className="value">{userProfile.address.area}</span>
                         </div>
                       )}
                     </div>
@@ -165,43 +165,43 @@ const UserProfile = ({ isOpen, onClose, userId }) => {
                       <span className="label">Member Since:</span>
                       <span className="value">{formatDate(userProfile.createdAt)}</span>
                     </div>
-                    {userProfile.profile?.gender && (
+                    {userProfile.gender && (
                       <div className="info-item">
                         <span className="label">Gender:</span>
                         <span className="value">
-                          {userProfile.profile.gender.charAt(0).toUpperCase() + userProfile.profile.gender.slice(1)}
+                          {userProfile.gender.charAt(0).toUpperCase() + userProfile.gender.slice(1)}
                         </span>
                       </div>
                     )}
-                    {userProfile.profile?.dateOfBirth && (
+                    {userProfile.dateOfBirth && (
                       <div className="info-item">
                         <span className="label">Date of Birth:</span>
-                        <span className="value">{formatDate(userProfile.profile.dateOfBirth)}</span>
+                        <span className="value">{formatDate(userProfile.dateOfBirth)}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {userProfile.profile?.occupation === 'student' && (
+                {userProfile.occupation === 'student' && (
                   <div className="profile-section">
                     <h4>Academic Information</h4>
                     <div className="info-grid">
-                      {userProfile.profile.institution && (
+                      {userProfile.institution && (
                         <div className="info-item">
                           <span className="label">Institution:</span>
-                          <span className="value">{userProfile.profile.institution}</span>
+                          <span className="value">{userProfile.institution}</span>
                         </div>
                       )}
-                      {userProfile.profile.department && (
+                      {userProfile.department && (
                         <div className="info-item">
                           <span className="label">Department:</span>
-                          <span className="value">{userProfile.profile.department}</span>
+                          <span className="value">{userProfile.department}</span>
                         </div>
                       )}
-                      {userProfile.profile.studentId && (
+                      {userProfile.studentId && (
                         <div className="info-item">
                           <span className="label">Student ID:</span>
-                          <span className="value">{userProfile.profile.studentId}</span>
+                          <span className="value">{userProfile.studentId}</span>
                         </div>
                       )}
                     </div>
