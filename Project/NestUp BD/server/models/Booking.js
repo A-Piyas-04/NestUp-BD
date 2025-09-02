@@ -58,11 +58,11 @@ const bookingSchema = new mongoose.Schema({
     min: [0, 'Total amount cannot be negative']
   },
   
-  // Booking Status - Updated enum
+  // Booking Status - Updated enum for new flow
   status: {
     type: String,
-    enum: ['active', 'pending', 'approved', 'rejected'],
-    default: 'active'
+    enum: ['pending', 'approved', 'paid', 'active', 'completed', 'cancelled', 'rejected'],
+    default: 'pending'
   },
   
   // Approval Status - For host approval workflow
@@ -112,11 +112,12 @@ const bookingSchema = new mongoose.Schema({
   contactInfo: {
     phone: {
       type: String,
-      required: [true, 'Contact phone is required'],
+      required: false,
       trim: true,
       validate: {
         validator: function(v) {
-          return /^[+]?[0-9\s\-()]{10,15}$/.test(v);
+          // Only validate if phone number is provided
+          return !v || /^[+]?[0-9\s\-()]{10,15}$/.test(v);
         },
         message: 'Please enter a valid phone number'
       }
@@ -238,9 +239,22 @@ bookingSchema.virtual('currentStatus').get(function() {
     return 'pending';
   }
   
-  // For approved bookings, always return 'approved' regardless of dates
   if (this.status === 'approved') {
     return 'approved';
+  }
+  
+  if (this.status === 'paid') {
+    // For paid bookings, check dates to determine if active, upcoming, or completed
+    if (this.endDate < now) {
+      return 'completed';
+    }
+    if (this.startDate <= now && this.endDate >= now) {
+      return 'active';
+    }
+    if (this.startDate > now) {
+      return 'upcoming';
+    }
+    return 'paid';
   }
   
   if (this.endDate < now) {
@@ -355,8 +369,17 @@ bookingSchema.methods.confirm = function() {
 // Method to approve booking
 bookingSchema.methods.approve = function(reason) {
   this.isApproved = true;
+  this.status = 'approved';
   this.approvedAt = new Date();
   if (reason) this.approvalReason = reason;
+  return this.save();
+};
+
+// Method to mark booking as paid
+bookingSchema.methods.markAsPaid = function() {
+  this.status = 'paid';
+  this.paymentStatus = 'paid';
+  this.confirmedAt = new Date();
   return this.save();
 };
 

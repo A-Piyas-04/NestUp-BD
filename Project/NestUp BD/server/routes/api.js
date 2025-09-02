@@ -6,7 +6,7 @@ import Service from '../models/Service.js';
 import Booking from '../models/Booking.js';
 import Payment from '../models/Payment.js';
 import User from '../models/User.js';
-import { sendBookingApprovalNotification, sendBookingRejectionNotification, sendNewBookingNotification } from '../utils/notificationUtils.js';
+import Notification from '../models/Notification.js';
 
 const router = express.Router();
 
@@ -43,57 +43,148 @@ router.get('/services', async (req, res) => {
       limit = 10 
     } = req.query;
     
-    // Build filter object
-    const filter = { 
+    // Build match conditions for aggregation pipeline
+    const matchConditions = { 
       'availability.isAvailable': true,
       isBooked: false // Exclude booked services from search results
     };
     
     if (propertyType) {
-      filter.propertyType = propertyType;
+      matchConditions.propertyType = propertyType;
     }
     
     if (district) {
-      filter['location.district'] = new RegExp(district, 'i');
+      matchConditions['location.district'] = new RegExp(district, 'i');
     }
     
     if (area) {
-      filter['location.area'] = new RegExp(area, 'i');
+      matchConditions['location.area'] = new RegExp(area, 'i');
     }
     
     if (minPrice || maxPrice) {
-      filter.price = {};
-      if (minPrice) filter.price.$gte = Number(minPrice);
-      if (maxPrice) filter.price.$lte = Number(maxPrice);
+      matchConditions.price = {};
+      if (minPrice) matchConditions.price.$gte = Number(minPrice);
+      if (maxPrice) matchConditions.price.$lte = Number(maxPrice);
     }
     
-
     // Date range filter - service start date >= Move-in Date AND service end date <= Move-out Date
     if (availableFrom || availableTo) {
-      const dateFilter = {};
       if (availableFrom) {
         // Service start date must be greater than or equal to Move-in Date
-        dateFilter['availability.from'] = { $gte: new Date(availableFrom) };
+        matchConditions['availability.from'] = { $gte: new Date(availableFrom) };
       }
       if (availableTo) {
         // Service end date must be less than or equal to Move-out Date
-        dateFilter['availability.to'] = { $lte: new Date(availableTo) };
+        matchConditions['availability.to'] = { $lte: new Date(availableTo) };
       }
-      Object.assign(filter, dateFilter);
     }
     
     // Calculate pagination
     const skip = (page - 1) * limit;
     
-    // Get services with pagination
-    const services = await Service.find(filter)
-      .populate('owner', 'name email')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit));
+    // Use aggregation pipeline to exclude services with approved bookings
+    const pipeline = [
+      // Match basic service criteria
+      { $match: matchConditions },
+      
+      // Lookup approved bookings for each service
+      {
+        $lookup: {
+          from: 'bookings',
+          localField: '_id',
+          foreignField: 'service',
+          as: 'approvedBookings',
+          pipeline: [
+            {
+              $match: {
+                isApproved: true,
+                status: { $in: ['approved', 'paid', 'active'] }
+              }
+            }
+          ]
+        }
+      },
+      
+      // Filter out services that have approved bookings
+      {
+        $match: {
+          approvedBookings: { $size: 0 }
+        }
+      },
+      
+      // Remove the approvedBookings field from results
+      {
+        $project: {
+          approvedBookings: 0
+        }
+      },
+      
+      // Lookup owner information
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'owner',
+          foreignField: '_id',
+          as: 'owner',
+          pipeline: [
+            {
+              $project: {
+                name: 1,
+                email: 1
+              }
+            }
+          ]
+        }
+      },
+      
+      // Convert owner array to object
+      {
+        $unwind: {
+          path: '$owner',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      
+      // Sort by creation date
+      { $sort: { createdAt: -1 } },
+      
+      // Apply pagination
+      { $skip: skip },
+      { $limit: Number(limit) }
+    ];
     
-    // Get total count for pagination
-    const total = await Service.countDocuments(filter);
+    // Get services using aggregation
+    const services = await Service.aggregate(pipeline);
+    
+    // Get total count for pagination (without skip/limit)
+    const countPipeline = [
+      { $match: matchConditions },
+      {
+        $lookup: {
+          from: 'bookings',
+          localField: '_id',
+          foreignField: 'service',
+          as: 'approvedBookings',
+          pipeline: [
+            {
+              $match: {
+                isApproved: true,
+                status: { $in: ['approved', 'paid', 'active'] }
+              }
+            }
+          ]
+        }
+      },
+      {
+        $match: {
+          approvedBookings: { $size: 0 }
+        }
+      },
+      { $count: 'total' }
+    ];
+    
+    const countResult = await Service.aggregate(countPipeline);
+    const total = countResult.length > 0 ? countResult[0].total : 0;
     
     res.json({
       services,
@@ -578,6 +669,34 @@ router.get('/bookings/pending-approval', verifyToken, checkAuth, async (req, res
   }
 });
 
+// Get host's bookings by approval status (protected)
+router.get('/bookings/host/:status', verifyToken, checkAuth, async (req, res) => {
+  try {
+    const { status } = req.params;
+    let bookings;
+    
+    switch (status) {
+      case 'pending':
+        bookings = await Booking.findPendingApproval(req.user._id);
+        break;
+      case 'approved':
+        bookings = await Booking.findApproved(req.user._id);
+        break;
+      default:
+        return res.status(400).json({ message: 'Invalid status. Use: pending or approved' });
+    }
+    
+    res.json({
+      message: `${status.charAt(0).toUpperCase() + status.slice(1)} bookings retrieved successfully`,
+      bookings: bookings,
+      count: bookings.length
+    });
+  } catch (error) {
+    console.error(`Get ${status} bookings error:`, error);
+    res.status(500).json({ message: `Failed to fetch ${status} bookings` });
+  }
+});
+
 // Get single booking (protected)
 router.get('/bookings/:id', verifyToken, checkAuth, async (req, res) => {
   try {
@@ -649,14 +768,20 @@ router.post('/bookings', verifyToken, checkAuth, async (req, res) => {
       fees = {}
     } = req.body;
     
+    // Debug: Log the received request body
+    console.log('Create booking request body:', JSON.stringify(req.body, null, 2));
+    console.log('personalInfo received:', personalInfo);
+    
     // Validate required fields
     if (!serviceId || !startDate || !endDate || !personalInfo) {
+      console.log('Missing required fields:', { serviceId: !!serviceId, startDate: !!startDate, endDate: !!endDate, personalInfo: !!personalInfo });
       return res.status(400).json({ message: 'Missing required booking information' });
     }
     
     // Validate personal info structure
-    if (!personalInfo.phone || !personalInfo.email) {
-      return res.status(400).json({ message: 'Phone and email are required in personal info' });
+    if (!personalInfo.email) {
+      console.log('Missing email:', { email: personalInfo.email });
+      return res.status(400).json({ message: 'Email is required in personal info' });
     }
     
     // Check if service exists and is available
@@ -679,9 +804,18 @@ router.post('/bookings', verifyToken, checkAuth, async (req, res) => {
     }
     
     // Validate dates
+    console.log('Date validation - startDate:', startDate, 'endDate:', endDate);
     const bookingStartDate = new Date(startDate);
     const bookingEndDate = new Date(endDate);
     const now = new Date();
+    
+    console.log('Parsed dates - bookingStartDate:', bookingStartDate, 'bookingEndDate:', bookingEndDate);
+    console.log('Date validity - startDate valid:', !isNaN(bookingStartDate.getTime()), 'endDate valid:', !isNaN(bookingEndDate.getTime()));
+    
+    // Check if dates are valid
+    if (isNaN(bookingStartDate.getTime()) || isNaN(bookingEndDate.getTime())) {
+      return res.status(400).json({ message: 'Invalid date format provided' });
+    }
     
     // Check if start date is in the past
     if (bookingStartDate < now) {
@@ -749,8 +883,18 @@ router.post('/bookings', verifyToken, checkAuth, async (req, res) => {
         }
       });
     
-    // Send new booking notification to host
-    await sendNewBookingNotification(populatedBooking);
+    // Create notification for service owner about new booking request
+    try {
+      await Notification.createBookingRequestNotification(
+        service.owner, // recipient (service owner)
+        req.user._id,  // sender (booking user)
+        booking._id,   // booking ID
+        service._id    // service ID
+      );
+    } catch (notificationError) {
+      console.error('Failed to create booking request notification:', notificationError);
+      // Don't fail the booking creation if notification fails
+    }
     
     res.status(201).json({
       message: 'Booking created successfully',
@@ -763,8 +907,12 @@ router.post('/bookings', verifyToken, checkAuth, async (req, res) => {
     });
   } catch (error) {
     console.error('Create booking error:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     
     if (error.name === 'ValidationError') {
+      console.error('Validation errors:', error.errors);
       const messages = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({ message: messages.join(', ') });
     }
@@ -778,8 +926,8 @@ router.patch('/bookings/:id/status', verifyToken, checkAuth, async (req, res) =>
   try {
     const { status, reason } = req.body;
     
-    if (!status || !['active', 'pending', 'approved', 'rejected'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status. Allowed: active, pending, approved, rejected' });
+    if (!status || !['active', 'pending', 'approved'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status. Allowed: active, pending, approved' });
     }
     
     const booking = await Booking.findById(req.params.id)
@@ -799,10 +947,9 @@ router.patch('/bookings/:id/status', verifyToken, checkAuth, async (req, res) =>
     
     // Validate status transitions
     const validTransitions = {
-      'pending': ['approved', 'rejected'],
+      'pending': ['approved'],
       'approved': ['active'],
-      'active': [],
-      'rejected': []
+      'active': []
     };
     
     if (!validTransitions[booking.status]?.includes(status)) {
@@ -818,17 +965,7 @@ router.patch('/bookings/:id/status', verifyToken, checkAuth, async (req, res) =>
       booking.approvedAt = new Date();
       if (reason) booking.approvalReason = reason;
       
-      // Mark service as booked when approved
-      await Service.findByIdAndUpdate(booking.service._id, {
-        isBooked: true,
-        currentBooking: booking._id
-      });
-      
-    } else if (status === 'rejected') {
-      booking.status = 'rejected';
-      booking.isApproved = false;
-      booking.rejectedAt = new Date();
-      if (reason) booking.approvalReason = reason;
+      // Note: Service will be marked as booked only after payment completion
       
     } else if (status === 'active') {
       booking.status = 'active';
@@ -938,7 +1075,9 @@ router.put('/bookings/:id/approve', verifyToken, checkAuth, async (req, res) => 
     // Check if booking is already approved/rejected
     if (booking.isApproved !== null) {
       return res.status(400).json({ 
-        message: `Booking has already been ${booking.isApproved ? 'approved' : 'rejected'}` 
+        message: `Booking has already been ${booking.isApproved ? 'approved' : 'rejected'}`,
+        error: 'BOOKING_ALREADY_PROCESSED',
+        currentStatus: booking.isApproved ? 'approved' : 'rejected'
       });
     }
     
@@ -949,14 +1088,9 @@ router.put('/bookings/:id/approve', verifyToken, checkAuth, async (req, res) => 
     booking.status = 'approved';
     await booking.save();
     
-    // Mark service as booked upon approval
-    await Service.findByIdAndUpdate(booking.service._id, {
-      isBooked: true,
-      currentBooking: booking._id
-    });
+    // Note: Service will be marked as booked only after payment completion
     
-    // Send approval notification to guest
-    await sendBookingApprovalNotification(booking, approvalReason);
+
     
     // Populate the updated booking
     const updatedBooking = await Booking.findById(booking._id)
@@ -974,92 +1108,12 @@ router.put('/bookings/:id/approve', verifyToken, checkAuth, async (req, res) => 
   }
 });
 
-// Reject booking (protected - host only)
-router.put('/bookings/:id/reject', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const { rejectionReason } = req.body;
-    
-    if (!rejectionReason) {
-      return res.status(400).json({ message: 'Rejection reason is required' });
-    }
-    
-    // Validate ObjectId format
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: 'Invalid booking ID format' });
-    }
-    
-    const booking = await Booking.findById(req.params.id)
-      .populate('service', 'owner title location')
-      .populate('user', 'name email');
-    
-    if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
-    
-    // Check if user is the service owner (host)
-    if (booking.service.owner.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Only the service owner can reject bookings' });
-    }
-    
-    // Check if booking is already approved/rejected
-    if (booking.isApproved !== null) {
-      return res.status(400).json({ 
-        message: `Booking has already been ${booking.isApproved ? 'approved' : 'rejected'}` 
-      });
-    }
-    
-    // Reject the booking
-    await booking.reject(rejectionReason);
-    
-    // Send rejection notification to guest
-    await sendBookingRejectionNotification(booking, rejectionReason);
-    
-    // Populate the updated booking
-    const updatedBooking = await Booking.findById(booking._id)
-      .populate('service', 'title location price propertyType images owner')
-      .populate('user', 'name email')
-      .populate('payment');
-    
-    res.json({
-      message: 'Booking rejected successfully',
-      booking: updatedBooking
-    });
-  } catch (error) {
-    console.error('Reject booking error:', error);
-    res.status(500).json({ message: 'Failed to reject booking' });
-  }
-});
+// Reject booking endpoint disabled - rejection functionality removed
+// router.put('/bookings/:id/reject', verifyToken, checkAuth, async (req, res) => {
+//   return res.status(403).json({ message: 'Booking rejection is not allowed' });
+// });
 
-// Get host's bookings by approval status (protected)
-router.get('/bookings/host/:status', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const { status } = req.params;
-    let bookings;
-    
-    switch (status) {
-      case 'pending':
-        bookings = await Booking.findPendingApproval(req.user._id);
-        break;
-      case 'approved':
-        bookings = await Booking.findApproved(req.user._id);
-        break;
-      case 'rejected':
-        bookings = await Booking.findRejected(req.user._id);
-        break;
-      default:
-        return res.status(400).json({ message: 'Invalid status. Use: pending, approved, or rejected' });
-    }
-    
-    res.json({
-      message: `${status.charAt(0).toUpperCase() + status.slice(1)} bookings retrieved successfully`,
-      bookings: bookings,
-      count: bookings.length
-    });
-  } catch (error) {
-    console.error(`Get ${status} bookings error:`, error);
-    res.status(500).json({ message: `Failed to fetch ${status} bookings` });
-  }
-});
+
 
 // ==================== PAYMENT ROUTES ====================
 
@@ -1091,7 +1145,11 @@ router.get('/payments', verifyToken, checkAuth, async (req, res) => {
         select: 'startDate endDate status confirmationCode service',
         populate: {
           path: 'service',
-          select: 'title location price images'
+          select: 'title location price images owner',
+          populate: {
+            path: 'owner',
+            select: 'name email'
+          }
         }
       })
       .sort(sort)
@@ -1175,12 +1233,18 @@ router.post('/payments', verifyToken, checkAuth, async (req, res) => {
       paymentMethod,
       paymentDetails,
       personalInfo,
+      termsAccepted,
       currency = 'BDT'
     } = req.body;
     
     // Validate required fields
     if (!bookingId || !paymentMethod || !personalInfo) {
       return res.status(400).json({ message: 'Missing required payment information' });
+    }
+    
+    // Validate terms acceptance
+    if (!termsAccepted) {
+      return res.status(400).json({ message: 'Terms and conditions must be accepted' });
     }
     
     // Check if booking exists and belongs to user
@@ -1195,9 +1259,9 @@ router.post('/payments', verifyToken, checkAuth, async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to pay for this booking' });
     }
     
-    // Check if booking is in valid state for payment
-    if (booking.status !== 'pending') {
-      return res.status(400).json({ message: 'Booking is not in a valid state for payment' });
+    // Check if booking is in valid state for payment (must be approved)
+    if (booking.status !== 'approved') {
+      return res.status(400).json({ message: 'Booking must be approved before payment can be processed' });
     }
     
     // Check if payment already exists for this booking
@@ -1263,7 +1327,7 @@ router.post('/payments', verifyToken, checkAuth, async (req, res) => {
           country: typeof personalInfo.address === 'string' ? 'Bangladesh' : personalInfo.address?.country || 'Bangladesh'
         }
       },
-      termsAccepted: true,
+      termsAccepted: termsAccepted,
       status: 'pending'
     };
     
@@ -1274,9 +1338,23 @@ router.post('/payments', verifyToken, checkAuth, async (req, res) => {
     booking.payment = payment._id;
     await booking.save();
     
+    // Automatically mark payment as paid (since we're simulating successful payment)
+    await payment.markAsPaid();
+    
+    // Update booking status to paid using the model method
+    if (booking.status === 'approved') {
+      await booking.markAsPaid();
+      
+      // Mark service as booked after payment completion
+      await Service.findByIdAndUpdate(booking.service._id, {
+        isBooked: true,
+        currentBooking: booking._id
+      });
+    }
+    
     // Populate the payment before returning
     const populatedPayment = await Payment.findById(payment._id)
-      .populate('booking', 'startDate endDate status confirmationCode')
+      .populate('booking', 'startDate endDate status paymentStatus confirmationCode')
       .populate('user', 'name email');
     
     // Enhance payment with calculated fields
@@ -1289,7 +1367,7 @@ router.post('/payments', verifyToken, checkAuth, async (req, res) => {
     };
     
     res.status(201).json({
-      message: 'Payment initiated successfully',
+      message: 'Payment completed successfully',
       payment: enhancedPayment
     });
   } catch (error) {
@@ -1341,14 +1419,26 @@ router.patch('/payments/:id/status', verifyToken, checkAuth, async (req, res) =>
       
       // Update booking payment status but keep booking status as 'pending' until host approval
       if (payment.booking) {
-        const booking = await Booking.findById(payment.booking._id);
-        if (booking && booking.status === 'pending') {
-          // Only update payment status, keep booking status as 'pending'
-          booking.paymentStatus = 'paid';
-          await booking.save();
+        const booking = await Booking.findById(payment.booking._id)
+          .populate('service', 'title location price propertyType images owner')
+          .populate('user', 'name email')
+          .populate({
+            path: 'service',
+            populate: {
+              path: 'owner',
+              select: 'name email'
+            }
+          });
+        
+        if (booking && booking.status === 'approved') {
+          // Mark booking as paid using the model method
+          await booking.markAsPaid();
           
-          // Don't mark service as booked yet - wait for host approval
-          // Service will be marked as booked only after host approval
+          // Mark service as booked only after payment completion
+          await Service.findByIdAndUpdate(booking.service._id, {
+            isBooked: true,
+            currentBooking: booking._id
+          });
         }
       }
     } else if (status === 'failed') {
@@ -1369,7 +1459,7 @@ router.patch('/payments/:id/status', verifyToken, checkAuth, async (req, res) =>
     
     const updatedPayment = await Payment.findById(payment._id)
       .populate('service', 'title location price images')
-      .populate('booking', 'startDate endDate status confirmationCode')
+      .populate('booking', 'startDate endDate status paymentStatus confirmationCode')
       .populate('user', 'name email');
     
     // Enhance payment with calculated fields
@@ -1448,7 +1538,7 @@ router.post('/payments/:id/refund', verifyToken, checkAuth, async (req, res) => 
     
     const updatedPayment = await Payment.findById(payment._id)
       .populate('service', 'title location price images')
-      .populate('booking', 'startDate endDate status confirmationCode')
+      .populate('booking', 'startDate endDate status paymentStatus confirmationCode')
       .populate('user', 'name email');
     
     // Enhance payment with calculated fields
@@ -1665,6 +1755,133 @@ router.get('/users/:userId/profile', async (req, res) => {
   } catch (error) {
     console.error('Get user profile error:', error);
     res.status(500).json({ message: 'Failed to fetch user profile' });
+  }
+});
+
+// ===== NOTIFICATION ROUTES =====
+
+// Get user notifications
+router.get('/notifications', verifyToken, checkAuth, async (req, res) => {
+  try {
+    const { page = 1, limit = 20, unreadOnly = false } = req.query;
+    
+    const notifications = await Notification.getUserNotifications(req.user._id, {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      unreadOnly: unreadOnly === 'true'
+    });
+    
+    res.json({
+      success: true,
+      notifications,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit)
+      }
+    });
+  } catch (error) {
+    console.error('Get notifications error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch notifications' 
+    });
+  }
+});
+
+// Get unread notification count
+router.get('/notifications/unread-count', verifyToken, checkAuth, async (req, res) => {
+  try {
+    const count = await Notification.getUnreadCount(req.user._id);
+    
+    res.json({
+      success: true,
+      count
+    });
+  } catch (error) {
+    console.error('Get unread count error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch unread count',
+      count: 0
+    });
+  }
+});
+
+// Mark notification as read
+router.patch('/notifications/:id/read', verifyToken, checkAuth, async (req, res) => {
+  try {
+    const notification = await Notification.findOne({
+      _id: req.params.id,
+      recipient: req.user._id
+    });
+    
+    if (!notification) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Notification not found' 
+      });
+    }
+    
+    await notification.markAsRead();
+    
+    res.json({
+      success: true,
+      message: 'Notification marked as read',
+      notification
+    });
+  } catch (error) {
+    console.error('Mark notification as read error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to mark notification as read' 
+    });
+  }
+});
+
+// Mark all notifications as read
+router.patch('/notifications/mark-all-read', verifyToken, checkAuth, async (req, res) => {
+  try {
+    const result = await Notification.markAllAsRead(req.user._id);
+    
+    res.json({
+      success: true,
+      message: 'All notifications marked as read',
+      modifiedCount: result.modifiedCount
+    });
+  } catch (error) {
+    console.error('Mark all notifications as read error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to mark all notifications as read' 
+    });
+  }
+});
+
+// Delete notification
+router.delete('/notifications/:id', verifyToken, checkAuth, async (req, res) => {
+  try {
+    const notification = await Notification.findOneAndDelete({
+      _id: req.params.id,
+      recipient: req.user._id
+    });
+    
+    if (!notification) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Notification not found' 
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Notification deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete notification error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to delete notification' 
+    });
   }
 });
 

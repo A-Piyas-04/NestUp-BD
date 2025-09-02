@@ -838,12 +838,7 @@ const ProvideService = () => {
           </div>
           
           <div className="help-section">
-            <div className="help-card">
-              <div className="help-icon">❓</div>
-              <h3>Need Help?</h3>
-              <p>If you have any questions or need assistance with your listing, our support team is here to help.</p>
-              <a href="#" className="help-link">Contact Support</a>
-            </div>
+
             
             <div className="help-card">
               <div className="help-icon">📝</div>

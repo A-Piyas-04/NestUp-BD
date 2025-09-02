@@ -107,10 +107,6 @@ const userSchema = new mongoose.Schema({
 
   // User Preferences
   preferences: {
-    receiveNotifications: {
-      type: Boolean,
-      default: true
-    },
     newsletterSubscription: {
       type: Boolean,
       default: false

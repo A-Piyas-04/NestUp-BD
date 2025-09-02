@@ -27,7 +27,6 @@ async function addServiceCards() {
         isVerified: true,
         profile: {
           preferences: {
-            receiveNotifications: true,
             newsletterSubscription: false,
             twoFactorAuth: false,
             language: "english"
@@ -49,7 +48,6 @@ async function addServiceCards() {
         isVerified: true,
         profile: {
           preferences: {
-            receiveNotifications: true,
             newsletterSubscription: false,
             twoFactorAuth: false,
             language: "english"

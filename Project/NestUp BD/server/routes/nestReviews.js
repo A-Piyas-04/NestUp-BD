@@ -72,10 +72,10 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
       });
     }
 
-    if (booking.status !== 'approved') {
+    if (!['approved', 'paid'].includes(booking.status)) {
       return res.status(400).json({
         success: false,
-        message: 'You can only review approved bookings'
+        message: 'You can only review approved or paid bookings'
       });
     }
 
@@ -142,6 +142,8 @@ router.post('/', verifyToken, upload.array('images', 5), async (req, res) => {
       nestReviewSubmitted: true,
       nestReviewId: nestReview._id
     });
+
+
 
     // Populate user data for response
     await nestReview.populate('reviewer', 'name avatar');

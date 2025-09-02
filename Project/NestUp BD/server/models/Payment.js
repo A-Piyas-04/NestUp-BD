@@ -466,7 +466,7 @@ paymentSchema.methods.getSummary = function() {
 // Static method to find payments by user
 paymentSchema.statics.findByUser = function(userId, options = {}) {
   const query = this.find({ user: userId })
-    .populate('booking', 'startDate endDate status confirmationCode')
+    .populate('booking', 'startDate endDate status paymentStatus confirmationCode')
     .sort({ createdAt: -1 });
     
   if (options.status) {

@@ -207,8 +207,8 @@ hostReviewSchema.pre('save', async function(next) {
         return next(new Error('User can only review their own bookings'));
       }
       
-      if (booking.status !== 'approved') {
-        return next(new Error('Can only review approved bookings'));
+      if (!['approved', 'paid'].includes(booking.status)) {
+        return next(new Error('Can only review approved or paid bookings'));
       }
       
       // Ensure host matches the service owner
