@@ -1,44 +1,46 @@
+@import '../../Dashboard.css';
+
 /* BookedNests Component Styles */
-.page-container {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
 
-.page-header {
+/* Header Background Styling */
+.dashboard-page-header {
+  background: linear-gradient(135deg, var(--primary-light) 0%, #f0f7ff 100%);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
   margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(37, 99, 235, 0.1);
 }
 
-.page-header h1 {
-  font-size: 2rem;
+.dashboard-page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%232563eb' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  opacity: 0.6;
+  z-index: 0;
+}
+
+.dashboard-page-header h1 {
+  font-size: 1.75rem;
   font-weight: 700;
-  color: var(--gray-800, #1f2937);
-  margin: 0 0 0.5rem 0;
+  margin-bottom: 0.5rem;
+  color: var(--secondary);
+  position: relative;
+  z-index: 1;
 }
 
-.page-header p {
+.dashboard-page-header p {
+  color: var(--gray-600);
   font-size: 1rem;
-  color: var(--gray-600, #4b5563);
   margin: 0;
-}
-
-/* Loading and Error States */
-.loading-spinner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 3rem;
-  font-size: 1.125rem;
-  color: var(--gray-600, #4b5563);
-}
-
-.error-message {
-  text-align: center;
-  padding: 2rem;
-  background: var(--red-50, #fef2f2);
-  border: 1px solid var(--red-200, #fecaca);
-  border-radius: var(--radius-lg, 12px);
-  color: var(--red-700, #b91c1c);
+  position: relative;
+  z-index: 1;
 }
 
 /* Success Message */
@@ -225,10 +227,27 @@
   color: var(--green-800, #166534);
 }
 
-.status-rejected {
-  background: var(--red-100, #fee2e2);
-  color: var(--red-800, #991b1b);
+.status-paid {
+  background: var(--blue-100, #dbeafe);
+  color: var(--blue-800, #1e40af);
 }
+
+.status-completed {
+  background: var(--gray-100, #f3f4f6);
+  color: var(--gray-800, #1f2937);
+}
+
+.status-upcoming {
+  background: var(--purple-100, #f3e8ff);
+  color: var(--purple-800, #6b21a8);
+}
+
+.status-default {
+  background: var(--gray-100, #f3f4f6);
+  color: var(--gray-600, #4b5563);
+}
+
+
 
 /* Booking Details */
 .booking-details {
@@ -305,14 +324,43 @@
 }
 
 .btn-review {
-  background-color: var(--success-600, #059669);
+  background-color: var(--green-600, #059669);
   color: white;
-  border-color: var(--success-600, #059669);
+  border-color: var(--green-600, #059669);
 }
+
+.btn-review:hover {
+  background-color: var(--green-700, #047857);
+  border-color: var(--green-700, #047857);
+}
+
+.review-status {
+  color: var(--green-600, #059669);
+  font-weight: 500;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 
 .btn-review:hover {
   background-color: var(--success-700, #047857);
   border-color: var(--success-700, #047857);
+}
+
+.pay-button {
+  background-color: var(--orange-600, #ea580c) !important;
+  border-color: var(--orange-600, #ea580c) !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+.pay-button:hover {
+  background-color: var(--orange-700, #c2410c) !important;
+  border-color: var(--orange-700, #c2410c) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
 }
 
 .review-status {
@@ -616,4 +664,35 @@
   .review-modal-content {
     padding: 1rem;
   }
+}
+
+/* Status Message Styles */
+.status-message {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-200);
+}
+
+.review-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: var(--success-light);
+  color: var(--success-dark);
+  border: 1px solid var(--success);
+}
+
+.review-status::before {
+  content: '✓';
+  margin-right: 0.5rem;
+  font-weight: bold;
 }

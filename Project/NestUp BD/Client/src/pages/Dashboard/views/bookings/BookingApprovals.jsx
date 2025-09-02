@@ -10,8 +10,7 @@ const BookingApprovals = () => {
   const [activeTab, setActiveTab] = useState('pending');
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showRejectModal, setShowRejectModal] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
+
   const [processingAction, setProcessingAction] = useState(null);
 
   // Fetch bookings based on active tab
@@ -19,25 +18,23 @@ const BookingApprovals = () => {
     const fetchBookings = async () => {
       try {
         setLoading(true);
+        setError(null);
         const token = localStorage.getItem('token');
         
-        if (!token) {
-          throw new Error('Please login to view bookings');
+        let endpoint;
+        switch (activeTab) {
+          case 'pending':
+            endpoint = '/api/bookings/pending-approval';
+            break;
+          case 'approved':
+            endpoint = '/api/bookings/host/approved';
+            break;
+          default:
+            endpoint = '/api/bookings/pending-approval';
         }
-        
-        let endpoint = '/api/bookings/pending-approval';
-        if (activeTab === 'approved') {
-          endpoint = '/api/bookings/host/approved';
-        } else if (activeTab === 'rejected') {
-          endpoint = '/api/bookings/host/rejected';
-        } else if (activeTab === 'pending') {
-          endpoint = '/api/bookings/host/pending';
-        }
-        
+
         const response = await fetch(endpoint, {
-          method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         });
@@ -48,11 +45,9 @@ const BookingApprovals = () => {
 
         const data = await response.json();
         setBookings(data.bookings || []);
-        setError(null);
       } catch (err) {
         console.error('Error fetching bookings:', err);
-        setError(err.message);
-        setBookings([]);
+        setError('Failed to load bookings. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -104,7 +99,15 @@ const BookingApprovals = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to approve booking');
+        const errorData = await response.json();
+        if (errorData.error === 'BOOKING_ALREADY_PROCESSED') {
+          alert(`This booking has already been ${errorData.currentStatus}. Refreshing the list...`);
+          // Refresh the bookings list to show current state
+          window.location.reload();
+        } else {
+          throw new Error(errorData.message || 'Failed to approve booking');
+        }
+        return;
       }
 
       // Remove from current list and show success message
@@ -118,36 +121,7 @@ const BookingApprovals = () => {
     }
   };
 
-  const handleReject = async (bookingId, reason) => {
-    try {
-      setProcessingAction(bookingId);
-      const token = localStorage.getItem('token');
-      
-      const response = await fetch(`/api/bookings/${bookingId}/reject`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ reason })
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to reject booking');
-      }
-
-      // Remove from current list and show success message
-      setBookings(prev => prev.filter(booking => booking._id !== bookingId));
-      setShowRejectModal(false);
-      setRejectReason('');
-      alert('Booking rejected successfully!');
-    } catch (err) {
-      console.error('Error rejecting booking:', err);
-      alert('Failed to reject booking. Please try again.');
-    } finally {
-      setProcessingAction(null);
-    }
-  };
 
   const openDetailsModal = (booking) => {
     setSelectedBooking(booking);
@@ -159,22 +133,14 @@ const BookingApprovals = () => {
     setSelectedBooking(null);
   };
 
-  const openRejectModal = (booking) => {
-    setSelectedBooking(booking);
-    setShowRejectModal(true);
-  };
 
-  const closeRejectModal = () => {
-    setShowRejectModal(false);
-    setSelectedBooking(null);
-    setRejectReason('');
-  };
+
+
 
   const getStatusBadge = (status) => {
     const statusConfig = {
       pending: { text: 'Pending Approval', class: 'status-pending' },
-      approved: { text: 'Approved', class: 'status-approved' },
-      rejected: { text: 'Rejected', class: 'status-rejected' }
+      approved: { text: 'Approved', class: 'status-approved' }
     };
     
     const config = statusConfig[status] || { text: status, class: 'status-default' };
@@ -193,8 +159,8 @@ const BookingApprovals = () => {
   }
 
   return (
-    <div className="page-container">
-      <div className="page-header">
+    <div className="dashboard-page-container">
+        <div className="dashboard-page-header">
         <h1>Booking Approvals</h1>
         <p>Manage booking requests for your properties</p>
       </div>
@@ -219,12 +185,7 @@ const BookingApprovals = () => {
         >
           Approved
         </button>
-        <button 
-          className={`tab-button ${activeTab === 'rejected' ? 'active' : ''}`}
-          onClick={() => setActiveTab('rejected')}
-        >
-          Rejected
-        </button>
+
       </div>
 
       {/* Bookings List */}
@@ -233,7 +194,7 @@ const BookingApprovals = () => {
           <h2>
             {activeTab === 'pending' && 'Pending Approval'}
             {activeTab === 'approved' && 'Approved Bookings'}
-            {activeTab === 'rejected' && 'Rejected Bookings'}
+
           </h2>
           <span className="booking-count">{bookings.length} booking{bookings.length !== 1 ? 's' : ''}</span>
         </div>
@@ -244,12 +205,12 @@ const BookingApprovals = () => {
             <h3>
               {activeTab === 'pending' && 'No Pending Approvals'}
               {activeTab === 'approved' && 'No Approved Bookings'}
-              {activeTab === 'rejected' && 'No Rejected Bookings'}
+
             </h3>
             <p>
               {activeTab === 'pending' && 'You have no booking requests waiting for approval.'}
               {activeTab === 'approved' && 'You have not approved any bookings yet.'}
-              {activeTab === 'rejected' && 'You have not rejected any bookings yet.'}
+
             </p>
           </div>
         ) : (
@@ -314,13 +275,7 @@ const BookingApprovals = () => {
                       >
                         {processingAction === booking._id ? 'Approving...' : 'Approve'}
                       </button>
-                      <button 
-                        className="btn-danger"
-                        onClick={() => openRejectModal(booking)}
-                        disabled={processingAction === booking._id}
-                      >
-                        Reject
-                      </button>
+
                     </>
                   )}
                 </div>
@@ -361,53 +316,13 @@ const BookingApprovals = () => {
                 <p><strong>Booking Date:</strong> {formatDate(selectedBooking.createdAt)}</p>
               </div>
               
-              {selectedBooking.rejectionReason && (
-                <div className="detail-section">
-                  <h4>Rejection Reason</h4>
-                  <p>{selectedBooking.rejectionReason}</p>
-                </div>
-              )}
+
             </div>
           </div>
         </div>
       )}
 
-      {/* Reject Modal */}
-      {showRejectModal && selectedBooking && (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && closeRejectModal()}>
-          <div className="reject-modal">
-            <div className="reject-modal-header">
-              <h3>Reject Booking</h3>
-              <button className="close-btn" onClick={closeRejectModal}>×</button>
-            </div>
-            <div className="reject-modal-content">
-              <p>Are you sure you want to reject this booking for <strong>{selectedBooking.service?.title}</strong>?</p>
-              <div className="form-group">
-                <label htmlFor="rejectReason">Reason for rejection (optional):</label>
-                <textarea
-                  id="rejectReason"
-                  value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
-                  placeholder="Please provide a reason for rejecting this booking..."
-                  rows={4}
-                />
-              </div>
-              <div className="modal-actions">
-                <button className="btn-secondary" onClick={closeRejectModal}>
-                  Cancel
-                </button>
-                <button 
-                  className="btn-danger"
-                  onClick={() => handleReject(selectedBooking._id, rejectReason)}
-                  disabled={processingAction === selectedBooking._id}
-                >
-                  {processingAction === selectedBooking._id ? 'Rejecting...' : 'Reject Booking'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 };

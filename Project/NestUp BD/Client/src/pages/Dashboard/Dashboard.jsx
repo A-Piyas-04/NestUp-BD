@@ -7,7 +7,7 @@ import MyNests from './views/nests/MyNests';
 import BookingApprovals from './views/bookings/BookingApprovals';
 import NestReviews from './views/reviews/NestReviews';
 import BookedNests from './views/bookings/BookedNests';
-import Wishlist from './views/nests/Wishlist';
+import Wishlist from './views/Wishlist/Wishlist';
 
 import PaymentHistory from './views/payments/PaymentHistory';
 

@@ -1,28 +1,51 @@
-@import '../shared/DashboardShared.css';
+@import '../../Dashboard.css';
+
+/* Header Background Styling */
+.dashboard-page-header {
+  background: linear-gradient(135deg, var(--primary-light) 0%, #f0f7ff 100%);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.dashboard-page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%232563eb' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  opacity: 0.6;
+  z-index: 0;
+}
+
+.dashboard-page-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--secondary);
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-page-header p {
+  color: var(--gray-600);
+  font-size: 1rem;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
 
 .my-reviews-container {
   padding: 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
 }
-
-.page-header {
-  margin-bottom: 2rem;
-}
-
-.page-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--secondary);
-  margin-bottom: 0.5rem;
-}
-
-.page-header p {
-  color: var(--gray-600);
-  font-size: 1.1rem;
-  margin: 0;
-}
-
 /* Loading and Error States */
 .loading {
   text-align: center;

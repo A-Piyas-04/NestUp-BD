@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../../../context/AuthContext';
 import NestReviewForm from '../../../../components/NestReviewForm/NestReviewForm';
+import './BookedNests.css';
 
 const BookedNests = () => {
   const { user } = useAuth();
@@ -15,8 +16,7 @@ const BookedNests = () => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [showSupportModal, setShowSupportModal] = useState(false);
-  const [supportBooking, setSupportBooking] = useState(null);
+
 
   // Check for payment success state
   useEffect(() => {
@@ -26,6 +26,9 @@ const BookedNests = () => {
         transactionId: location.state.transactionId,
         amount: location.state.amount
       });
+      
+      // Refresh bookings to show updated status
+      fetchBookings();
       
       // Auto-hide success message after 10 seconds
       const timer = setTimeout(() => {
@@ -37,43 +40,45 @@ const BookedNests = () => {
   }, [location.state]);
 
   // Fetch bookings from backend
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem('token');
-        
-        if (!token) {
-          throw new Error('Please login to view your bookings');
-        }
-        
-        const response = await fetch('/api/bookings', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch bookings');
-        }
-
-        const data = await response.json();
-        setBookedNests(data.bookings || []);
-        // Store stats separately if available
-        if (data.stats) {
-          setBookedNests(prev => ({ ...prev, stats: data.stats }));
-        }
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching bookings:', err);
-        setError(err.message);
-        setBookedNests([]);
-      } finally {
-        setLoading(false);
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('Please login to view your bookings');
       }
-    };
+      
+      const response = await fetch('/api/bookings', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch bookings');
+      }
+
+      const data = await response.json();
+      setBookedNests(data.bookings || []);
+      // Store stats separately if available
+      if (data.stats) {
+        setBookedNests(prev => ({ ...prev, stats: data.stats }));
+      }
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching bookings:', err);
+      setError(err.message);
+      setBookedNests([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load bookings on component mount and when user changes
+  useEffect(() => {
 
     if (user) {
       fetchBookings();
@@ -127,7 +132,7 @@ const BookedNests = () => {
       active: { text: 'Active', class: 'status-active' },
       pending: { text: 'Pending Approval', class: 'status-pending' },
       approved: { text: 'Approved', class: 'status-approved' },
-      rejected: { text: 'Rejected', class: 'status-rejected' },
+      paid: { text: 'Paid', class: 'status-paid' },
       completed: { text: 'Completed', class: 'status-completed' },
       upcoming: { text: 'Upcoming', class: 'status-upcoming' }
     };
@@ -196,15 +201,12 @@ const BookedNests = () => {
     setSelectedBooking(null);
   };
 
-  const openSupportModal = (booking) => {
-    setSupportBooking(booking);
-    setShowSupportModal(true);
+  const handlePayment = (booking) => {
+    // Redirect to payment page with booking details
+    window.location.href = `/payment?bookingId=${booking._id}`;
   };
 
-  const closeSupportModal = () => {
-    setShowSupportModal(false);
-    setSupportBooking(null);
-  };
+
 
   // Use API stats if available, fallback to client calculation
   const bookingsArray = Array.isArray(bookedNests) ? bookedNests : [];
@@ -217,24 +219,24 @@ const BookedNests = () => {
 
   if (loading) {
     return (
-      <div className="page-container">
-        <div className="page-header">
+      <div className="dashboard-page-container">
+        <div className="dashboard-page-header">
           <h1>Booked Nests</h1>
           <p>Loading your bookings...</p>
         </div>
-        <div className="loading-spinner">Loading...</div>
+        <div className="dashboard-loading">Loading...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="page-container">
-        <div className="page-header">
+      <div className="dashboard-page-container">
+        <div className="dashboard-page-header">
           <h1>Booked Nests</h1>
           <p>Error loading bookings</p>
         </div>
-        <div className="error-message">
+        <div className="dashboard-error">
           <p>{error}</p>
           <button onClick={() => window.location.reload()} className="btn-primary">
             Retry
@@ -245,8 +247,8 @@ const BookedNests = () => {
   }
 
   return (
-    <div className="page-container">
-      <div className="page-header">
+    <div className="dashboard-page-container">
+      <div className="dashboard-page-header">
         <h1>Booked Nests</h1>
         <p>Your accommodation bookings and history</p>
       </div>
@@ -346,28 +348,67 @@ const BookedNests = () => {
                   
                   <div className="booking-actions">
                     <button 
-                      className="btn-primary"
+                      className="btn-secondary"
                       onClick={() => openDetailsModal(booking)}
                     >
                       View Details
                     </button>
-                    <button 
-                      className="btn-secondary"
-                      onClick={() => openSupportModal(booking)}
-                    >
-                      Contact Support
-                    </button>
-                    {(booking.summary?.canReview || (booking.status === 'approved' && !booking.nestReviewSubmitted)) && (
-                      <button 
-                        className="btn-review"
-                        onClick={() => openReviewForm(booking)}
-                      >
-                        Review Nest
-                      </button>
-                    )}
-                    {booking.nestReviewSubmitted && (
-                      <span className="review-status">✓ Nest Reviewed</span>
-                    )}
+                    
+                    {/* Conditional action buttons based on booking and payment status */}
+                    {(() => {
+                      const bookingStatus = status;
+                      const paymentStatus = booking.paymentStatus;
+                      const hasPayment = booking.payment;
+                      const isReviewed = booking.nestReviewSubmitted;
+                      
+
+                      // Pay Now button - show for approved bookings without payment or with pending payment
+                      if (bookingStatus === 'approved' && (!hasPayment || paymentStatus === 'pending')) {
+                        return (
+                          <button 
+                            className="btn-primary pay-button"
+                            onClick={() => handlePayment(booking)}
+                          >
+                            Pay Now
+                          </button>
+                        );
+                      }
+                      
+                      // Review button - show for paid bookings that haven't been reviewed
+                      // Check both booking.status (actual DB status) and paymentStatus
+                      if ((booking.status === 'paid' || paymentStatus === 'paid') && !isReviewed) {
+                        return (
+                          <button 
+                            className="btn-review"
+                            onClick={() => openReviewForm(booking)}
+                          >
+                            Review Nest
+                          </button>
+                        );
+                      }
+                      
+                      // Show review status if already reviewed
+                      if (isReviewed) {
+                        return (
+                          <span className="review-status">✓ Nest Reviewed</span>
+                        );
+                      }
+                      
+                      // For other statuses, show appropriate message
+                      if (bookingStatus === 'pending') {
+                        return (
+                          <span className="status-message">Awaiting host approval</span>
+                        );
+                      }
+                      
+                      if (bookingStatus === 'active' || bookingStatus === 'completed') {
+                        return (
+                          <span className="status-message">Booking {bookingStatus}</span>
+                        );
+                      }
+                      
+                      return null;
+                    })()}
                   </div>
                 </div>
               );
@@ -466,62 +507,7 @@ const BookedNests = () => {
         </div>
       )}
 
-      {/* Contact Support Modal */}
-      {showSupportModal && supportBooking && (
-        <div className="modal-overlay" onClick={closeSupportModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Contact Support</h3>
-              <button className="close-btn" onClick={closeSupportModal}>×</button>
-            </div>
-            <div className="modal-body">
-              <div className="property-info">
-                <h4>{supportBooking.service?.title}</h4>
-                <p>📍 {supportBooking.service?.location?.area}, {supportBooking.service?.location?.district}</p>
-                <p>Booking ID: {supportBooking._id}</p>
-                <p>Status: {getBookingStatus(supportBooking)}</p>
-              </div>
-              <form className="support-form">
-                <div className="form-group">
-                  <label>Issue Category</label>
-                  <select className="form-control">
-                    <option value="">Select an issue</option>
-                    <option value="payment">Payment Issue</option>
-                    <option value="booking">Booking Problem</option>
-                    <option value="property">Property Issue</option>
-                    <option value="cancellation">Cancellation Request</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Description</label>
-                  <textarea 
-                    className="form-control" 
-                    rows="4" 
-                    placeholder="Please describe your issue in detail..."
-                  ></textarea>
-                </div>
-                <div className="form-group">
-                  <label>Contact Email</label>
-                  <input 
-                    type="email" 
-                    className="form-control" 
-                    placeholder="Your email address"
-                  />
-                </div>
-                <div className="form-actions">
-                  <button type="button" className="btn-secondary" onClick={closeSupportModal}>
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn-primary">
-                    Submit Request
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Review Form Modal */}
       {showReviewForm && reviewingBooking && (

@@ -120,8 +120,8 @@ const PaymentHistory = () => {
 
   if (loading) {
     return (
-      <div className="page-container">
-        <div className="page-header">
+      <div className="dashboard-page-container">
+        <div className="dashboard-page-header">
           <h1>Payment History</h1>
           <p>Loading your payment history...</p>
         </div>
@@ -137,8 +137,8 @@ const PaymentHistory = () => {
     }
     
     return (
-      <div className="page-container">
-        <div className="page-header">
+      <div className="dashboard-page-container">
+        <div className="dashboard-page-header">
           <h1>Payment History</h1>
           <p>Error loading payment history</p>
         </div>
@@ -153,32 +153,14 @@ const PaymentHistory = () => {
   }
 
   return (
-    <div className="page-container">
-      <div className="page-header">
+    <div className="dashboard-page-container">
+      <div className="dashboard-page-header">
         <h1>Payment History</h1>
         <p>Track all your accommodation payments and transactions</p>
       </div>
       
       <div className="payment-summary">
-        <div className="summary-card">
-          <h3>Net Spent</h3>
-          <div className="total-amount">{formatAmount(netSpent)}</div>
-          <p>After refunds</p>
-        </div>
-        
-        <div className="summary-card">
-          <h3>Total Transactions</h3>
-          <div className="transaction-count">{paymentHistory.stats?.total || pagination.totalPayments || paymentsArray.length}</div>
-          <p>Payment records</p>
-        </div>
-        
-        <div className="summary-card">
-          <h3>Pending Payments</h3>
-          <div className="pending-count">
-            {paymentHistory.stats?.pending || paymentsArray.filter(p => p.status === 'pending' || p.status === 'processing').length}
-          </div>
-          <p>Awaiting completion</p>
-        </div>
+
         
         {totalRefunded > 0 && (
           <div className="summary-card">
@@ -204,8 +186,9 @@ const PaymentHistory = () => {
               <div key={payment._id} className="transaction-card">
                 <div className="transaction-header">
                   <div className="transaction-info">
-                    <h3>{payment.service?.title || 'Property Booking'}</h3>
-                    <p className="host-name">{payment.service?.location?.area}, {payment.service?.location?.district}</p>
+                    <h3>{payment.booking?.service?.title || 'Property Booking'}</h3>
+                    <p className="host-name">{payment.booking?.service?.location?.area}, {payment.booking?.service?.location?.district}</p>
+                    <p className="host-info">Host: {payment.booking?.service?.owner?.name} ({payment.booking?.service?.owner?.email})</p>
                     <p className="transaction-id">
                       Transaction ID: {payment.formattedConfirmationNumber || payment.paymentDetails?.transactionId || payment._id.slice(-8)}
                     </p>
@@ -250,13 +233,7 @@ const PaymentHistory = () => {
                   )}
                 </div>
                 
-                <div className="transaction-actions">
-                  <button className="btn-secondary">View Details</button>
-                  <button className="btn-secondary">Download Receipt</button>
-                  {payment.canBeRefunded && (
-                    <button className="btn-secondary">Request Refund</button>
-                  )}
-                </div>
+
               </div>
             ))
           )}

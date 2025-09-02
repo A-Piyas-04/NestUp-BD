@@ -162,7 +162,7 @@ const MyReviews = () => {
 
   return (
     <div className="my-reviews-container">
-      <div className="page-header">
+      <div className="dashboard-page-header">
         <h1>My Nest Reviews</h1>
         <p>Manage and track all the nest reviews you've written</p>
       </div>

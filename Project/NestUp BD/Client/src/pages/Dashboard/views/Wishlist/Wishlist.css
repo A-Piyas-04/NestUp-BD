@@ -1,4 +1,40 @@
-@import '../shared/DashboardShared.css';
+@import '../../Dashboard.css';
+
+/* Dashboard Page Header Styling */
+.dashboard-page-header {
+  background: linear-gradient(135deg, var(--primary-light) 0%, #f0f7ff 100%);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.dashboard-page-header h1 {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 0.5rem 0;
+  color: var(--gray-800);
+}
+
+.dashboard-page-header p {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: var(--gray-600);
+}
 
 .wishlist-container {
   padding: 1.5rem;
@@ -6,22 +42,7 @@
   margin: 0 auto;
 }
 
-.page-header {
-  margin-bottom: 2rem;
-}
 
-.page-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--secondary);
-  margin-bottom: 0.5rem;
-}
-
-.page-header p {
-  color: var(--gray-600);
-  font-size: 1.1rem;
-  margin: 0;
-}
 
 .loading,
 .error {

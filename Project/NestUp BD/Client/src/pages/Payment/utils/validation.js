@@ -57,6 +57,9 @@ export const validateStep = (step, paymentData) => {
       if (!paymentData.paymentDetails.cardHolderName.trim()) {
         newErrors.cardHolderName = 'Card holder name is required';
       }
+    } else if (paymentData.paymentMethod === 'cash') {
+      // Cash payments don't require additional validation
+      // Users just need to visit the office with the displayed information
     }
   }
 
@@ -67,4 +70,4 @@ export const validateStep = (step, paymentData) => {
   }
 
   return newErrors;
-}; 
+};

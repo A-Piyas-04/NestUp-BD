@@ -84,7 +84,7 @@ const NestReviews = () => {
 
   return (
     <div className="nest-reviews-container">
-      <div className="page-header">
+      <div className="dashboard-page-header">
         <h1>Nest Reviews</h1>
         <p>Reviews from guests about your properties</p>
       </div>

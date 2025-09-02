@@ -28,29 +28,42 @@ const Payment = () => {
   const { serviceId: urlServiceId } = useParams();
   const { user } = useAuth();
   
+  // Extract bookingId from URL query parameters
+  const urlParams = new URLSearchParams(location.search);
+  const bookingId = urlParams.get('bookingId');
+  
   // Debug: Log what we received from navigation
   console.log('Payment component - location.state:', location.state);
   console.log('Payment component - propertyDetails:', location.state?.propertyDetails);
   console.log('Payment component - urlServiceId:', urlServiceId);
+  console.log('Payment component - bookingId:', bookingId);
   
   // State for loading service details
   const [isLoadingService, setIsLoadingService] = useState(false);
   const [serviceError, setServiceError] = useState(null);
+  
+  // State for existing booking (when accessed via Pay Now)
+  const [existingBooking, setExistingBooking] = useState(null);
+  const [isLoadingBooking, setIsLoadingBooking] = useState(false);
+  const [bookingError, setBookingError] = useState(null);
 
   // State for all payment-related data
   const [paymentData, setPaymentData] = useState({
-    propertyDetails: location.state?.propertyDetails || {
-      title: 'Student Studio Apartment',
-      location: 'Dhanmondi, Dhaka',
-      price: '৳7,500',
-      duration: '6 months',
-      totalAmount: '৳45,000',
-      image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
-      serviceId: urlServiceId || null,
-      startDate: null,
-      endDate: null
+    propertyDetails: {
+      serviceId: location.state?.propertyDetails?.serviceId || urlServiceId || null,
+      title: location.state?.propertyDetails?.title || 'Student Studio Apartment',
+      location: location.state?.propertyDetails?.location || 'Dhanmondi, Dhaka',
+      price: location.state?.propertyDetails?.price || '৳7,500',
+      duration: location.state?.propertyDetails?.duration || '6 months',
+      totalAmount: location.state?.propertyDetails?.totalAmount || '৳45,000',
+      image: location.state?.propertyDetails?.image || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
+      availableFrom: location.state?.propertyDetails?.availableFrom || '',
+      availableTo: location.state?.propertyDetails?.availableTo || '',
+      startDate: location.state?.propertyDetails?.startDate || null,
+      endDate: location.state?.propertyDetails?.endDate || null,
+      fees: location.state?.propertyDetails?.fees || null
     },
-    paymentMethod: 'mobile_banking',
+    paymentMethod: 'cash',
     paymentDetails: {
       mobileNumber: '',
       transactionId: '',
@@ -78,11 +91,83 @@ const Payment = () => {
   // Stores validation errors for the current step
   const [errors, setErrors] = useState({});
 
+  // Fetch booking details if bookingId is provided (Pay Now flow)
+  useEffect(() => {
+    const fetchBookingDetails = async () => {
+      if (bookingId) {
+        setIsLoadingBooking(true);
+        setBookingError(null);
+        
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`/api/bookings/${bookingId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            credentials: 'include'
+          });
+          
+          if (!response.ok) {
+            throw new Error('Booking not found');
+          }
+          
+          const response_data = await response.json();
+          const booking = response_data.booking || response_data; // Handle both response formats
+          setExistingBooking(booking);
+          
+          // Update paymentData with booking details
+          const service = booking.service;
+          
+          // Check if service exists to prevent undefined errors
+          if (!service || !service._id) {
+            throw new Error('Service information is missing from booking');
+          }
+          
+          const startDate = new Date(booking.startDate);
+          const endDate = new Date(booking.endDate);
+          const durationInDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+          
+          setPaymentData(prev => ({
+            ...prev,
+            propertyDetails: {
+              serviceId: service._id,
+              title: service.title || 'Service Title',
+              location: service.location ? `${service.location.area || ''}, ${service.location.district || ''}` : 'Location not available',
+              price: `৳${booking.basePrice?.toLocaleString() || '0'}`,
+              duration: `${durationInDays} days`,
+              totalAmount: `৳${booking.totalAmount?.toLocaleString() || '0'}`,
+              image: service.images?.[0] || service.thumbnail || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
+              availableFrom: booking.startDate,
+              availableTo: booking.endDate,
+              startDate: booking.startDate,
+              endDate: booking.endDate,
+              fees: booking.fees || null
+            },
+            personalInfo: {
+              fullName: booking.personalInfo?.fullName || '',
+              email: booking.personalInfo?.email || '',
+              phone: booking.personalInfo?.phone || '',
+              nidNumber: booking.personalInfo?.nidNumber || '',
+              address: booking.personalInfo?.address || ''
+            }
+          }));
+        } catch (error) {
+          console.error('Error fetching booking details:', error);
+          setBookingError('Failed to load booking details. Please try again.');
+        } finally {
+          setIsLoadingBooking(false);
+        }
+      }
+    };
+
+    fetchBookingDetails();
+  }, [bookingId]);
+
   // Fetch service details if serviceId is provided via URL but propertyDetails are incomplete
   useEffect(() => {
     const fetchServiceDetails = async () => {
-      // Only fetch if we have serviceId from URL and no complete propertyDetails from state
-      if (urlServiceId && (!location.state?.propertyDetails || !location.state.propertyDetails.title || location.state.propertyDetails.title === 'Student Studio Apartment')) {
+      // Only fetch if we have serviceId from URL, no bookingId, and no complete propertyDetails from state
+      if (urlServiceId && !bookingId && (!location.state?.propertyDetails || !location.state.propertyDetails.title || location.state.propertyDetails.title === 'Student Studio Apartment')) {
         setIsLoadingService(true);
         setServiceError(null);
         
@@ -101,13 +186,13 @@ const Payment = () => {
               serviceId: service._id,
               title: service.title,
               location: `${service.location.area}, ${service.location.district}`,
-              price: `৳${service.pricing.basePrice.toLocaleString()}`,
+              price: `৳${service.price.toLocaleString()}`,
               duration: '1 month', // Default duration
-              totalAmount: `৳${service.pricing.totalAmount.toLocaleString()}`,
+              totalAmount: `৳${service.price.toLocaleString()}`,
               image: service.images?.[0] || service.thumbnail,
-              startDate: service.availability.availableFrom,
-              endDate: service.availability.availableTo,
-              fees: service.pricing.fees
+              startDate: service.availability?.from,
+              endDate: service.availability?.to,
+              fees: null
             }
           }));
         } catch (error) {
@@ -120,7 +205,7 @@ const Payment = () => {
     };
 
     fetchServiceDetails();
-  }, [urlServiceId, location.state]);
+  }, [urlServiceId, bookingId, location.state]);
 
   /**
    * Handles input changes for nested form sections.
@@ -213,40 +298,49 @@ const Payment = () => {
         return;
       }
       
-      // Step 1: Create booking
       const token = localStorage.getItem('token');
-      const bookingResponse = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          serviceId: paymentData.propertyDetails.serviceId,
-          startDate: paymentData.propertyDetails.startDate,
-          endDate: paymentData.propertyDetails.endDate,
-          guests: 1,
-          specialRequests: '',
-          personalInfo: {
-            phone: paymentData.personalInfo.phone,
-            email: paymentData.personalInfo.email,
-            fullName: paymentData.personalInfo.fullName,
-            nidNumber: paymentData.personalInfo.nidNumber,
-            address: paymentData.personalInfo.address
-          }
-        })
-      });
+      let targetBookingId;
 
-      if (!bookingResponse.ok) {
-        const errorData = await bookingResponse.json();
-        throw new Error(errorData.message || 'Failed to create booking');
+      if (existingBooking) {
+        // Use existing approved booking
+        targetBookingId = existingBooking._id;
+        console.log('Using existing approved booking:', targetBookingId);
+      } else {
+        // Step 1: Create new booking (this should not happen in the new flow)
+        console.warn('Creating new booking during payment - this should not happen in the new approval flow');
+        const bookingResponse = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            serviceId: paymentData.propertyDetails.serviceId,
+            startDate: paymentData.propertyDetails.startDate,
+            endDate: paymentData.propertyDetails.endDate,
+            guests: 1,
+            specialRequests: '',
+            personalInfo: {
+              phone: paymentData.personalInfo.phone,
+              email: paymentData.personalInfo.email,
+              fullName: paymentData.personalInfo.fullName,
+              nidNumber: paymentData.personalInfo.nidNumber,
+              address: paymentData.personalInfo.address
+            }
+          })
+        });
+
+        if (!bookingResponse.ok) {
+          const errorData = await bookingResponse.json();
+          throw new Error(errorData.message || 'Failed to create booking');
+        }
+
+        const bookingData = await bookingResponse.json();
+        targetBookingId = bookingData.booking._id;
       }
 
-      const bookingData = await bookingResponse.json();
-      const bookingId = bookingData.booking._id;
-
-      // Step 2: Process payment
+      // Step 2: Process payment for the booking
       const paymentResponse = await fetch('/api/payments', {
         method: 'POST',
         headers: {
@@ -255,7 +349,7 @@ const Payment = () => {
         },
         credentials: 'include',
         body: JSON.stringify({
-          bookingId: bookingId,
+          bookingId: targetBookingId,
           paymentMethod: paymentData.paymentMethod,
           paymentDetails: paymentData.paymentDetails,
           personalInfo: paymentData.personalInfo,
@@ -333,6 +427,49 @@ const Payment = () => {
         return null;
     }
   };
+
+  // Show loading state while fetching booking details
+  if (isLoadingBooking) {
+    return (
+      <div>
+        <Header />
+        <div className="payment-page">
+          <div className="payment-container">
+            <div className="payment-header">
+              <h1>Loading Booking Details...</h1>
+              <p>Please wait while we fetch your booking information</p>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Show error state if booking fetch failed
+  if (bookingError) {
+    return (
+      <div>
+        <Header />
+        <div className="payment-page">
+          <div className="payment-container">
+            <div className="payment-header">
+              <h1>Error Loading Booking</h1>
+              <p>{bookingError}</p>
+              <button 
+                onClick={() => navigate('/dashboard/bookings')} 
+                className="btn-primary"
+                style={{ marginTop: '20px' }}
+              >
+                Back to Bookings
+              </button>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   // Show loading state while fetching service details
   if (isLoadingService) {

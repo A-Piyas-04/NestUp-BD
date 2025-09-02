@@ -141,8 +141,8 @@ const MyNests = () => {
 
   if (loading) {
     return (
-      <div className="page-container">
-        <div className="page-header">
+      <div className="dashboard-page-container">
+        <div className="dashboard-page-header">
           <h1>My Nests</h1>
           <p>Manage your provided accommodation services</p>
         </div>
@@ -157,8 +157,8 @@ const MyNests = () => {
 
   if (error) {
     return (
-      <div className="page-container">
-        <div className="page-header">
+      <div className="dashboard-page-container">
+        <div className="dashboard-page-header">
           <h1>My Nests</h1>
           <p>Manage your provided accommodation services</p>
         </div>
@@ -174,7 +174,7 @@ const MyNests = () => {
 
   return (
     <div className="my-nests-container">
-      <div className="page-header">
+      <div className="dashboard-page-header">
         <h1>My Nests</h1>
         <p>Manage your property listings and track their performance</p>
       </div>

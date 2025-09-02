@@ -101,7 +101,7 @@
   background-color: var(--primary);
   color: white;
   border: none;
-  padding: 1rem;
+  padding: 1rem 10.4rem !important;
   border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 1rem;

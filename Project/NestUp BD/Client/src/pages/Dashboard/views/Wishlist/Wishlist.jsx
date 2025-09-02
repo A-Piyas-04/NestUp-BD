@@ -85,7 +85,7 @@ const Wishlist = () => {
   if (loading) {
     return (
       <div className="wishlist-container">
-        <div className="page-header">
+        <div className="dashboard-page-header">
           <h1>My Wishlist</h1>
           <p>Your saved properties</p>
         </div>
