@@ -51,7 +51,6 @@ The NestUp BD application uses **5 main collections** in MongoDB:
     },
     
     preferences: {
-      receiveNotifications: Boolean (default: true),
       newsletterSubscription: Boolean (default: false),
       twoFactorAuth: Boolean (default: false),
       language: Enum ['english', 'bangla'] (default: 'english')
@@ -70,7 +69,7 @@ The NestUp BD application uses **5 main collections** in MongoDB:
 - **Password Hashing**: Automatic bcrypt hashing with salt rounds (12)
 - **Email Validation**: Regex validation for email format
 - **Wishlist System**: Array of Service ObjectIds for saved properties
-- **Notification Preferences**: Controls notification delivery
+
 - **Auto-timestamps**: Automatic createdAt and updatedAt management
 
 ### Methods

@@ -136,27 +136,7 @@
   transform: translateY(-2px);
 }
 
-/* Notification Bell in Header */
-.user-actions .notification-bell-container {
-  margin-left: 1rem;
-  margin-right: 0.5rem;
-}
 
-.user-actions .notification-bell {
-  color: var(--header-text);
-  padding: 8px;
-}
-
-.user-actions .notification-bell:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--header-text);
-  transform: translateY(-2px);
-}
-
-.user-actions .notification-badge {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  border-color: var(--header-bg);
-}
 
 .mobile-menu-btn {
   display: none;

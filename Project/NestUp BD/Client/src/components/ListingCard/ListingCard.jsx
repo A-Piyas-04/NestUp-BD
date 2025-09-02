@@ -13,17 +13,75 @@ const ListingCard = ({
   
   isBooked = false,
   service = null,
-  user = null,
+  user: propUser = null,
   onViewDetails = null,
   showReviews = true,
   reviews = null
 }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isBooking, setIsBooking] = useState(false);
   
   // Format dates to be more user-friendly
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  const handleBookRequest = async () => {
+    if (!user) {
+      alert('Please log in to book this service');
+      navigate('/login');
+      return;
+    }
+
+    if (!service) {
+      alert('Service information not available');
+      return;
+    }
+
+    setIsBooking(true);
+    
+    try {
+      // Create booking request with current date range
+      const startDate = new Date(availableFrom);
+      const endDate = new Date(availableTo);
+      
+      const bookingData = {
+        serviceId: service._id,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        guests: 1,
+        personalInfo: {
+          fullName: user.name,
+          email: user.email,
+          ...(user.phone && { phone: user.phone })
+        },
+        specialRequests: ''
+      };
+
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(bookingData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('Booking request sent successfully! The host will review your request.');
+      } else {
+        alert(result.message || 'Failed to send booking request');
+      }
+    } catch (error) {
+      console.error('Booking request error:', error);
+      alert('Failed to send booking request. Please try again.');
+    } finally {
+      setIsBooking(false);
+    }
   };
 
   const formattedAvailableFrom = availableFrom ? formatDate(availableFrom) : '';
@@ -71,42 +129,9 @@ const ListingCard = ({
     }
   };
 
-  const handleBook = () => {
-    // Debug: Log service data before navigation
-    console.log('ListingCard handleBook - service:', service);
-    console.log('ListingCard handleBook - service._id:', service?._id);
-    
-    // Navigate directly to payment page for booking
-    const fromDate = new Date(availableFrom);
-    const toDate = new Date(availableTo);
-    const durationInDays = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24));
-    
-    const priceNumber = parseInt(price.replace(/[^\d]/g, ''));
-    const totalAmount = priceNumber;
-    
-    const propertyDetails = {
-      serviceId: service?._id,
-      title,
-      location,
-      price: service?.pricing?.basePrice ? `৳${service.pricing.basePrice.toLocaleString()}` : `৳${priceNumber.toLocaleString()}`,
-      duration: `${durationInDays} days`,
-      totalAmount: service?.pricing?.totalAmount ? `৳${service.pricing.totalAmount.toLocaleString()}` : `৳${totalAmount.toLocaleString()}`,
-      image: image || service?.images?.[0] || service?.thumbnail,
-      availableFrom: formattedAvailableFrom,
-      availableTo: formattedAvailableTo,
-      startDate: availableFrom,
-      endDate: availableTo,
-      fees: service?.pricing?.fees || null
-    };
 
-    console.log('ListingCard handleBook - propertyDetails:', propertyDetails);
-    // Navigate with serviceId in URL for better UX (bookmarkable, refreshable)
-    if (service?._id) {
-      navigate(`/payment/${service._id}`, { state: { propertyDetails } });
-    } else {
-      navigate('/payment', { state: { propertyDetails } });
-    }
-  };
+  
+
 
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -228,11 +253,7 @@ const ListingCard = ({
   // Check if current user owns this listing
   const isOwnListing = user && service && service.owner && user.email === service.owner.email;
   
-  // Check if service is booked - prioritize API-provided booking status
-  const serviceIsBooked = isBooked || 
-    (service && service.bookingStatus === 'booked') || 
-    (service && service.isBooked) || 
-    (service && service.availability === false);
+  
 
   return (
     <div className="listing-card">
@@ -245,7 +266,7 @@ const ListingCard = ({
           </div>
         )}
 
-        {serviceIsBooked && <span className="listing-badge booked-badge">🔒 Booked</span>}
+
         
         {/* Save Button - Top Left */}
         <button 
@@ -294,18 +315,20 @@ const ListingCard = ({
           <button className="listing-button tertiary" onClick={handleViewDetails}>
             View Details
           </button>
-          <button 
-            className={`listing-button ${serviceIsBooked ? 'disabled booked' : isOwnListing ? 'disabled own-listing' : 'primary'}`}
-            onClick={serviceIsBooked ? null : handleBook}
-            disabled={isOwnListing || serviceIsBooked}
-            title={
-              serviceIsBooked ? "This property has been booked by another user" :
-              isOwnListing ? "You cannot book your own listing" : 
-              "Book this property"
-            }
-          >
-            {serviceIsBooked ? 'Booked' : isOwnListing ? 'Your Listing' : 'Book'}
-          </button>
+
+          {!isOwnListing && (
+            <button 
+              className="listing-button primary" 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleBookRequest();
+              }}
+              disabled={isBooking || service?.isBooked}
+              style={{ marginTop: '8px' }}
+            >
+              {isBooking ? 'Sending Request...' : (service?.isBooked ? 'Already Booked' : 'Book Now')}
+            </button>
+          )}
           
           {!isOwnListing && (
             <button 
@@ -323,6 +346,7 @@ const ListingCard = ({
         </div>
       </div>
       
+
 
     </div>
   );

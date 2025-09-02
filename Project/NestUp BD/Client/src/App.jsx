@@ -8,6 +8,7 @@ import HostProfile from './pages/HostProfile/HostProfile';
 import NotFound from './pages/NotFound/NotFound';
 import ProvideService from './pages/ProvideService/ProvideService';
 import Payment from './pages/Payment/Payment';
+
 import './App.css';
 
 function AnimatedRoutes() {
@@ -22,6 +23,7 @@ function AnimatedRoutes() {
         <Route path="/login" element={<motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} transition={{ duration: 0.4 }}><LoginRegister /></motion.div>} />
         <Route path="/register" element={<motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} transition={{ duration: 0.4 }}><LoginRegister /></motion.div>} />
         <Route path="/provide-service" element={<motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} transition={{ duration: 0.4 }}><ProvideService /></motion.div>} />
+
         <Route path="/host-profile/:hostId" element={<motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} transition={{ duration: 0.4 }}><HostProfile /></motion.div>} />
         <Route path="/payment" element={<motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} transition={{ duration: 0.4 }}><Payment /></motion.div>} />
         <Route path="/payment/:serviceId" element={<motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} transition={{ duration: 0.4 }}><Payment /></motion.div>} />

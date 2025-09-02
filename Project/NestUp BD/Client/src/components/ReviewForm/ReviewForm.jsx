@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import notificationService from '../Notifications/NotificationService';
 import './ReviewForm.css';
 
 const ReviewForm = ({ 
@@ -44,20 +43,6 @@ const ReviewForm = ({
       };
       
       onSubmit(reviewData);
-      
-      // Create notification for new review (for host)
-      if (!isEditing) {
-        notificationService.createNotification({
-          type: 'new_review',
-          data: {
-            reviewerName: 'Guest', // This should come from actual user data
-            rating: reviewData.rating,
-            propertyTitle: nestName || 'Property',
-            comment: reviewData.comment
-          },
-          priority: 'high'
-        });
-      }
     }
   };
 
