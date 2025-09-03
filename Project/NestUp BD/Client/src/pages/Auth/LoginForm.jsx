@@ -58,6 +58,7 @@ const LoginForm = () => {
         onChange={(e) => setEmail(e.target.value)}
         required 
       />
+      <small className="input-hint">example@anymail.com</small>
 
       <label>Password</label>
       <input 
@@ -67,6 +68,7 @@ const LoginForm = () => {
         onChange={(e) => setPassword(e.target.value)}
         required 
       />
+      <small className="input-hint">Password must be at least 6 characters</small>
 
       <button type="submit" className="submit-button">Login</button>
     </form>

@@ -211,11 +211,7 @@ const BookedNests = () => {
   // Use API stats if available, fallback to client calculation
   const bookingsArray = Array.isArray(bookedNests) ? bookedNests : [];
   const totalBookings = bookedNests.stats?.total || bookingsArray.length;
-  const activeBookings = bookedNests.stats?.active || bookingsArray.filter(booking => {
-    const status = getBookingStatus(booking);
-    return status === 'active' || status === 'upcoming';
-  }).length;
-  const approvedBookings = bookedNests.stats?.approved || bookingsArray.filter(b => getBookingStatus(b) === 'approved').length;
+  const approvedBookings = bookedNests.stats?.approved || bookingsArray.filter(b => b.isApproved === true).length;
 
   if (loading) {
     return (
@@ -279,12 +275,6 @@ const BookedNests = () => {
       )}
       
       <div className="bookings-summary">
-        <div className="summary-card">
-          <h3>Active Bookings</h3>
-          <div className="booking-count">{activeBookings}</div>
-          <p>Currently staying</p>
-        </div>
-        
         <div className="summary-card">
           <h3>Total Bookings</h3>
           <div className="booking-count">{totalBookings}</div>

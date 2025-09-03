@@ -1,10 +1,17 @@
 export const paymentMethods = [
   {
+    id: 'bkash',
+    name: 'bKash',
+    icon: '📱',
+    description: 'Mobile payment with bKash',
+    popular: true
+  },
+  {
     id: 'cash',
     name: 'Cash Payment',
     icon: '💰',
     description: 'Pay at our office',
-    popular: true
+    popular: false
   }
 ];
 

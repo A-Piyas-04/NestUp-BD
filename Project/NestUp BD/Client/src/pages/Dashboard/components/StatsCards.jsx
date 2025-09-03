@@ -67,7 +67,7 @@ const StatsCards = () => {
           
           const activeNests = servicesData.services?.length || 0;
           const bookedNests = bookingsData.bookings?.length || 0;
-          const approvedBookings = bookingsData.bookings?.filter(b => b.status === 'approved').length || 0;
+          const approvedBookings = bookingsData.bookings?.filter(b => b.isApproved === true).length || 0;
           
           // Calculate total payments
           const totalPayments = paymentsData.payments?.reduce((sum, payment) => {

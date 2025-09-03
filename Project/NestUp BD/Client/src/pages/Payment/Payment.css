@@ -329,6 +329,139 @@
   line-height: 1.5;
 }
 
+/* bKash Payment Styles */
+.bkash-form {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.bkash-instructions {
+  background: linear-gradient(135deg, #fef3e2 0%, #fef7ed 100%);
+  border: 1px solid #fed7aa;
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.bkash-instructions h5 {
+  color: #ea580c;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bkash-instructions ol {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #9a3412;
+}
+
+.bkash-instructions li {
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.bkash-instructions .amount-highlight {
+  background: #fed7aa;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  color: #9a3412;
+}
+
+.bkash-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.bkash-input-group {
+  position: relative;
+}
+
+.bkash-input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.bkash-input-group input {
+  width: 100%;
+  padding: 0.875rem;
+  border: 2px solid #d1d5db;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.bkash-input-group input:focus {
+  outline: none;
+  border-color: #ea580c;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+}
+
+.bkash-input-group input.error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.bkash-input-group .error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.popular-badge {
+  position: absolute;
+  top: -8px;
+  right: 10px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+/* Enhanced payment method styles for bKash */
+.payment-method.selected.popular {
+  border-color: #10b981;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.payment-method.popular .method-icon {
+  color: #10b981;
+}
+
+/* Responsive styles for bKash form */
+@media (max-width: 768px) {
+  .bkash-form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .bkash-instructions {
+    padding: 1rem;
+  }
+  
+  .bkash-instructions h5 {
+    font-size: 1rem;
+  }
+}
+
 .bank-details,
 .office-details {
   background: var(--gray-50);
@@ -649,4 +782,4 @@
     width: 100%;
     height: 200px;
   }
-} 
+}

@@ -123,9 +123,9 @@
 
 .booking-count,
 .avg-rating {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--primary-600, #2563eb);
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  color: rgb(29, 29, 138) !important;
   margin: 0.5rem 0;
 }
 
