@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../../context/AuthContext';
 import LoginPrompt from '../../../../components/LoginPrompt';
+import jsPDF from 'jspdf';
 import './PaymentHistory.css';
 
 const PaymentHistory = () => {
@@ -106,6 +107,60 @@ const PaymentHistory = () => {
   const getStatusBadge = (status) => {
     // All payments are displayed as completed by default
     return <span className={`status-badge status-completed`}>Completed</span>;
+  };
+
+  // Generate PDF invoice
+  const generateInvoice = (payment) => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(37, 99, 235);
+    doc.text('NestUp BD', 20, 30);
+    
+    doc.setFontSize(16);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Payment Invoice', 20, 50);
+    
+    // Invoice details
+    doc.setFontSize(12);
+    doc.text(`Invoice Date: ${formatDate(payment.createdAt)}`, 20, 70);
+    doc.text(`Transaction ID: ${payment.formattedConfirmationNumber || payment.paymentDetails?.transactionId || payment._id.slice(-8)}`, 20, 85);
+    
+    // Property details
+    doc.setFontSize(14);
+    doc.text('Property Details:', 20, 110);
+    doc.setFontSize(12);
+    doc.text(`Property: ${payment.booking?.service?.title || 'Property Booking'}`, 20, 125);
+    doc.text(`Location: ${payment.booking?.service?.location?.area}, ${payment.booking?.service?.location?.district}`, 20, 140);
+    doc.text(`Host: ${payment.booking?.service?.owner?.name} (${payment.booking?.service?.owner?.email})`, 20, 155);
+    
+    // Booking details
+    if (payment.booking?.startDate && payment.booking?.endDate) {
+      doc.text(`Booking Period: ${formatDate(payment.booking.startDate)} - ${formatDate(payment.booking.endDate)}`, 20, 170);
+    }
+    
+    // Payment details
+    doc.setFontSize(14);
+    doc.text('Payment Details:', 20, 195);
+    doc.setFontSize(12);
+    doc.text(`Payment Method: ${formatPaymentMethod(payment)}`, 20, 210);
+    doc.text(`Amount: tk.${(payment.totalAmount || payment.amount).toLocaleString()}`, 20, 225);
+    doc.text(`Status: Completed`, 20, 240);
+    
+    if (payment.processedAt) {
+      doc.text(`Processed: ${formatDate(payment.processedAt)}`, 20, 255);
+    }
+    
+    // Footer
+    doc.setFontSize(10);
+    doc.setTextColor(128, 128, 128);
+    doc.text('Thank you for choosing NestUp BD!', 20, 280);
+    doc.text('For any queries, contact us at support@nestupbd.com', 20, 290);
+    
+    // Save the PDF
+    const fileName = `NestUp_Invoice_${payment.formattedConfirmationNumber || payment._id.slice(-8)}.pdf`;
+    doc.save(fileName);
   };
 
   // Use API stats if available, fallback to client calculation
@@ -233,6 +288,15 @@ const PaymentHistory = () => {
                   )}
                 </div>
                 
+                <div className="payment-actions">
+                  <button 
+                    className="btn-generate-invoice"
+                    onClick={() => generateInvoice(payment)}
+                    title="Generate and download invoice PDF"
+                  >
+                    Generate Invoice
+                  </button>
+                </div>
 
               </div>
             ))

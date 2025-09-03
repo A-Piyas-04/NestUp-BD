@@ -6,7 +6,6 @@ import Service from '../models/Service.js';
 import Booking from '../models/Booking.js';
 import Payment from '../models/Payment.js';
 import User from '../models/User.js';
-import Notification from '../models/Notification.js';
 
 const router = express.Router();
 
@@ -883,18 +882,7 @@ router.post('/bookings', verifyToken, checkAuth, async (req, res) => {
         }
       });
     
-    // Create notification for service owner about new booking request
-    try {
-      await Notification.createBookingRequestNotification(
-        service.owner, // recipient (service owner)
-        req.user._id,  // sender (booking user)
-        booking._id,   // booking ID
-        service._id    // service ID
-      );
-    } catch (notificationError) {
-      console.error('Failed to create booking request notification:', notificationError);
-      // Don't fail the booking creation if notification fails
-    }
+
     
     res.status(201).json({
       message: 'Booking created successfully',
@@ -1758,131 +1746,6 @@ router.get('/users/:userId/profile', async (req, res) => {
   }
 });
 
-// ===== NOTIFICATION ROUTES =====
 
-// Get user notifications
-router.get('/notifications', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const { page = 1, limit = 20, unreadOnly = false } = req.query;
-    
-    const notifications = await Notification.getUserNotifications(req.user._id, {
-      page: parseInt(page),
-      limit: parseInt(limit),
-      unreadOnly: unreadOnly === 'true'
-    });
-    
-    res.json({
-      success: true,
-      notifications,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit)
-      }
-    });
-  } catch (error) {
-    console.error('Get notifications error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch notifications' 
-    });
-  }
-});
-
-// Get unread notification count
-router.get('/notifications/unread-count', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const count = await Notification.getUnreadCount(req.user._id);
-    
-    res.json({
-      success: true,
-      count
-    });
-  } catch (error) {
-    console.error('Get unread count error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch unread count',
-      count: 0
-    });
-  }
-});
-
-// Mark notification as read
-router.patch('/notifications/:id/read', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const notification = await Notification.findOne({
-      _id: req.params.id,
-      recipient: req.user._id
-    });
-    
-    if (!notification) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Notification not found' 
-      });
-    }
-    
-    await notification.markAsRead();
-    
-    res.json({
-      success: true,
-      message: 'Notification marked as read',
-      notification
-    });
-  } catch (error) {
-    console.error('Mark notification as read error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to mark notification as read' 
-    });
-  }
-});
-
-// Mark all notifications as read
-router.patch('/notifications/mark-all-read', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const result = await Notification.markAllAsRead(req.user._id);
-    
-    res.json({
-      success: true,
-      message: 'All notifications marked as read',
-      modifiedCount: result.modifiedCount
-    });
-  } catch (error) {
-    console.error('Mark all notifications as read error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to mark all notifications as read' 
-    });
-  }
-});
-
-// Delete notification
-router.delete('/notifications/:id', verifyToken, checkAuth, async (req, res) => {
-  try {
-    const notification = await Notification.findOneAndDelete({
-      _id: req.params.id,
-      recipient: req.user._id
-    });
-    
-    if (!notification) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Notification not found' 
-      });
-    }
-    
-    res.json({
-      success: true,
-      message: 'Notification deleted successfully'
-    });
-  } catch (error) {
-    console.error('Delete notification error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to delete notification' 
-    });
-  }
-});
 
 export default router;

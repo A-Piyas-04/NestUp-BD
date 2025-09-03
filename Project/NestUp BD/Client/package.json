@@ -19,6 +19,7 @@
     "express": "^5.1.0",
     "framer-motion": "^12.23.12",
     "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.2",
     "mongoose": "^8.17.0",
     "postcss": "^8.5.5",
     "react": "^19.1.0",
