@@ -29,15 +29,6 @@ const StatsCards = () => {
       positive: true,
       icon: '💳',
       color: 'purple'
-    },
-    {
-      id: 'approved-bookings',
-      title: 'Approved Bookings',
-      value: '0',
-      change: '',
-      positive: true,
-      icon: '✅',
-      color: 'red'
     }
   ]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +58,6 @@ const StatsCards = () => {
           
           const activeNests = servicesData.services?.length || 0;
           const bookedNests = bookingsData.bookings?.length || 0;
-          const approvedBookings = bookingsData.bookings?.filter(b => b.isApproved === true).length || 0;
           
           // Calculate total payments
           const totalPayments = paymentsData.payments?.reduce((sum, payment) => {
@@ -101,15 +91,6 @@ const StatsCards = () => {
               positive: true,
               icon: '💳',
               color: 'purple'
-            },
-            {
-              id: 'approved-bookings',
-              title: 'Approved Bookings',
-              value: approvedBookings.toString(),
-              change: '',
-              positive: true,
-              icon: '✅',
-              color: 'red'
             }
           ]);
         }
@@ -126,7 +107,7 @@ const StatsCards = () => {
   if (loading) {
     return (
       <div className="stats-cards">
-        {[1, 2, 3, 4].map((i) => (
+        {[1, 2, 3].map((i) => (
           <div className="stat-card loading" key={i}>
             <div className="stat-icon">⏳</div>
             <div className="stat-content">
